@@ -1,0 +1,225 @@
+﻿ID,PrimaryProductID,Description,HalfLife,RatioGroup,Paper,Fuel
+1,1,fuelwood and other,0.0000,0,0,1
+2,2,"manufacturing, other manufacturing",12.0000,1,0,0
+3,2,"rail and railcar, n/a",12.0000,1,0,0
+4,2,"packaging and shipping, n/a",6.0000,1,0,0
+5,2,"manufacturing, furniture",30.0000,1,0,0
+6,2,"other, n/a",12.0000,1,0,0
+7,2,"new nonresidential, other",67.0000,1,0,0
+8,2,"new nonresidential, new nonres buildings",67.0000,1,0,0
+9,2,"residential r and r, n/a",30.0000,1,0,0
+10,2,"new housing, manufactured housing",12.0000,1,0,0
+11,2,"new housing, single family",100.0000,1,0,0
+12,2,"new housing, multifamily",70.0000,1,0,0
+13,3,"manufacturing, other manufacturing",12.0000,2,0,0
+14,3,"new housing, multifamily",70.0000,2,0,0
+15,3,"new housing, single family",100.0000,2,0,0
+16,3,"residential r and r, n/a",30.0000,2,0,0
+17,3,"new nonresidential, new nonres buildings",67.0000,2,0,0
+18,3,"new nonresidential, other",67.0000,2,0,0
+19,3,"rail and railcar, n/a",12.0000,2,0,0
+20,3,"manufacturing, furniture",30.0000,2,0,0
+21,3,"new housing, manufactured housing",12.0000,2,0,0
+22,3,"packaging and shipping, n/a",6.0000,2,0,0
+23,3,"other, n/a",12.0000,2,0,0
+24,4,"new housing, multifamily",70.0000,3,0,0
+25,4,"rail and railcar, n/a",12.0000,3,0,0
+26,4,"new housing, single family",100.0000,3,0,0
+27,4,"new housing, manufactured housing",12.0000,3,0,0
+28,4,"manufacturing, furniture",30.0000,3,0,0
+29,4,"new nonresidential, new nonres buildings",67.0000,3,0,0
+30,4,"manufacturing, other manufacturing",12.0000,3,0,0
+31,4,"packaging and shipping, n/a",6.0000,3,0,0
+32,4,"other, n/a",12.0000,3,0,0
+33,4,"residential r and r, n/a",30.0000,3,0,0
+34,4,"new nonresidential, other",67.0000,3,0,0
+35,5,other industrial products,12.0000,0,0,0
+36,6,"new housing, manufactured housing",12.0000,4,0,0
+37,6,"new housing, multifamily",70.0000,4,0,0
+38,6,"residential r and r, n/a",30.0000,4,0,0
+39,6,"new nonresidential, new nonres buildings",67.0000,4,0,0
+40,6,"new nonresidential, other",67.0000,4,0,0
+41,6,"rail and railcar, n/a",12.0000,4,0,0
+42,6,"manufacturing, furniture",30.0000,4,0,0
+43,6,"manufacturing, other manufacturing",12.0000,4,0,0
+44,6,"packaging and shipping, n/a",6.0000,4,0,0
+45,6,"other, n/a",12.0000,4,0,0
+46,6,"new housing, single family",100.0000,4,0,0
+47,7,wood pulp,2.6000,0,1,0
+48,8,fuelwood and other,0.0000,0,0,1
+49,9,"residential r and r, n/a",30.0000,5,0,0
+50,9,"packaging and shipping, n/a",6.0000,5,0,0
+51,9,"manufacturing, other manufacturing",12.0000,5,0,0
+52,9,"manufacturing, furniture",30.0000,5,0,0
+53,9,"rail and railcar, n/a",12.0000,5,0,0
+54,9,"new nonresidential, new nonres buildings",67.0000,5,0,0
+55,9,"other, n/a",12.0000,5,0,0
+56,9,"new housing, multifamily",70.0000,5,0,0
+57,9,"new housing, manufactured housing",12.0000,5,0,0
+58,9,"new housing, single family",100.0000,5,0,0
+59,9,"new nonresidential, other",67.0000,5,0,0
+60,10,"manufacturing, other manufacturing",12.0000,6,0,0
+61,10,"other, n/a",12.0000,6,0,0
+62,10,"new housing, single family",100.0000,6,0,0
+63,10,"rail and railcar, n/a",12.0000,6,0,0
+64,10,"packaging and shipping, n/a",6.0000,6,0,0
+65,10,"new housing, manufactured housing",12.0000,6,0,0
+66,10,"residential r and r, n/a",30.0000,6,0,0
+67,10,"new nonresidential, other",67.0000,6,0,0
+68,10,"manufacturing, furniture",30.0000,6,0,0
+69,10,"new housing, multifamily",70.0000,6,0,0
+70,10,"new nonresidential, new nonres buildings",67.0000,6,0,0
+71,11,"rail and railcar, n/a",12.0000,7,0,0
+72,11,"new nonresidential, other",67.0000,7,0,0
+73,11,"new housing, manufactured housing",12.0000,7,0,0
+74,11,"residential r and r, n/a",30.0000,7,0,0
+75,11,"new nonresidential, new nonres buildings",67.0000,7,0,0
+76,11,"other, n/a",12.0000,7,0,0
+77,11,"packaging and shipping, n/a",6.0000,7,0,0
+78,11,"new housing, multifamily",70.0000,7,0,0
+79,11,"new housing, single family",100.0000,7,0,0
+80,11,"manufacturing, other manufacturing",12.0000,7,0,0
+81,11,"manufacturing, furniture",30.0000,7,0,0
+82,12,other industrial products,12.0000,0,0,0
+83,13,"residential r and r, n/a",30.0000,8,0,0
+84,13,"manufacturing, furniture",30.0000,8,0,0
+85,13,"new housing, single family",100.0000,8,0,0
+86,13,"new housing, multifamily",70.0000,8,0,0
+87,13,"manufacturing, other manufacturing",12.0000,8,0,0
+88,13,"other, n/a",12.0000,8,0,0
+89,13,"rail and railcar, n/a",12.0000,8,0,0
+90,13,"new nonresidential, new nonres buildings",67.0000,8,0,0
+91,13,"new housing, manufactured housing",12.0000,8,0,0
+92,13,"packaging and shipping, n/a",6.0000,8,0,0
+93,13,"new nonresidential, other",67.0000,8,0,0
+94,14,wood pulp,2.6000,0,1,0
+95,15,fuelwood and other,0.0000,0,0,1
+96,16,"rail and railcar, n/a",12.0000,9,0,0
+97,16,"packaging and shipping, n/a",6.0000,9,0,0
+98,16,"other, n/a",12.0000,9,0,0
+99,16,"manufacturing, furniture",30.0000,9,0,0
+100,16,"new housing, multifamily",70.0000,9,0,0
+101,16,"new nonresidential, other",67.0000,9,0,0
+102,16,"new housing, single family",100.0000,9,0,0
+103,16,"new nonresidential, new nonres buildings",67.0000,9,0,0
+104,16,"new housing, manufactured housing",12.0000,9,0,0
+105,16,"residential r and r, n/a",30.0000,9,0,0
+106,16,"manufacturing, other manufacturing",12.0000,9,0,0
+107,17,"manufacturing, other manufacturing",12.0000,10,0,0
+108,17,"new housing, multifamily",70.0000,10,0,0
+109,17,"other, n/a",12.0000,10,0,0
+110,17,"residential r and r, n/a",30.0000,10,0,0
+111,17,"new nonresidential, new nonres buildings",67.0000,10,0,0
+112,17,"packaging and shipping, n/a",6.0000,10,0,0
+113,17,"new nonresidential, other",67.0000,10,0,0
+114,17,"new housing, single family",100.0000,10,0,0
+115,17,"new housing, manufactured housing",12.0000,10,0,0
+116,17,"manufacturing, furniture",30.0000,10,0,0
+117,17,"rail and railcar, n/a",12.0000,10,0,0
+118,18,"manufacturing, other manufacturing",12.0000,11,0,0
+119,18,"packaging and shipping, n/a",6.0000,11,0,0
+120,18,"other, n/a",12.0000,11,0,0
+121,18,"manufacturing, furniture",30.0000,11,0,0
+122,18,"rail and railcar, n/a",12.0000,11,0,0
+123,18,"new nonresidential, new nonres buildings",67.0000,11,0,0
+124,18,"new housing, single family",100.0000,11,0,0
+125,18,"new housing, manufactured housing",12.0000,11,0,0
+126,18,"residential r and r, n/a",30.0000,11,0,0
+127,18,"new nonresidential, other",67.0000,11,0,0
+128,18,"new housing, multifamily",70.0000,11,0,0
+129,19,other industrial products,12.0000,0,0,0
+130,20,"residential r and r, n/a",30.0000,12,0,0
+131,20,"packaging and shipping, n/a",6.0000,12,0,0
+132,20,"new housing, manufactured housing",12.0000,12,0,0
+133,20,"new housing, single family",100.0000,12,0,0
+134,20,"new housing, multifamily",70.0000,12,0,0
+135,20,"other, n/a",12.0000,12,0,0
+136,20,"manufacturing, other manufacturing",12.0000,12,0,0
+137,20,"rail and railcar, n/a",12.0000,12,0,0
+138,20,"new nonresidential, new nonres buildings",67.0000,12,0,0
+139,20,"manufacturing, furniture",30.0000,12,0,0
+140,20,"new nonresidential, other",67.0000,12,0,0
+141,21,wood pulp,2.6000,0,1,0
+142,22,fuelwood and other,0.0000,0,0,1
+143,23,"residential r and r, n/a",30.0000,13,0,0
+144,23,"manufacturing, furniture",30.0000,13,0,0
+145,23,"new housing, manufactured housing",12.0000,13,0,0
+146,23,"new housing, multifamily",70.0000,13,0,0
+147,23,"new nonresidential, new nonres buildings",67.0000,13,0,0
+148,23,"new nonresidential, other",67.0000,13,0,0
+149,23,"manufacturing, other manufacturing",12.0000,13,0,0
+150,23,"packaging and shipping, n/a",6.0000,13,0,0
+151,23,"other, n/a",12.0000,13,0,0
+152,23,"new housing, single family",100.0000,13,0,0
+153,23,"rail and railcar, n/a",12.0000,13,0,0
+154,24,"new housing, single family",100.0000,14,0,0
+155,24,"manufacturing, furniture",30.0000,14,0,0
+156,24,"other, n/a",12.0000,14,0,0
+157,24,"packaging and shipping, n/a",6.0000,14,0,0
+158,24,"new nonresidential, new nonres buildings",67.0000,14,0,0
+159,24,"manufacturing, other manufacturing",12.0000,14,0,0
+160,24,"new nonresidential, other",67.0000,14,0,0
+161,24,"residential r and r, n/a",30.0000,14,0,0
+162,24,"new housing, multifamily",70.0000,14,0,0
+163,24,"rail and railcar, n/a",12.0000,14,0,0
+164,24,"new housing, manufactured housing",12.0000,14,0,0
+165,25,"manufacturing, furniture",30.0000,15,0,0
+166,25,"manufacturing, other manufacturing",12.0000,15,0,0
+167,25,"new nonresidential, other",67.0000,15,0,0
+168,25,"new housing, single family",100.0000,15,0,0
+169,25,"new housing, multifamily",70.0000,15,0,0
+170,25,"new housing, manufactured housing",12.0000,15,0,0
+171,25,"residential r and r, n/a",30.0000,15,0,0
+172,25,"rail and railcar, n/a",12.0000,15,0,0
+173,25,"packaging and shipping, n/a",6.0000,15,0,0
+174,25,"other, n/a",12.0000,15,0,0
+175,25,"new nonresidential, new nonres buildings",67.0000,15,0,0
+176,26,other industrial products,12.0000,0,0,0
+177,27,"rail and railcar, n/a",12.0000,16,0,0
+178,27,"new nonresidential, other",67.0000,16,0,0
+179,27,"other, n/a",12.0000,16,0,0
+180,27,"manufacturing, other manufacturing",12.0000,16,0,0
+181,27,"new nonresidential, new nonres buildings",67.0000,16,0,0
+182,27,"packaging and shipping, n/a",6.0000,16,0,0
+183,27,"new housing, manufactured housing",12.0000,16,0,0
+184,27,"new housing, multifamily",70.0000,16,0,0
+185,27,"new housing, single family",100.0000,16,0,0
+186,27,"manufacturing, furniture",30.0000,16,0,0
+187,27,"residential r and r, n/a",30.0000,16,0,0
+188,28,wood pulp,2.6000,0,1,0
+189,29,"hardwood, poles",12.0000,0,0,0
+190,30,"softwood, poles",12.0000,0,0,0
+191,31,"hardwood, pilings",12.0000,0,0,0
+192,32,"softwood, pilings",12.0000,0,0,0
+193,33,"hardwood, mine props",12.0000,0,0,0
+194,34,"softwood, mine props",12.0000,0,0,0
+195,35,"hardwood, posts",12.0000,0,0,0
+196,36,"softwood, posts",12.0000,0,0,0
+197,37,"hardwood, fuelwood",0.0000,0,0,1
+198,38,"softwood, fuelwood",0.0000,0,0,1
+199,39,"hardwood, non-sawtimber",12.0000,0,0,0
+200,40,"softwood, non-sawtimber",12.0000,0,0,0
+201,41,"hardwood, ties",12.0000,0,0,0
+202,42,"softwood, ties",12.0000,0,0,0
+203,43,"hardwood, coop bolts",12.0000,0,0,0
+204,44,"softwood, coop bolts",12.0000,0,0,0
+205,45,"hardwood, acid/dist.",12.0000,0,0,0
+206,46,"softwood, acid/dist.",12.0000,0,0,0
+207,47,"hardwood, float logs",12.0000,0,0,0
+208,48,"softwood, float logs",12.0000,0,0,0
+209,49,"hardwood, trap float",12.0000,0,0,0
+210,50,"softwood, trap float",12.0000,0,0,0
+211,51,"hardwood, misc-conv.",12.0000,0,0,0
+212,52,"softwood, misc-conv.",12.0000,0,0,0
+213,53,"hardwood, nav stores",12.0000,0,0,0
+214,54,"softwood, nav stores",12.0000,0,0,0
+215,55,"hardwood, cull logs",12.0000,0,0,0
+216,56,"softwood, cull logs",12.0000,0,0,0
+217,57,"hardwood, sm rnd wd",12.0000,0,0,0
+218,58,"softwood, sm rnd wd",12.0000,0,0,0
+219,59,"hardwood, grn bio cv",12.0000,0,0,0
+220,60,"softwood, grn bio cv",12.0000,0,0,0
+221,61,"hardwood, dry bio cv",12.0000,0,0,0
+222,62,"softwood, dry bio cv",12.0000,0,0,0
+223,63,"hardwood, sp wood pr",12.0000,0,0,0
+224,64,"softwood, sp wood pr",12.0000,0,0,0
