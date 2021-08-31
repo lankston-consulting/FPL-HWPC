@@ -1,23 +1,29 @@
-import pandas
+from utils import data_reader
+import json
 
-class DiscardDestinations(object):
+class ModelData(object):
     
     _instance = None
 
-    discard_destinations = None
+    data = dict()
 
     def __new__(cls, *args, **kwargs):
         """Singleton catcher
 
         Returns:
-            DiscardDestinations: The singleton DiscardDestinations object
+            ModelData: The singleton ModelData object
         """
         if cls._instance is None:
-            cls._instance = super(DiscardDestinations, cls).__new__(cls)
+            cls._instance = super(ModelData, cls).__new__(cls)
+            dr = data_reader.DataReader()
 
-            val = {'id': [0, 1, 2, 3, 4], 'discard destinations': ['Burned', 'Recycled', 'Composted', 'Landfills', 'Dumps']}
+            with open('utils/default_paths.json') as f:
+                j = json.load(f)
+                p = j['discard_destinations']
+                val = dr.ReadFile(p)
+            val = None
 
-            cls.discard_destinations = pandas.DataFrame(data=val)
+            cls.data = val
 
         return cls._instance
 

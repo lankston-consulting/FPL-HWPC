@@ -1,0 +1,4 @@
+{
+    "discard_destinations": "data/discard_destinations.csv",
+    "harvest_data": "data/harvest_data.csv"
+}
