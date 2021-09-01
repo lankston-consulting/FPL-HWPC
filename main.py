@@ -1,5 +1,6 @@
-from hwpc import model_data
+from hwpc import model, model_data
 
 if __name__ == '__main__':
-    md = model_data.ModelData()
+    m = model.Model()
+    m.run()
     print('done')

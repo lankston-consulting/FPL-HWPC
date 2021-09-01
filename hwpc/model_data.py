@@ -1,5 +1,8 @@
-from utils import data_reader
 import json
+import pandas as pd
+from pandas.core.frame import DataFrame
+from utils import data_reader
+
 
 class ModelData(object):
     
@@ -41,3 +44,10 @@ class ModelData(object):
         """
 
         return
+
+    @staticmethod
+    def get_harvest_years() -> pd.DataFrame:
+        harvest_data = ModelData.data['harvest_data']
+        years = harvest_data['Year']
+        years.sort_values()
+        return years
