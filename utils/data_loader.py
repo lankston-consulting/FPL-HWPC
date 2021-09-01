@@ -19,7 +19,7 @@ class DataLoader(ABC):
 
         return cls._instance
 
-    def DownloadFile(path: str) -> tempfile.TemporaryFile:
+    def download_file(path: str) -> tempfile.TemporaryFile:
         """Abstract method for downloading a file from a cloud location
 
         Args:

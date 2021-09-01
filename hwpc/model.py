@@ -6,15 +6,13 @@ class Model(object):
         super().__init__()
 
         self.data = model_data.ModelData()
-        self.data.LoadData()
+        self.data.load_data()
 
-    def Run(self, iterations=1):
+    def run(self, iterations=1):
 
-        
-        return
-
-    def _run(self):
 
         return
+
+
 
     

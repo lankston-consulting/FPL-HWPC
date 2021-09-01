@@ -6,7 +6,7 @@ class DataReader(object):
     def __init__(self) -> None:
         super().__init__()
 
-    def ReadFile(self, path: object) -> pandas.DataFrame:
+    def read_file(self, path: object) -> pandas.DataFrame:
         """Read a csv or file object into a pandas DataFrame
 
         Args:

@@ -19,7 +19,7 @@ class ModelData(object):
         return cls._instance
 
     @staticmethod
-    def LoadData() -> None:
+    def load_data() -> None:
         """Read data into pandas DataFrames
         TODO Right now this just looks at default data
         """
@@ -29,12 +29,12 @@ class ModelData(object):
             j = json.load(f)
             for k in j:
                 p = j[k]
-                ModelData.data[k] = dr.ReadFile(p)
+                ModelData.data[k] = dr.read_file(p)
 
         return
 
     @staticmethod
-    def PrepData() -> None:
+    def prep_data() -> None:
         """TODO This function should do any functions needed to prepare data for use.
         Examples could be sorting years, checking for matching yearly data, ratios summing
         to zero, etc.
