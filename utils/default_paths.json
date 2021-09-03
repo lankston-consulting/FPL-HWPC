@@ -3,6 +3,8 @@
     "primary_product_data": "data/primary_product_data.csv", 
     "timber_product_data": "data/timber_product_data.csv", 
 
+    "ids": "data/id_lookup.csv",
+
     "discard_types": "data/discard_types.csv",
     "discarded_disposition_ratios": "data/discarded_disposition_ratios.csv",
     "distribution_parameters": "data/distribution_parameters.csv", 

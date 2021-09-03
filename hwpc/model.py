@@ -12,15 +12,15 @@ class Model(object):
         super().__init__()
 
         self.md = model_data.ModelData()
-        self.md.load_data()
-        self.md.prep_data()
+
+        self.region = self.md.get_region_id('West')
 
         self.harvests = self.md.data[nm.Tables.harvest]
 
         self.timber_product_ratios = self.md.data[nm.Tables.timber_products]
         self.primary_product_ratios = self.md.data[nm.Tables.primary_product_ratios]
         self.end_use_ratios = self.md.data[nm.Tables.end_use_ratios]
-        # self.timber_product_ratios = self.data['timber_product_data']
+        self.end_use_halflifes = self.md.data[nm.Tables.end_use_halflifes]
         # self.timber_product_ratios = self.data['timber_product_data']
 
         # number of years in model
@@ -35,10 +35,10 @@ class Model(object):
 
         self.results = results.Results()
 
-    def run(self, iterations=1):
+    def run(self, region='West', iterations=1):
         
         self.calculate_primary_product_mcg()
-        self.calculate_end_use_products()
+        # self.calculate_end_use_products()
 
         # TODO convert from mbf to ccf if needed
 
@@ -52,19 +52,30 @@ class Model(object):
         # timber product by the amount harvested that year.
 
         timber_products_ccf = self.timber_product_ratios.merge(self.harvests, how='outer')
-        timber_products_ccf['ccf_ratio'] = timber_products_ccf[nm.Fields.ratio] * timber_products_ccf[nm.Fields.ccf]
+        timber_products_ccf = timber_products_ccf.rename(columns={nm.Fields.ratio: nm.Fields.timber_product_ratio})
+        timber_products_ccf[nm.Fields.timber_product_results] = timber_products_ccf[nm.Fields.timber_product_ratio] * timber_products_ccf[nm.Fields.ccf]
 
         # Calculate primary products (CCF) by multiplying the timber-to-primary ratio for each 
         # primary product by the amount of the corresponding timber product. Then convert to MgC
         # by multiplying by the CCF-to-MgC ratio for that primary product.
         
-        primary_products_ccf = self.primary_product_ratios.merge(self.harvests, how='outer')
-        primary_products_ccf['ccf_ratio'] = primary_products_ccf[nm.Fields.ratio] * primary_products_ccf[nm.Fields.ccf]
+        # Append the timber product id to the primary product table
+        primary_products_ccf = self.primary_product_ratios
+        primary_products_ccf = primary_products_ccf.rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
+        primary_products_ccf[nm.Fields.timber_product_id] = primary_products_ccf[nm.Fields.primary_product_id].map(self.md.primary_product_to_timber_product)
+        
+
+        primary_products_ccf = primary_products_ccf.merge(timber_products_ccf, how='outer', on=[nm.Fields.harvest_year, nm.Fields.timber_product_id])
+        primary_products_ccf[nm.Fields.primary_product_results] = primary_products_ccf[nm.Fields.primary_product_ratio] * primary_products_ccf[nm.Fields.ccf]
+
+        self.print_debug_df(primary_products_ccf)
 
         # TODO convert mgc I guess?        
 
         self.results.timber_products_ccf = timber_products_ccf
         self.results.primary_products_ccf = primary_products_ccf
+
+        return
 
 
     def calculate_end_use_products(self):
@@ -74,7 +85,12 @@ class Model(object):
         # Multiply the primary-to-end-use ratio for each end use product by the amount of the
         # corresponding primary product.
 
-        
+        end_use = self.results.primary_products_ccf.merge(self.end_use_ratios, how='outer')
+        end_use['ccf_ratio'] = end_use[nm.Fields.ratio] * end_use[nm.Fields.ccf]
+
+        self.print_debug_df(end_use)
+
+        self.results.end_use_ccf = end_use
 
         return
 
@@ -82,6 +98,8 @@ class Model(object):
         """Calculate the amount of end use products from each vintage year that are still in use
         during each inventory year.
         """
+
+
         return
 
     def calculate_discarded_dispositions(self):
@@ -102,7 +120,12 @@ class Model(object):
     def convert_emissions_c02_e(self):
         return
 
-    def print_debug_df(df):
+    def print_debug_df(self, df):
+        """Print the head and tail of a DataFrame to console. Useful for testing
+
+        Args:
+            df (DataFrame): A DataFrame of interest to print
+        """
         print(df.head())
         print(df.tail())
 
