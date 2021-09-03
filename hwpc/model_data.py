@@ -43,11 +43,6 @@ class ModelData(singleton.Singleton):
         # Prep the harvest data table by sorting years in ascending order
         ModelData.data[Names.Tables.harvest].sort_values(by=[Names.Fields.harvest_year], inplace=True)
 
-        # print(ModelData.data[Names.Tables.timber_products])
-        # ModelData.data[Names.Tables.timber_products].sort_values(by=[Names.Fields.timber_product_id], inplace=True)
-        # ModelData.data[Names.Tables.timber_products].sort_index(axis=1, inplace=True)
-        # print(ModelData.data[Names.Tables.timber_products])
-
         df = ModelData.data[Names.Tables.timber_products].melt(id_vars=Names.Fields.timber_product_id, 
                                                                var_name=Names.Fields.harvest_year, 
                                                                value_name=Names.Fields.ratio)
@@ -55,7 +50,6 @@ class ModelData(singleton.Singleton):
         df[Names.Fields.harvest_year] = pd.to_numeric(df[Names.Fields.harvest_year])
         ModelData.data[Names.Tables.timber_products] = df
 
-        df = ModelData.data[Names.Tables.timber_products].merge(ModelData.data[Names.Tables.harvest], how='outer')
         # print(df.head())
         # print(df.tail())
         return

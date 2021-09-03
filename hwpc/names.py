@@ -8,7 +8,13 @@ class Names(singleton.Singleton):
         end_use_ratios = 'end_use_ratios'
     
     class Fields(singleton.Singleton):
+        id = 'ID'
+
         harvest_year = 'Year'
-        timber_product_id = 'Timber Product ID'
         ccf = 'ccf'
+
+        timber_product_id = 'TimberProductID'
+        
         ratio = 'Ratio'
+
+        primary_product_id = 'PrimaryProductID'
