@@ -1,25 +1,22 @@
 import json
+import numpy as np
 import pandas as pd
-from pandas.core.frame import DataFrame
 from utils import data_reader
+from utils import singleton
+
+from hwpc.names import Names
 
 
-class ModelData(object):
-    
-    _instance = None
+class ModelData(singleton.Singleton):
 
     data = dict()
+    np_data = dict()
 
-    def __new__(cls, *args, **kwargs):
-        """Singleton catcher
-
-        Returns:
-            ModelData: The singleton ModelData object
-        """
-        if cls._instance is None:
-            cls._instance = super(ModelData, cls).__new__(cls)
-
-        return cls._instance
+    def __init__(self) -> None:
+        super().__init__()
+        Names()
+        Names().Tables()
+        Names().Fields()
 
     @staticmethod
     def load_data() -> None:
@@ -33,7 +30,7 @@ class ModelData(object):
             for k in j:
                 p = j[k]
                 ModelData.data[k] = dr.read_file(p)
-
+        
         return
 
     @staticmethod
@@ -43,11 +40,29 @@ class ModelData(object):
         to zero, etc.
         """
 
+        # Prep the harvest data table by sorting years in ascending order
+        ModelData.data[Names.Tables.harvest].sort_values(by=[Names.Fields.harvest_year], inplace=True)
+
+        # print(ModelData.data[Names.Tables.timber_products])
+        # ModelData.data[Names.Tables.timber_products].sort_values(by=[Names.Fields.timber_product_id], inplace=True)
+        # ModelData.data[Names.Tables.timber_products].sort_index(axis=1, inplace=True)
+        # print(ModelData.data[Names.Tables.timber_products])
+
+        df = ModelData.data[Names.Tables.timber_products].melt(id_vars=Names.Fields.timber_product_id, 
+                                                               var_name=Names.Fields.harvest_year, 
+                                                               value_name=Names.Fields.ratio)
+        
+        df[Names.Fields.harvest_year] = pd.to_numeric(df[Names.Fields.harvest_year])
+        ModelData.data[Names.Tables.timber_products] = df
+
+        df = ModelData.data[Names.Tables.timber_products].merge(ModelData.data[Names.Tables.harvest], how='outer')
+        # print(df.head())
+        # print(df.tail())
         return
 
     @staticmethod
     def get_harvest_years() -> pd.DataFrame:
-        harvest_data = ModelData.data['harvest_data']
-        years = harvest_data['Year']
-        years.sort_values()
+        harvest_data = ModelData.data[Names.Tables.harvest]
+        years = harvest_data[Names.Fields.harvest_year]
+        years = years.sort_values()
         return years
