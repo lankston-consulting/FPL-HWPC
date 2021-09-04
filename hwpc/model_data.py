@@ -52,6 +52,12 @@ class ModelData(singleton.Singleton):
         to zero, etc.
         """
 
+        # TODO move the renaming here from model.py
+        # ModelData.data[Names.Tables.timber_products] = ModelData.data[Names.Tables.timber_products].rename(columns={Names.Fields.ratio: Names.Fields.timber_product_ratio})
+        # ModelData.data[Names.Tables.primary_product_ratios] = ModelData.data[Names.Tables.primary_product_ratios].rename(columns={Names.Fields.ratio: Names.Fields.primary_product_ratio})
+        # ModelData.data[Names.Tables.end_use_ratios] = ModelData.data[Names.Tables.end_use_ratios].rename(columns={Names.Fields.ratio: Names.Fields.end_use_ratio})
+
+
         # Prep the harvest data table by sorting years in ascending order
         ModelData.data[Names.Tables.harvest].sort_values(by=[Names.Fields.harvest_year], inplace=True)
 
@@ -62,8 +68,11 @@ class ModelData(singleton.Singleton):
         df[Names.Fields.harvest_year] = pd.to_numeric(df[Names.Fields.harvest_year])
         ModelData.data[Names.Tables.timber_products] = df
 
-        # print(df.head())
-        # print(df.tail())
+
+
+        df = ModelData.data[Names.Tables.end_use_halflifes]
+        df = df.rename(columns={Names.Fields.id: Names.Fields.end_use_id})
+        ModelData.data[Names.Tables.end_use_halflifes] = df
         return
 
     @staticmethod
@@ -98,12 +107,6 @@ class ModelData(singleton.Singleton):
         ModelData.primary_product_to_timber_product = ids_dict
 
     @staticmethod
-    def __primary_product_to_timber_product(primary_product: int) -> int:
-        ids = ModelData.data[Names.Tables.ids]
-        timber_id = ids.loc[ids[Names.Fields.primary_product_id] == primary_product][Names.Fields.timber_product_id].iloc[0]
-        return timber_id
-
-    @staticmethod
     def _end_use_to_timber_product():
         ids = ModelData.data[Names.Tables.ids][[Names.Fields.end_use_id, Names.Fields.timber_product_id]]
         ids_dict = ids.to_dict(orient='list')
@@ -113,12 +116,6 @@ class ModelData(singleton.Singleton):
         ModelData.end_use_to_timber_product = ids_dict
 
     @staticmethod
-    def __end_use_to_timber_product(end_use: int) -> int:
-        ids = ModelData.data[Names.Tables.ids]
-        timber_id = ids.loc[ids[Names.Fields.end_use_id] == end_use][Names.Fields.timber_product_id].iloc[0]
-        return timber_id
-
-    @staticmethod
     def _end_use_to_primary_product():
         ids = ModelData.data[Names.Tables.ids][[Names.Fields.end_use_id, Names.Fields.primary_product_id]]
         ids_dict = ids.to_dict(orient='list')
@@ -126,9 +123,3 @@ class ModelData(singleton.Singleton):
         values = ids_dict[Names.Fields.primary_product_id]
         ids_dict = dict(zip(keys, values))
         ModelData.end_use_to_primary_product = ids_dict
-
-    @staticmethod
-    def __end_use_to_primary_product(primary_product: int) -> int:
-        ids = ModelData.data[Names.Tables.ids]
-        end_use_id = ids.loc[ids[Names.Fields.primary_product_id] == primary_product][Names.Fields.end_use_id].iloc[0]
-        return end_use_id

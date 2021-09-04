@@ -8,11 +8,20 @@ class Names(singleton.Singleton):
         primary_product_ratios = 'primary_product_ratios'
         end_use_ratios = 'end_use_ratios'
         end_use_halflifes = 'end_use_products'
+        discard_destinations = 'discard_destinations'
+        discard_types = 'discard_types'
+        discard_disposition_ratios = 'discarded_disposition_ratios'
         regions = 'regions'
     
     class Fields(singleton.Singleton):
+
+        #########################################
+        ## Inputs
+        #########################################
+
         id = 'ID'
 
+        region_id = 'RegionID'
         region_name = 'Name'
 
         harvest_year = 'Year'
@@ -26,10 +35,17 @@ class Names(singleton.Singleton):
         primary_product_ratio = 'PrimaryProductRatio'
 
         end_use_id = 'EndUseID'
+        end_use_ratio = 'EndUseRatio'
+        end_use_halflife = 'HalfLife'
 
         timber_product = 'TimberProduct'
         primary_product = 'PrimaryProduct'
         end_use_product = 'EndUseProduct'
+
+        discard_type_id = 'DiscardTypeID'
+        discard_destination_id = 'DiscardDestinationID'
+        discard_destination = 'Description'
+        discard_destination_ratio = 'DiscardDestinationRatio'
 
         #########################################
         ## Results
@@ -37,3 +53,6 @@ class Names(singleton.Singleton):
 
         timber_product_results = 'timber_products_ccf'
         primary_product_results = 'primary_products_ccf'
+        end_use_results = 'end_use_ccf'
+        end_use_in_use = 'end_use_in_use_ccf'
+        discarded_products_results = 'discarded_products_ccf'

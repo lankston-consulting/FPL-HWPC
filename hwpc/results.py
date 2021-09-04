@@ -7,3 +7,4 @@ class Results(object):
         self.timber_products_ccf = None
         self.primary_products_ccf = None
         self.end_use_ccf = None
+        self.products_in_use = None
