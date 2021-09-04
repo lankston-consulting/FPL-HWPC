@@ -108,32 +108,25 @@ class Model(object):
         """Calculate the amount of end use products from each vintage year that are still in use
         during each inventory year.
         """
-
         end_use_ccf = self.results.end_use_ccf
         # Make sure the rows are ascending to do the half life. Don't do this inplace
         end_use_ccf = end_use_ccf.sort_values(by=nm.Fields.harvest_year)
 
         end_use_halflives = self.end_use_halflifes[[nm.Fields.end_use_id, nm.Fields.end_use_halflife]]
-
-        ids = end_use_halflives[nm.Fields.end_use_id].unique()
-        end_use_in_use = list()
-
-        for id in ids:
+        
+        def halflife_func(df):
+            id = df[nm.Fields.end_use_id].iloc[0]
             halflife = end_use_halflives[end_use_halflives[nm.Fields.end_use_id] == id]
             halflife = halflife[nm.Fields.end_use_halflife].iloc[0]
 
-            end_use_by_id = end_use_ccf[end_use_ccf[nm.Fields.end_use_id] == id]
-
             if halflife == 0:
-                end_use_by_id.loc[:, nm.Fields.end_use_in_use] = end_use_by_id[nm.Fields.end_use_results]
+                df.loc[:, nm.Fields.end_use_in_use] = df[nm.Fields.end_use_results]
             else:  
-                end_use_by_id.loc[:, nm.Fields.end_use_in_use] = end_use_by_id[nm.Fields.end_use_results].ewm(halflife=halflife).mean() * self.end_use_loss_factor
+                df.loc[:, nm.Fields.end_use_in_use] = df[nm.Fields.end_use_results].ewm(halflife=halflife).mean() * self.end_use_loss_factor
             
-            end_use_in_use.append(end_use_by_id)
-
-        products_in_use = pd.concat(end_use_in_use)
-
-        # self.print_debug_df(products_in_use)
+            return df
+            
+        products_in_use = end_use_ccf.groupby(by=nm.Fields.end_use_id).apply(halflife_func)
 
         self.results.products_in_use = products_in_use
 
@@ -145,7 +138,6 @@ class Model(object):
         """
 
         products_in_use = self.results.products_in_use
-        ids = products_in_use[nm.Fields.end_use_id].unique()
         
         discarded_disposition_ratios = self.discarded_disposition_ratios
         discarded_disposition_ratios = discarded_disposition_ratios.rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})

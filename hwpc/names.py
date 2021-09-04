@@ -54,5 +54,5 @@ class Names(singleton.Singleton):
         timber_product_results = 'timber_products_ccf'
         primary_product_results = 'primary_products_ccf'
         end_use_results = 'end_use_ccf'
-        end_use_in_use = 'end_use_in_use_ccf'
+        end_use_in_use = 'products_in_use'
         discarded_products_results = 'discarded_products_ccf'
