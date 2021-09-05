@@ -42,7 +42,7 @@ class Names(singleton.Singleton):
         primary_product = 'PrimaryProduct'
         end_use_product = 'EndUseProduct'
 
-        discard_type_id = 'DiscardTypeID'
+        discard_type_id = 'DiscardTypeID' # paper and wood?
         discard_destination_id = 'DiscardDestinationID'
         discard_destination = 'Description'
         discard_destination_ratio = 'DiscardDestinationRatio'
@@ -51,8 +51,14 @@ class Names(singleton.Singleton):
         ## Results
         #########################################
 
-        timber_product_results = 'timber_products_ccf'
-        primary_product_results = 'primary_products_ccf'
-        end_use_results = 'end_use_ccf'
-        end_use_in_use = 'products_in_use'
-        discarded_products_results = 'discarded_products_ccf'
+        timber_product_results = 'timber_products'
+        primary_product_results = 'primary_products'
+        end_use_results = 'end_use'
+        products_in_use = 'products_in_use'
+        discarded_products_results = 'discarded_products'
+        running_discarded_products = 'cum_discarded_products'
+        discarded_products_adjusted = 'discarded_products_adjusted'
+        discard_paper = 'discarded_paper'
+        discard_wood = 'discarded_wood'
+        discard_wood_paper = 'discarded_wood_or_paper'
+        discard_dispositions = 'discard_dispositions'

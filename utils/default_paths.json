@@ -6,6 +6,7 @@
     "ids": "data/id_lookup.csv",
 
     "discard_types": "data/discard_types.csv",
+    "discard_destinations": "data/discard_destinations.csv", 
     "discarded_disposition_ratios": "data/discarded_disposition_ratios.csv",
     "distribution_parameters": "data/distribution_parameters.csv", 
     "end_use_products": "data/end_use_products.csv",
