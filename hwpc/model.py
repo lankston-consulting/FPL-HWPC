@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.core.fromnumeric import prod
+from numpy.lib.function_base import disp
 import pandas as pd
 
 import sys
@@ -50,6 +51,7 @@ class Model(object):
         self.calculate_end_use_products()
         self.calculate_products_in_use()
         self.calculate_discarded_dispositions()
+        self.calculate_dispositions()
 
         return
 
@@ -194,6 +196,33 @@ class Model(object):
         """Calculate the amounts of discarded products that have been emitted, are still remaining, 
         etc., for each inventory year.
         """
+
+        discarded_products = self.results.discarded_products 
+
+        # Calculate the amount in landfills that was discarded during this inventory year
+        # that is subject to decay by multiplying the amount in the landfill by the
+        # landfill-fixed-ratio. This will be used in later iterations of the i loop.
+
+        destinations = self.md.data[nm.Tables.discard_destinations]
+        landfill_id = destinations[destinations[nm.Fields.discard_description] == nm.Fields.landfills][nm.Fields.discard_destination_id].iloc[0]
+        dump_id = destinations[destinations[nm.Fields.discard_description] == nm.Fields.dumps][nm.Fields.discard_destination_id].iloc[0]
+        recycle_id = destinations[destinations[nm.Fields.discard_description] == nm.Fields.recycled][nm.Fields.discard_destination_id].iloc[0]
+
+        # self.print_debug_df_2(discarded_products)
+
+        halflifes = self.md.halflifes
+
+        dispositions = discarded_products
+        df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
+        dispositions[nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discarded_products_results] * halflifes[nm.Fields.paper][nm.Fields.landfill_fixed_ratio]
+        df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.wood_val)
+        dispositions[nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discarded_products_results] * halflifes[nm.Fields.wood][nm.Fields.landfill_fixed_ratio]
+
+        df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
+        dispositions[nm.Fields.can_decay] = 
+        self.print_debug_df_2(dispositions)
+
+
         return
 
     def calculate_fuel_burned(self):
@@ -218,11 +247,6 @@ class Model(object):
         print(df.tail(10))
 
     def print_debug_df_2(self, df):
-        
         df = df[df[nm.Fields.end_use_id] == 212]
-        
         self.print_debug_df(df)
-
-
-
     
