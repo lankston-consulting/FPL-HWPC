@@ -44,8 +44,16 @@ class Names(singleton.Singleton):
 
         discard_type_id = 'DiscardTypeID' # paper and wood?
         discard_destination_id = 'DiscardDestinationID'
-        discard_destination = 'Description'
+        discard_description = 'Description'
         discard_destination_ratio = 'DiscardDestinationRatio'
+
+        landfill_fixed_ratio = 'LandfillFixedRatio'
+        landfill_halflife = 'LandfillHalfLife'
+        dump_halflife = 'DumpHalfLife'
+        recycled_halflife = 'RecycledHalfLife'
+
+        paper = 'paper'
+        wood = 'wood'
 
         #########################################
         ## Results
@@ -62,3 +70,15 @@ class Names(singleton.Singleton):
         discard_wood = 'discarded_wood'
         discard_wood_paper = 'discarded_wood_or_paper'
         discard_dispositions = 'discard_dispositions'
+
+
+        burned = 'Burned'
+        recycled = 'Recycled'
+        composted = 'Composted'
+        landfills = 'Landfills'
+        dumps = 'Dumps'
+
+        can_decay = 'can_decay'
+
+
+

@@ -5,7 +5,7 @@ import pandas as pd
 from utils import data_reader
 from utils import singleton
 
-from hwpc.names import Names
+from hwpc.names import Names as nm
 
 
 class ModelData(singleton.Singleton):
@@ -17,11 +17,16 @@ class ModelData(singleton.Singleton):
     end_use_to_timber_product = dict()
     end_use_to_primary_product = dict()
 
+    halflifes = dict()
+
+    paper_val = 0
+    wood_val = 0
+
     def __init__(self) -> None:
         super().__init__()
-        Names()
-        Names().Tables()
-        Names().Fields()
+        nm()
+        nm().Tables()
+        nm().Fields()
         
         self.load_data()
         self.prep_data() 
@@ -29,6 +34,7 @@ class ModelData(singleton.Singleton):
         self._primary_product_to_timber_product()
         self._end_use_to_timber_product()
         self._end_use_to_primary_product()
+        self._set_disposition_halflifes()
 
     @staticmethod
     def load_data() -> None:
@@ -53,32 +59,32 @@ class ModelData(singleton.Singleton):
         """
 
         # TODO move the renaming here from model.py
-        # ModelData.data[Names.Tables.timber_products] = ModelData.data[Names.Tables.timber_products].rename(columns={Names.Fields.ratio: Names.Fields.timber_product_ratio})
-        # ModelData.data[Names.Tables.primary_product_ratios] = ModelData.data[Names.Tables.primary_product_ratios].rename(columns={Names.Fields.ratio: Names.Fields.primary_product_ratio})
-        # ModelData.data[Names.Tables.end_use_ratios] = ModelData.data[Names.Tables.end_use_ratios].rename(columns={Names.Fields.ratio: Names.Fields.end_use_ratio})
+        # ModelData.data[nm.Tables.timber_products] = ModelData.data[nm.Tables.timber_products].rename(columns={nm.Fields.ratio: nm.Fields.timber_product_ratio})
+        # ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
+        # ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[nm.Tables.end_use_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
 
 
         # Prep the harvest data table by sorting years in ascending order
-        ModelData.data[Names.Tables.harvest].sort_values(by=[Names.Fields.harvest_year], inplace=True)
+        ModelData.data[nm.Tables.harvest].sort_values(by=[nm.Fields.harvest_year], inplace=True)
 
-        df = ModelData.data[Names.Tables.timber_products].melt(id_vars=Names.Fields.timber_product_id, 
-                                                               var_name=Names.Fields.harvest_year, 
-                                                               value_name=Names.Fields.ratio)
+        df = ModelData.data[nm.Tables.timber_products].melt(id_vars=nm.Fields.timber_product_id, 
+                                                               var_name=nm.Fields.harvest_year, 
+                                                               value_name=nm.Fields.ratio)
         
-        df[Names.Fields.harvest_year] = pd.to_numeric(df[Names.Fields.harvest_year])
-        ModelData.data[Names.Tables.timber_products] = df
+        df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
+        ModelData.data[nm.Tables.timber_products] = df
 
 
 
-        df = ModelData.data[Names.Tables.end_use_halflifes]
-        df = df.rename(columns={Names.Fields.id: Names.Fields.end_use_id})
-        ModelData.data[Names.Tables.end_use_halflifes] = df
+        df = ModelData.data[nm.Tables.end_use_halflifes]
+        df = df.rename(columns={nm.Fields.id: nm.Fields.end_use_id})
+        ModelData.data[nm.Tables.end_use_halflifes] = df
         return
 
     @staticmethod
     def get_harvest_years() -> pd.DataFrame:
-        harvest_data = ModelData.data[Names.Tables.harvest]
-        years = harvest_data[Names.Fields.harvest_year]
+        harvest_data = ModelData.data[nm.Tables.harvest]
+        years = harvest_data[nm.Fields.harvest_year]
         years = years.sort_values()
         return years
 
@@ -93,33 +99,50 @@ class ModelData(singleton.Singleton):
         Returns:
             int: A numeric ID for the region
         """
-        regions = ModelData.data[Names.Tables.regions]
-        match_region = regions.loc[regions[Names.Fields.region_name] == region][Names.Fields.id].iloc[0]
+        regions = ModelData.data[nm.Tables.regions]
+        match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.id].iloc[0]
         return match_region
 
     @staticmethod
     def _primary_product_to_timber_product():
-        ids = ModelData.data[Names.Tables.ids][[Names.Fields.primary_product_id, Names.Fields.timber_product_id]]
+        ids = ModelData.data[nm.Tables.ids][[nm.Fields.primary_product_id, nm.Fields.timber_product_id]]
         ids_dict = ids.to_dict(orient='list')
-        keys = ids_dict[Names.Fields.primary_product_id]
-        values = ids_dict[Names.Fields.timber_product_id]
+        keys = ids_dict[nm.Fields.primary_product_id]
+        values = ids_dict[nm.Fields.timber_product_id]
         ids_dict = dict(zip(keys, values))
         ModelData.primary_product_to_timber_product = ids_dict
 
     @staticmethod
     def _end_use_to_timber_product():
-        ids = ModelData.data[Names.Tables.ids][[Names.Fields.end_use_id, Names.Fields.timber_product_id]]
+        ids = ModelData.data[nm.Tables.ids][[nm.Fields.end_use_id, nm.Fields.timber_product_id]]
         ids_dict = ids.to_dict(orient='list')
-        keys = ids_dict[Names.Fields.end_use_id]
-        values = ids_dict[Names.Fields.timber_product_id]
+        keys = ids_dict[nm.Fields.end_use_id]
+        values = ids_dict[nm.Fields.timber_product_id]
         ids_dict = dict(zip(keys, values))
         ModelData.end_use_to_timber_product = ids_dict
 
     @staticmethod
     def _end_use_to_primary_product():
-        ids = ModelData.data[Names.Tables.ids][[Names.Fields.end_use_id, Names.Fields.primary_product_id]]
+        ids = ModelData.data[nm.Tables.ids][[nm.Fields.end_use_id, nm.Fields.primary_product_id]]
         ids_dict = ids.to_dict(orient='list')
-        keys = ids_dict[Names.Fields.end_use_id]
-        values = ids_dict[Names.Fields.primary_product_id]
+        keys = ids_dict[nm.Fields.end_use_id]
+        values = ids_dict[nm.Fields.primary_product_id]
         ids_dict = dict(zip(keys, values))
         ModelData.end_use_to_primary_product = ids_dict
+
+    @staticmethod
+    def _set_disposition_halflifes():
+        halflifes = ModelData.data[nm.Tables.discard_types]
+        vals = halflifes.to_dict(orient='list')
+
+        paper_i = vals[nm.Fields.discard_description].index(nm.Fields.paper)
+        wood_i = vals[nm.Fields.discard_description].index(nm.Fields.wood)
+
+        ModelData.paper_val = paper_i
+        ModelData.wood_val = wood_i
+
+        ModelData.halflifes = {nm.Fields.paper: dict(), nm.Fields.wood: dict()}
+
+        for k in vals:
+            ModelData.halflifes[nm.Fields.paper][k] = vals[k][paper_i]
+            ModelData.halflifes[nm.Fields.wood][k] = vals[k][wood_i]
