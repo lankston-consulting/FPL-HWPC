@@ -1,12 +1,9 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 import tempfile
 
 class DataLoader(ABC):
-
+    _client = None
     _instance = None
-
-    def __init__(self) -> None:
-        super().__init__()
 
     def __new__(cls, *args, **kwargs):
         """Singleton catcher
@@ -19,6 +16,7 @@ class DataLoader(ABC):
 
         return cls._instance
 
+    @abstractmethod
     def download_file(path: str) -> tempfile.TemporaryFile:
         """Abstract method for downloading a file from a cloud location
 
