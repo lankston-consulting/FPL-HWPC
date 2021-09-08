@@ -17,7 +17,9 @@ class ModelData(singleton.Singleton):
     end_use_to_timber_product = dict()
     end_use_to_primary_product = dict()
 
-    halflifes = dict()
+    disposition_to_halflife = dict()
+
+    discard_types_dict = dict()
 
     paper_val = 0
     wood_val = 0
@@ -35,6 +37,7 @@ class ModelData(singleton.Singleton):
         self._end_use_to_timber_product()
         self._end_use_to_primary_product()
         self._set_disposition_halflifes()
+        self._set_disposition_halflifes_map()
 
     @staticmethod
     def load_data() -> None:
@@ -141,8 +144,18 @@ class ModelData(singleton.Singleton):
         ModelData.paper_val = paper_i
         ModelData.wood_val = wood_i
 
-        ModelData.halflifes = {nm.Fields.paper: dict(), nm.Fields.wood: dict()}
+        ModelData.discard_types_dict = {nm.Fields.paper: dict(), nm.Fields.wood: dict()}
 
         for k in vals:
-            ModelData.halflifes[nm.Fields.paper][k] = vals[k][paper_i]
-            ModelData.halflifes[nm.Fields.wood][k] = vals[k][wood_i]
+            ModelData.discard_types_dict[nm.Fields.paper][k] = vals[k][paper_i]
+            ModelData.discard_types_dict[nm.Fields.wood][k] = vals[k][wood_i]
+
+    @staticmethod
+    def _set_disposition_halflifes_map():
+        df = ModelData.data[nm.Tables.discard_destinations][[nm.Fields.discard_destination_id, nm.Fields.paper_halflife]]
+        dat = df.to_dict(orient='list')
+        ModelData.disposition_to_halflife[nm.Fields.paper] = dict(zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.paper_halflife]))
+        
+        df = ModelData.data[nm.Tables.discard_destinations][[nm.Fields.discard_destination_id, nm.Fields.wood_halflife]]
+        dat = df.to_dict(orient='list')
+        ModelData.disposition_to_halflife[nm.Fields.wood] = dict(zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.wood_halflife]))

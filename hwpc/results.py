@@ -9,3 +9,8 @@ class Results(object):
         self.end_use = None
         self.products_in_use = None
         self.discarded_products = None
+
+        self.dispositions = None
+        self.total_dispositions = None
+
+        self.dispositions_captured = None
