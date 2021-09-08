@@ -1,4 +1,4 @@
-#from hwpc import model
+from hwpc import model
 from config import gch
 import json
 import os,shutil

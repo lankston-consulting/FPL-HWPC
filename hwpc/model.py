@@ -52,6 +52,8 @@ class Model(object):
         self.calculate_products_in_use()
         self.calculate_discarded_dispositions()
         self.calculate_dispositions()
+        self.calculate_fuel_burned()
+        self.calculate_discarded_burned()
 
         return
 
@@ -196,9 +198,6 @@ class Model(object):
         """Calculate the amounts of discarded products that have been emitted, are still remaining, 
         etc., for each inventory year.
         """
-
-        discarded_products = self.results.discarded_products 
-
         # Calculate the amount in landfills that was discarded during this inventory year
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio. This will be used in later iterations of the i loop.
@@ -210,25 +209,84 @@ class Model(object):
 
         # self.print_debug_df_2(discarded_products)
 
-        halflifes = self.md.halflifes
+        discard_types = self.md.discard_types_dict
 
-        dispositions = discarded_products
+        # Calculate the amount in landfills that was discarded during this inventory year
+        # that is subject to decay by multiplying the amount in the landfill by the
+        # landfill-fixed-ratio. This will be used in later iterations of the i loop.
+        dispositions = self.results.discarded_products 
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
-        dispositions[nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discarded_products_results] * halflifes[nm.Fields.paper][nm.Fields.landfill_fixed_ratio]
+        dispositions.loc[df_filter, nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discard_wood_paper] * discard_types[nm.Fields.paper][nm.Fields.landfill_fixed_ratio]
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.wood_val)
-        dispositions[nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discarded_products_results] * halflifes[nm.Fields.wood][nm.Fields.landfill_fixed_ratio]
+        dispositions.loc[df_filter, nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discard_wood_paper] * discard_types[nm.Fields.wood][nm.Fields.landfill_fixed_ratio]
 
-        df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
-        dispositions[nm.Fields.can_decay] = 
-        self.print_debug_df_2(dispositions)
+        # set the decay ratios
+        diposition_halflifes = self.md.disposition_to_halflife
+        df_filter = (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
+        dispositions.loc[df_filter, nm.Fields.decay_ratio] = dispositions.loc[df_filter, nm.Fields.discard_destination_id].map(diposition_halflifes[nm.Fields.paper])
+        df_filter = (dispositions[nm.Fields.discard_type_id] == self.md.wood_val)
+        dispositions.loc[df_filter, nm.Fields.decay_ratio] = dispositions.loc[df_filter, nm.Fields.discard_destination_id].map(diposition_halflifes[nm.Fields.wood])
 
+
+        # Get the amounts discarded in year y that are subject to decay.
+        df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id)
+        dispositions.loc[~df_filter, nm.Fields.can_decay] = dispositions.loc[~df_filter, nm.Fields.discard_wood_paper]
+
+        # Calculate the amounts that were discarded in year y that could decay but
+        # are still remaining in year i, by plugging the amount subject to decay into
+        # the decay formula that uses half lives.
+        
+
+        def halflife_func(df):
+            halflife = df[nm.Fields.decay_ratio].iloc[0]
+            if halflife == 0:
+                df.loc[:, nm.Fields.discard_remaining] = df[nm.Fields.can_decay]
+            else:  
+                df.loc[:, nm.Fields.discard_remaining] = df[nm.Fields.can_decay].ewm(halflife=halflife).mean() 
+            
+            return df
+        
+        df_key = [nm.Fields.timber_product_id, nm.Fields.end_use_id, nm.Fields.primary_product_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]
+        dispositions = dispositions.groupby(by=df_key).apply(halflife_func)
+        self.results.dispositions = dispositions
+        
+        max_year = dispositions[nm.Fields.harvest_year].max()
+        total_dispositions = dispositions.loc[dispositions[nm.Fields.harvest_year] == max_year, df_key + [nm.Fields.harvest_year, nm.Fields.discard_remaining]]
+
+        self.results.total_dispositions =  total_dispositions
 
         return
 
     def calculate_fuel_burned(self):
+        """Calculate the amount of fuel burned during each vintage year.
+        """
+        dispositions = self.results.dispositions
+        primary_products = self.md.data[nm.Tables.primary_products]
+        primary_products = primary_products.rename(columns={nm.Fields.id: nm.Fields.primary_product_id})
+        dispositions = dispositions.merge(primary_products, how='outer', on=[nm.Fields.timber_product_id, nm.Fields.primary_product_id])
+
+        # Loop through all of the primary products that are fuel and add the amounts of that
+        #  product to the total for this year.
+        dispositions.loc[nm.Fields.fuel == 1] = dispositions.loc[nm.Fields.fuel == 1]
+
+        fuel_captured = self.md.data[nm.Tables.energy_capture]
+
+        # TODO check this function out, I don't follow what it does and energy capture seems to usually be 0
+        dispositions_captured = dispositions.merge(fuel_captured, how='outer', on=nm.Fields.harvest_year)
+        dispositions_captured = dispositions_captured.dropna()
+
+        self.results.dispositions_captured = dispositions_captured
+
+        self.print_debug_df_2(dispositions_captured)
+
+        self.memory_usage(dispositions_captured)
+        self.memory_usage_total(dispositions_captured)
+
         return
 
     def calculate_discarded_burned(self):
+        """Calculate the amount of discarded products that were burned.
+        """
         return
 
     def fill_statistics(self):
@@ -236,6 +294,17 @@ class Model(object):
 
     def convert_emissions_c02_e(self):
         return
+
+    def c_to_co2d(self, c: float) -> float:
+        """Convert C to CO2e.
+
+        Args:
+            c (float): the C value to convert
+
+        Returns:
+            float: Units of CO2 
+        """
+        return c * 44.0 / 12.0
 
     def print_debug_df(self, df):
         """Print the head and tail of a DataFrame to console. Useful for testing
@@ -249,4 +318,14 @@ class Model(object):
     def print_debug_df_2(self, df):
         df = df[df[nm.Fields.end_use_id] == 212]
         self.print_debug_df(df)
+
+    def memory_usage(self, df):
+        dfm = df.memory_usage()
+        dfm = dfm / 1024 / 1024
+        print('\n', dfm, '\n')
+
+    def memory_usage_total(self, df):
+        dfs = df.memory_usage().sum()
+        dfs = dfs / 1024 / 1024
+        print('{} MB used'.format(dfs))
     

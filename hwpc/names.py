@@ -5,6 +5,7 @@ class Names(singleton.Singleton):
         ids = 'ids'
         harvest = 'harvest_data'
         timber_products = 'timber_product_data'
+        primary_products = 'primary_products'
         primary_product_ratios = 'primary_product_ratios'
         end_use_ratios = 'end_use_ratios'
         end_use_halflifes = 'end_use_products'
@@ -12,6 +13,7 @@ class Names(singleton.Singleton):
         discard_types = 'discard_types'
         discard_disposition_ratios = 'discarded_disposition_ratios'
         regions = 'regions'
+        energy_capture = 'x_burned_energy_capture'
     
     class Fields(singleton.Singleton):
 
@@ -55,6 +57,9 @@ class Names(singleton.Singleton):
         paper = 'paper'
         wood = 'wood'
 
+        paper_halflife = 'PaperHalfLife'
+        wood_halflife = 'WoodHalfLife'
+
         #########################################
         ## Results
         #########################################
@@ -79,6 +84,10 @@ class Names(singleton.Singleton):
         dumps = 'Dumps'
 
         can_decay = 'can_decay'
+        decay_ratio = 'decay_ratio'
+        running_can_decay = 'cum_can_decay'
+
+        discard_remaining = 'discard_remaining'
 
 
 
