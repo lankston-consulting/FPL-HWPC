@@ -1,0 +1,3 @@
+﻿Type ID,Discard Type,Landfill Fixed Ratio,Landfill Half Life,Dump Half Life,Recycled Half Life
+0,paper,0.44,14.5,8.25,2.6
+1,wood,0.77,29,16.5,2.6
