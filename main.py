@@ -51,7 +51,8 @@ if __name__ == '__main__':
             shutil.copy(default_value, 'data')
 
 
-
+    with open('data/inputs.json', 'w') as outfile:
+        json.dump(inputs, outfile)
 
     for key,value in inputs.items():
         print(key,value)
