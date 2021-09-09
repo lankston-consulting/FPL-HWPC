@@ -46,7 +46,7 @@ class ModelData(singleton.Singleton):
         """
         dr = data_reader.DataReader()
 
-        with open('utils/default_paths.json') as f:
+        with open('data/inputs.json') as f:
             j = json.load(f)
             for k in j:
                 p = j[k]

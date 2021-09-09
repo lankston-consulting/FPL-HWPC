@@ -6,7 +6,7 @@
     "discard_ratios":"default_data/discard_ratios.csv",
     "discard_types":"default_data/discard_types.csv",
     "discarded_disposition_ratios":"default_data/discarded_disposition_ratios.csv",
-    "distribution_parameters.csv":"default_data/distribution_parameters.csv",
+    "distribution_parameters":"default_data/distribution_parameters.csv",
     "end_use_half_lives":"default_data/end_use_half_lives.csv",
     "end_use_product_ratios":"default_data/end_use_product_ratios.csv",
     "end_use_products":"default_data/end_use_products.csv",
