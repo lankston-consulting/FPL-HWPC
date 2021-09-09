@@ -12,6 +12,6 @@ class Results(object):
         self.fuel_captured = None
 
     def save_results(self):
-
+        self.working_table.to_csv('results.csv')
         return
 

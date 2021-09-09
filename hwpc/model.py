@@ -52,6 +52,9 @@ class Model(object):
         self.calculate_dispositions()
         self.calculate_fuel_burned()
         self.calculate_discarded_burned()
+        self.summarize()
+
+        self.results.save_results()
 
         return
 
@@ -168,11 +171,11 @@ class Model(object):
 
         # Zero out the stuff that was fuel.
         # TODO what??
-        discard_destinations = self.md.data[nm.Tables.discard_destinations]
-        burned = discard_destinations[discard_destinations[nm.Fields.discard_description] == 'Burned'][nm.Fields.discard_destination_id].iloc[0]
+        # discard_destinations = self.md.data[nm.Tables.discard_destinations]
+        # burned = discard_destinations[discard_destinations[nm.Fields.discard_description] == 'Burned'][nm.Fields.discard_destination_id].iloc[0]
 
-        df_filter = discarded_products[nm.Fields.discard_destination_id] == burned
-        discarded_products.loc[df_filter, nm.Fields.products_in_use] = 0
+        # df_filter = discarded_products[nm.Fields.discard_destination_id] == burned
+        # discarded_products.loc[df_filter, nm.Fields.products_in_use] = 0
 
         # Multiply the amount discarded this year by the disposition ratios to get the
         # amount that goes into landfills, dumps, etc, and then add these to the 
