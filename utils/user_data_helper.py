@@ -42,6 +42,7 @@ class UserData(DataLoader):
         fp.seek(0)
         return fp
 
+    @staticmethod
     def download_blob(bucket_name, remote_path, destination_file_name):
         """Downloads a blob from the bucket."""
         # The ID of your GCS bucket

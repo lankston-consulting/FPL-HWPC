@@ -1,6 +1,7 @@
 #from hwpc import model
 from config import gch
 import json
+import os,shutil
 
 if __name__ == '__main__':
     # m = model.Model()
@@ -38,17 +39,17 @@ if __name__ == '__main__':
     filled = json.loads(filled)
     test.close()
     inputs = {}
-    print(filled)
 
     for default_key,default_value in default_json.items():
         if(default_key in filled):
-            path = "data/"+default_key+".csv"
+            data_path = "data/"+default_key+".csv"
             file_path = filled[default_key]
-            print(file_path)
-            print(path)
-            gch.download_blob('hwpcarbon-data',file_path,path)
+            gch.download_blob('hwpcarbon-data',file_path,data_path)
+            inputs[default_key] = data_path
         else:
-            inputs[default_key] = default_value
+            inputs[default_key] = "data/"+default_key+".csv"
+            shutil.copy(default_value, 'data')
+
 
 
 
