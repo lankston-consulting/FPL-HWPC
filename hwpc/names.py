@@ -60,6 +60,8 @@ class Names(singleton.Singleton):
         paper_halflife = 'PaperHalfLife'
         wood_halflife = 'WoodHalfLife'
 
+        fuel = 'Fuel'
+
         #########################################
         ## Results
         #########################################
@@ -88,6 +90,8 @@ class Names(singleton.Singleton):
         running_can_decay = 'cum_can_decay'
 
         discard_remaining = 'discard_remaining'
+
+        burned_with_energy_capture = 'burned_captured'
 
 
 

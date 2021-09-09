@@ -1,16 +1,17 @@
+import pandas as pd
 
 class Results(object):
 
     def __init__(self) -> None:
         super().__init__()
 
-        self.timber_products = None
-        self.primary_products = None
-        self.end_use = None
-        self.products_in_use = None
-        self.discarded_products = None
+        self.working_table = None
 
-        self.dispositions = None
         self.total_dispositions = None
 
-        self.dispositions_captured = None
+        self.fuel_captured = None
+
+    def save_results(self):
+
+        return
+
