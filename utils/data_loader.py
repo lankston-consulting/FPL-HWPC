@@ -21,10 +21,24 @@ class DataLoader(ABC):
         """Abstract method for downloading a file from a cloud location
 
         Args:
-            path: A reasonible path name that the cloud service will understand
+            path: A reasonable path name that the cloud service will understand
 
         Returns:
             tempfile.TemporaryFile: An active temporary file object
+        """
+
+        return None
+    
+    @abstractmethod
+    def download_blob(path: str):
+
+        """Abstract method for dowloanding files and saving them to data folder
+
+        Args:
+            path: A reasonable path name that the cloud service will understand
+
+        Returns:
+            None
         """
 
         return None
