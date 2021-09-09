@@ -1,6 +1,4 @@
 import numpy as np
-from numpy.core.fromnumeric import prod
-from numpy.lib.function_base import disp
 import pandas as pd
 
 import sys
@@ -64,6 +62,9 @@ class Model(object):
         # Calculate timber products (CCF) by multiplying the harvest-to-timber ratio for each
         # timber product by the amount harvested that year.
 
+        # TODO convert mgc I guess?   
+        # IF MgC, convert to CCF. The rest of the model uses CCF.
+
         timber_products = self.timber_product_ratios.merge(self.harvests, how='outer')
         timber_products = timber_products.rename(columns={nm.Fields.ratio: nm.Fields.timber_product_ratio})
         timber_products[nm.Fields.timber_product_results] = timber_products[nm.Fields.timber_product_ratio] * timber_products[nm.Fields.ccf]
@@ -84,10 +85,10 @@ class Model(object):
 
         primary_products = primary_products.dropna()
 
-        # TODO convert mgc I guess?        
+             
 
-        self.results.timber_products = timber_products
-        self.results.primary_products = primary_products
+        # self.results.timber_products = timber_products
+        self.results.working_table = primary_products
 
         return
 
@@ -102,14 +103,14 @@ class Model(object):
         end_use = end_use.rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
         end_use[nm.Fields.primary_product_id] = end_use[nm.Fields.end_use_id].map(self.md.end_use_to_primary_product)
 
-        end_use = end_use.merge(self.results.primary_products, how='outer', on=[nm.Fields.harvest_year, nm.Fields.primary_product_id])
+        end_use = end_use.merge(self.results.working_table, how='outer', on=[nm.Fields.harvest_year, nm.Fields.primary_product_id])
         end_use[nm.Fields.end_use_results] = end_use[nm.Fields.end_use_ratio] * end_use[nm.Fields.primary_product_results]
 
         end_use = end_use.dropna()
 
         # self.print_debug_df(end_use)
 
-        self.results.end_use = end_use
+        self.results.working_table = end_use
 
         return
 
@@ -117,7 +118,7 @@ class Model(object):
         """Calculate the amount of end use products from each vintage year that are still in use
         during each inventory year.
         """
-        end_use = self.results.end_use
+        end_use = self.results.working_table
         # Make sure the rows are ascending to do the half life. Don't do this inplace
         end_use = end_use.sort_values(by=nm.Fields.harvest_year)
 
@@ -139,7 +140,7 @@ class Model(object):
 
         # self.print_debug_df(products_in_use)
 
-        self.results.products_in_use = products_in_use
+        self.results.working_table = products_in_use
 
         return
 
@@ -151,26 +152,12 @@ class Model(object):
         # Calculate the amount of each end use from year y that was discarded in year i 
         # by subtracting the products in use from the amount of harvested product and
         # then subtracting the amount discarded in previous years.
-        products_in_use = self.results.products_in_use
+        products_in_use = self.results.working_table
         products_in_use[nm.Fields.discarded_products_results] = products_in_use[nm.Fields.end_use_results] - products_in_use[nm.Fields.products_in_use] 
         products_in_use[nm.Fields.running_discarded_products] = products_in_use.groupby(by=nm.Fields.end_use_id).agg({nm.Fields.discarded_products_results: np.cumsum})
         
         products_in_use[nm.Fields.discarded_products_adjusted] = products_in_use[nm.Fields.end_use_results] - products_in_use[nm.Fields.running_discarded_products]
         products_in_use[nm.Fields.discarded_products_results] = products_in_use[nm.Fields.discarded_products_results] - products_in_use[nm.Fields.discarded_products_adjusted]
-
-        # Zero out the stuff that was fuel.
-        # TODO what??
-        # discard_destinations = self.md.data[nm.Tables.discard_destinations]
-        # burned = discard_destinations[discard_destinations[nm.Fields.discard_destination] == 'Burned'][nm.Fields.discard_destination_id].iloc[0]
-        #
-        # def zero_burn(discard_destination_id, discarded_value):
-        #     if discard_destination_id == burned:
-        #         return 0
-        #     else:
-        #         return discarded_value
-        # 
-        # This is really slow
-        # discarded_products[nm.Fields.discarded_products_adjusted] = discarded_products.apply(lambda x: zero_burn(x[nm.Fields.discard_destination_id], x[nm.Fields.discarded_products_adjusted]), axis=1)
 
         discarded_disposition_ratios = self.discarded_disposition_ratios
         discarded_disposition_ratios = discarded_disposition_ratios.rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
@@ -178,6 +165,14 @@ class Model(object):
 
         discarded_products = products_in_use.merge(discarded_disposition_ratios, how='outer', on=nm.Fields.harvest_year)
         discarded_products = discarded_products.dropna()
+
+        # Zero out the stuff that was fuel.
+        # TODO what??
+        discard_destinations = self.md.data[nm.Tables.discard_destinations]
+        burned = discard_destinations[discard_destinations[nm.Fields.discard_description] == 'Burned'][nm.Fields.discard_destination_id].iloc[0]
+
+        df_filter = discarded_products[nm.Fields.discard_destination_id] == burned
+        discarded_products.loc[df_filter, nm.Fields.products_in_use] = 0
 
         # Multiply the amount discarded this year by the disposition ratios to get the
         # amount that goes into landfills, dumps, etc, and then add these to the 
@@ -191,7 +186,7 @@ class Model(object):
 
         discarded_products[nm.Fields.discard_wood_paper] = discarded_products.groupby(by=[nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]).agg({nm.Fields.discarded_products_results: np.cumsum})
 
-        self.results.discarded_products = discarded_products
+        self.results.working_table = discarded_products
         return
 
     def calculate_dispositions(self):
@@ -214,11 +209,11 @@ class Model(object):
         # Calculate the amount in landfills that was discarded during this inventory year
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio. This will be used in later iterations of the i loop.
-        dispositions = self.results.discarded_products 
+        dispositions = self.results.working_table 
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
-        dispositions.loc[df_filter, nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discard_wood_paper] * discard_types[nm.Fields.paper][nm.Fields.landfill_fixed_ratio]
+        dispositions.loc[df_filter, nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discard_wood_paper] * (1 - discard_types[nm.Fields.paper][nm.Fields.landfill_fixed_ratio])
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.wood_val)
-        dispositions.loc[df_filter, nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discard_wood_paper] * discard_types[nm.Fields.wood][nm.Fields.landfill_fixed_ratio]
+        dispositions.loc[df_filter, nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discard_wood_paper] * (1 - discard_types[nm.Fields.wood][nm.Fields.landfill_fixed_ratio])
 
         # set the decay ratios
         diposition_halflifes = self.md.disposition_to_halflife
@@ -248,7 +243,7 @@ class Model(object):
         
         df_key = [nm.Fields.timber_product_id, nm.Fields.end_use_id, nm.Fields.primary_product_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]
         dispositions = dispositions.groupby(by=df_key).apply(halflife_func)
-        self.results.dispositions = dispositions
+        self.results.working_table = dispositions
         
         max_year = dispositions[nm.Fields.harvest_year].max()
         total_dispositions = dispositions.loc[dispositions[nm.Fields.harvest_year] == max_year, df_key + [nm.Fields.harvest_year, nm.Fields.discard_remaining]]
@@ -260,36 +255,45 @@ class Model(object):
     def calculate_fuel_burned(self):
         """Calculate the amount of fuel burned during each vintage year.
         """
-        dispositions = self.results.dispositions
+        dispositions = self.results.working_table
         primary_products = self.md.data[nm.Tables.primary_products]
         primary_products = primary_products.rename(columns={nm.Fields.id: nm.Fields.primary_product_id})
         dispositions = dispositions.merge(primary_products, how='outer', on=[nm.Fields.timber_product_id, nm.Fields.primary_product_id])
 
+        self.results.working_table = dispositions
+
         # Loop through all of the primary products that are fuel and add the amounts of that
         #  product to the total for this year.
-        dispositions.loc[nm.Fields.fuel == 1] = dispositions.loc[nm.Fields.fuel == 1]
+        df_keys = [nm.Fields.harvest_year, nm.Fields.primary_product_id, nm.Fields.primary_product_results]
+        fuel_captured = dispositions.loc[dispositions[nm.Fields.fuel] == 1, df_keys].drop_duplicates()
+        fuel_captured = fuel_captured.rename(columns={nm.Fields.primary_product_results: nm.Fields.burned_with_energy_capture})
 
-        fuel_captured = self.md.data[nm.Tables.energy_capture]
-
-        # TODO check this function out, I don't follow what it does and energy capture seems to usually be 0
-        dispositions_captured = dispositions.merge(fuel_captured, how='outer', on=nm.Fields.harvest_year)
-        dispositions_captured = dispositions_captured.dropna()
-
-        self.results.dispositions_captured = dispositions_captured
-
-        self.print_debug_df_2(dispositions_captured)
-
-        self.memory_usage(dispositions_captured)
-        self.memory_usage_total(dispositions_captured)
+        self.results.fuel_captured = fuel_captured
 
         return
 
     def calculate_discarded_burned(self):
         """Calculate the amount of discarded products that were burned.
         """
+        # For each year, sum up the amount of discarded paper and wood that are burned, and then
+        # multiply that by the burned-with-energy-capture ratio for that year.
+
+        dispositions = self.results.working_table
+        dispositions_not_fuel = dispositions[dispositions[nm.Fields.fuel] == 0]
+
+        # print(dispositions)
+        # self.memory_usage(dispositions)
+
+        # TODO finish this function
+
+
+
         return
 
-    def fill_statistics(self):
+    def summarize(self):
+
+        results = self.results.working_table
+
         return
 
     def convert_emissions_c02_e(self):
@@ -328,4 +332,11 @@ class Model(object):
         dfs = df.memory_usage().sum()
         dfs = dfs / 1024 / 1024
         print('{} MB used'.format(dfs))
+
+    def save(self, df):
+        df.to_csv('temp.csv')
+
+    def save_2(self, df):
+        df = df[df[nm.Fields.end_use_id] == 212]
+        df.to_csv('temp.csv')
     
