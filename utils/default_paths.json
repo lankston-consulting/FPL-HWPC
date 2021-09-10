@@ -1,4 +1,7 @@
 {
+    "harvest_data":"default_data/harvest_data.csv",
+    "timber_product_data":"default_data/timber_product_data.csv",
+    "primary_product_data":"default_data/primary_product_data.csv",
     "ccf_to_metric_tons_carbon":"default_data/ccf_to_metric_tons_carbon.csv",
     "discard_burned_w_energy_capture":"default_data/discard_burned_w_energy_capture.csv",
     "discard_destinations":"default_data/discard_destinations.csv",
