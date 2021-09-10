@@ -2,7 +2,7 @@ from utils import singleton
 
 class Names(singleton.Singleton):
     class Tables(singleton.Singleton):
-        ids = 'ids'
+        ids = 'id_lookup'
         harvest = 'harvest_data'
         timber_products = 'timber_product_data'
         primary_products = 'primary_products'
