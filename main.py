@@ -1,10 +1,7 @@
 from hwpc import model, input_download
 from config import gch
-import json
-import os,shutil
 
 if __name__ == '__main__':
-
 
     i = input_download.Input_Download()
     i.downloads()
