@@ -159,8 +159,8 @@ class Model(object):
         products_in_use[nm.Fields.discarded_products_results] = products_in_use[nm.Fields.end_use_results] - products_in_use[nm.Fields.products_in_use] 
         products_in_use[nm.Fields.running_discarded_products] = products_in_use.groupby(by=nm.Fields.end_use_id).agg({nm.Fields.discarded_products_results: np.cumsum})
         
-        products_in_use[nm.Fields.discarded_products_adjusted] = products_in_use[nm.Fields.end_use_results] - products_in_use[nm.Fields.running_discarded_products]
-        products_in_use[nm.Fields.discarded_products_results] = products_in_use[nm.Fields.discarded_products_results] - products_in_use[nm.Fields.discarded_products_adjusted]
+        products_in_use[nm.Fields.discarded_products_adjustment] = products_in_use[nm.Fields.end_use_results] - products_in_use[nm.Fields.running_discarded_products]
+        products_in_use[nm.Fields.discarded_products_adjusted] = products_in_use[nm.Fields.discarded_products_results] - products_in_use[nm.Fields.discarded_products_adjustment]
 
         discarded_disposition_ratios = self.discarded_disposition_ratios
         discarded_disposition_ratios = discarded_disposition_ratios.rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
@@ -181,7 +181,7 @@ class Model(object):
         # amount that goes into landfills, dumps, etc, and then add these to the 
         # discarded disposition totals for stuff discarded in year i.
 
-        discarded_products[nm.Fields.discard_dispositions] = discarded_products[nm.Fields.discarded_products_results] * discarded_products[nm.Fields.discard_destination_ratio]
+        discarded_products[nm.Fields.discard_dispositions] = discarded_products[nm.Fields.discarded_products_adjusted] * discarded_products[nm.Fields.discard_destination_ratio]
 
         # Calculate the amount of wood and paper from year y discarded in year i by 
         # summing all discards up, summing all paper discards up, and then subtracting
