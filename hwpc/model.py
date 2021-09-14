@@ -15,16 +15,10 @@ class Model(object):
 
         self.md = model_data.ModelData()
 
-        self.region = self.md.get_region_id('West')
-
         self.harvests = self.md.data[nm.Tables.harvest]
 
-        self.timber_product_ratios = self.md.data[nm.Tables.timber_products]
+        self.timber_product_ratios = self.md.data[nm.Tables.timber_products_data]
         self.primary_product_ratios = self.md.data[nm.Tables.primary_product_ratios]
-
-        # TODO add switch for loading user supplied primary product data instead
-        # for now use a default region and limit the default table
-        self.primary_product_ratios = self.primary_product_ratios[self.primary_product_ratios[nm.Fields.region_id] == self.region]
         
         self.end_use_ratios = self.md.data[nm.Tables.end_use_ratios]
         self.end_use_halflifes = self.md.data[nm.Tables.end_use_halflifes]
@@ -265,6 +259,8 @@ class Model(object):
 
         self.results.working_table = dispositions
 
+        print(dispositions.dtypes)
+
         # Loop through all of the primary products that are fuel and add the amounts of that
         #  product to the total for this year.
         df_keys = [nm.Fields.harvest_year, nm.Fields.primary_product_id, nm.Fields.primary_product_results]
@@ -272,6 +268,8 @@ class Model(object):
         fuel_captured = fuel_captured.rename(columns={nm.Fields.primary_product_results: nm.Fields.burned_with_energy_capture})
 
         self.results.fuel_captured = fuel_captured
+
+        
 
         return
 
