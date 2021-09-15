@@ -1,14 +1,15 @@
-from config import gch
 import json
-import os,shutil
+import os
+import shutil
+from config import gch
 
-class Input_Download(object):
+class InputDownload(object):
 
     def __init__(self) -> None:
         super().__init__()
 
     def downloads(self):
-        test = gch.download_file('hwpcarbon-data','hpwc-user-inputs/user_request_20210909_161047/user_input.json')
+        test = gch.download_file('hwpcarbon-data','hpwc-user-inputs/user_request_20210914_152542/user_input.json')
 
         with open("utils/default_paths.json", "r") as readjson:
             default_json = json.load(readjson)

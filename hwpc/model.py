@@ -15,7 +15,7 @@ class Model(object):
 
         self.md = model_data.ModelData()
 
-        self.region = self.md.get_region_id('West')
+        self.region = self.md.get_region_id('West' )
 
         self.harvests = self.md.data[nm.Tables.harvest]
 
@@ -55,6 +55,9 @@ class Model(object):
         self.summarize()
 
         self.results.save_results()
+        #self.results.save_total_dispositions()
+        #self.results.save_fuel_captured()
+        self.results.save_end_use_products()
 
         return
 
@@ -113,6 +116,7 @@ class Model(object):
 
         # self.print_debug_df(end_use)
 
+        self.results.end_use_products_step = end_use
         self.results.working_table = end_use
 
         return

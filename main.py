@@ -3,7 +3,7 @@ from config import gch
 
 if __name__ == '__main__':
 
-    i = input_download.Input_Download()
+    i = input_download.InputDownload()
     i.downloads()
 
     m = model.Model()
