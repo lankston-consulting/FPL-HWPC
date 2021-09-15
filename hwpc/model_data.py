@@ -11,7 +11,7 @@ from hwpc.names import Names as nm
 class ModelData(singleton.Singleton):
 
     data = dict()
-    np_data = dict()
+    region = None
 
     primary_product_to_timber_product = dict()
     end_use_to_timber_product = dict()
@@ -66,17 +66,30 @@ class ModelData(singleton.Singleton):
         # ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
         # ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[nm.Tables.end_use_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
 
-
-        # Prep the harvest data table by sorting years in ascending order
-        ModelData.data[nm.Tables.harvest].sort_values(by=[nm.Fields.harvest_year], inplace=True)
-
-        df = ModelData.data[nm.Tables.timber_products].melt(id_vars=nm.Fields.timber_product_id, 
-                                                               var_name=nm.Fields.harvest_year, 
-                                                               value_name=nm.Fields.ratio)
+        # Melt the timber_product_data table to make years rows
+        df = ModelData.data[nm.Tables.timber_products_data].melt(id_vars=nm.Fields.timber_product_id, 
+                                                            var_name=nm.Fields.harvest_year, 
+                                                            value_name=nm.Fields.ratio)
         
+        # Just in case the year was read as a string, parse to numeric
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
-        ModelData.data[nm.Tables.timber_products] = df
+        ModelData.data[nm.Tables.timber_products_data] = df
 
+        # Parse the region and attempt to pull in default data
+        region = ModelData.data[nm.Tables.region].columns[0]
+        region_match = ModelData.get_region_id(region)
+
+        if region_match:
+            df = ModelData.data[nm.Tables.primary_product_ratios] 
+            ModelData.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.id] == region_match]
+        else:
+            # Melt the primary_product_data table to make years rows
+            df = ModelData.data[nm.Tables.primary_products_data].melt(id_vars=nm.Fields.primary_product_id, 
+                                                                    var_name=nm.Fields.harvest_year, 
+                                                                    value_name=nm.Fields.ratio)
+
+            df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
+            ModelData.data[nm.Tables.primary_product_ratios] = df
 
 
         df = ModelData.data[nm.Tables.end_use_halflifes]
@@ -103,7 +116,10 @@ class ModelData(singleton.Singleton):
             int: A numeric ID for the region
         """
         regions = ModelData.data[nm.Tables.regions]
-        match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.id].iloc[0]
+        if region in regions[nm.Fields.region_name].unique():
+            match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.id].iloc[0]
+        else:
+            match_region = None
         return match_region
 
     @staticmethod

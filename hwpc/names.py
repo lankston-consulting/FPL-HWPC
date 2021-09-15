@@ -4,7 +4,8 @@ class Names(singleton.Singleton):
     class Tables(singleton.Singleton):
         ids = 'id_lookup'
         harvest = 'harvest_data'
-        timber_products = 'timber_product_data'
+        timber_products_data = 'timber_product_data'
+        primary_products_data = 'primary_product_data'
         primary_products = 'primary_products'
         primary_product_ratios = 'primary_product_ratios'
         end_use_ratios = 'end_use_ratios'
@@ -12,6 +13,7 @@ class Names(singleton.Singleton):
         discard_destinations = 'discard_destinations'
         discard_types = 'discard_types'
         discard_disposition_ratios = 'discarded_disposition_ratios'
+        region = 'region'
         regions = 'regions'
         energy_capture = 'x_burned_energy_capture'
     
