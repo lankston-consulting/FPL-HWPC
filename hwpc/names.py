@@ -63,6 +63,8 @@ class Names(singleton.Singleton):
         wood_halflife = 'WoodHalfLife'
 
         fuel = 'Fuel'
+        conversion_factor = 'ConversionFactor'
+
 
         #########################################
         ## Results
@@ -95,6 +97,9 @@ class Names(singleton.Singleton):
         discard_remaining = 'discard_remaining'
 
         burned_with_energy_capture = 'burned_captured'
+
+        carbon = 'mtcarbon'
+        co2 = 'co2e'
 
 
 

@@ -84,9 +84,15 @@ class ModelData(singleton.Singleton):
             ModelData.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.id] == region_match]
         else:
             # Melt the primary_product_data table to make years rows
-            df = ModelData.data[nm.Tables.primary_products_data].melt(id_vars=nm.Fields.primary_product_id, 
-                                                                    var_name=nm.Fields.harvest_year, 
-                                                                    value_name=nm.Fields.ratio)
+            try:
+                df = ModelData.data[nm.Tables.primary_products_data].melt(id_vars=nm.Fields.primary_product_id, 
+                                                                        var_name=nm.Fields.harvest_year, 
+                                                                        value_name=nm.Fields.ratio)
+            except:
+                ModelData.data[nm.Tables.primary_products_data] =  ModelData.data[nm.Tables.primary_products_data].rename(columns={'Primary Product ID': nm.Fields.primary_product_id})
+                df = ModelData.data[nm.Tables.primary_products_data].melt(id_vars=nm.Fields.primary_product_id, 
+                                                                            var_name=nm.Fields.harvest_year, 
+                                                                            value_name=nm.Fields.ratio)
 
             df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
             ModelData.data[nm.Tables.primary_product_ratios] = df

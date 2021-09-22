@@ -299,6 +299,10 @@ class Model(object):
 
         results = self.results.working_table
 
+        results[nm.Fields.carbon] = results[nm.Fields.discard_remaining] * results[nm.Fields.conversion_factor]
+        results[nm.Fields.co2] = results[nm.Fields.carbon].apply(self.c_to_co2d)
+
+        self.results.working_table = results
         return
 
     def convert_emissions_c02_e(self):
