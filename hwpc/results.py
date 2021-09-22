@@ -2,10 +2,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from hwpc.names import Names as nm
 
+
 class Results(object):
 
     def __init__(self) -> None:
         super().__init__()
+
+        self.timber_products = None
+        self.primary_products = None
+        self.end_use_products = None
+        self.products_in_use = None
+        self.discarded_products = None
 
         self.working_table = None
 
@@ -13,11 +20,14 @@ class Results(object):
 
         self.fuel_captured = None
 
-        self.end_use_products_step = None
+
 
     def save_results(self):
         self.working_table.to_csv('results.csv')
         return
+
+    def load_results(self):
+        self.working_table = pd.read_csv('results.csv')
       
     
     def save_total_dispositions(self):
@@ -118,4 +128,13 @@ class Results(object):
     
     def save_end_use_products(self):
         # self.end_use_products_step.to_csv('end_use_products.csv')
+        return
+
+    def total_yearly_harvest(self):
+        df = pd.DataFrame(self.working_table)
+        n = nm.Fields.c(nm.Fields.timber_product_results)
+        df[n] = df[nm.Fields.timber_product_results] * df[nm.Fields.conversion_factor]
+        df_sum = df.groupby(by=nm.Fields.harvest_year)[n].mode()
+        print(df_sum)
+
         return
