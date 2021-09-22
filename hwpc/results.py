@@ -3,9 +3,10 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 from hwpc.names import Names as nm
+from utils import pickler
 
 
-class Results(object):
+class Results(pickler.Pickler):
 
     def __init__(self) -> None:
         super().__init__()
@@ -26,14 +27,14 @@ class Results(object):
 
         return
 
-    def pickle(self) -> None:
-        with open('results.pkl', 'wb') as p:
-            pickle.dump(self, p)
+    # def pickle(self) -> None:
+    #     with open('results.pkl', 'wb') as p:
+    #         pickle.dump(self, p)
 
-    @classmethod
-    def unpickle(cls):
-        with open('results.pkl', 'rb') as p:
-            return pickle.load(p)
+    # @classmethod
+    # def unpickle(cls):
+    #     with open('results.pkl', 'rb') as p:
+    #         return pickle.load(p)
 
     def save_results(self):
         self.working_table.to_csv('results.csv')
@@ -149,11 +150,12 @@ class Results(object):
         return
 
     def total_yearly_harvest(self):
-        df = pd.DataFrame(self.timber_products)
+        df = pd.DataFrame(self.primary_products)
         print(df)
+        df = df.merge()
         n = nm.Fields.c(nm.Fields.timber_product_results)
         # df[n] = df[nm.Fields.timber_product_results] * df[nm.Fields.conversion_factor]
         # df_sum = df.groupby(by=nm.Fields.harvest_year)[n].mode()
-        print(df_sum)
+
 
         return

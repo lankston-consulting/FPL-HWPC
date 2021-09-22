@@ -3,12 +3,13 @@ from os import stat
 import numpy as np
 import pandas as pd
 from utils import data_reader
+from utils import pickler
 from utils import singleton
 
 from hwpc.names import Names as nm
 
 
-class ModelData(singleton.Singleton):
+class ModelData(pickler.Pickler, singleton.Singleton):
 
     data = dict()
     region = None
