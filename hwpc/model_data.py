@@ -40,6 +40,42 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         self._set_disposition_halflifes()
         self._set_disposition_halflifes_map()
 
+    def __getstate__(self):
+        ret = self.__dict__.copy()
+        ret['cls_data'] = ModelData.data
+        ret['cls_region'] = ModelData.region
+
+        ret['cls_primary_product_to_timber_product'] = ModelData.primary_product_to_timber_product
+        ret['cls_end_use_to_timber_product'] = ModelData.end_use_to_timber_product
+        ret['cls_end_use_to_primary_product'] = ModelData.end_use_to_primary_product
+
+        ret['cls_disposition_to_halflife'] = ModelData.disposition_to_halflife
+
+        ret['cls_discard_types_dict'] = ModelData.discard_types_dict
+
+        ret['cls_paper_val'] = ModelData.paper_val
+        ret['cls_wood_val'] = ModelData.wood_val
+
+        return ret
+
+    def __setstate__(self, state):
+        ModelData.data = state.pop('cls_data')
+        ModelData.region = state.pop('cls_region')
+
+        ModelData.primary_product_to_timber_product = state.pop('cls_primary_product_to_timber_product')
+        ModelData.end_use_to_timber_product = state.pop('cls_end_use_to_timber_product')
+        ModelData.end_use_to_primary_product = state.pop('cls_end_use_to_primary_product')
+
+        ModelData.disposition_to_halflife = state.pop('cls_disposition_to_halflife')
+
+        ModelData.discard_types_dict = state.pop('cls_discard_types_dict')
+
+        ModelData.paper_val = state.pop('cls_paper_val')
+        ModelData.wood_val = state.pop('cls_wood_val')
+
+        self.__dict__.update(state)
+
+
     @staticmethod
     def load_data() -> None:
         """Read data into pandas DataFrames
