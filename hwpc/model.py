@@ -49,7 +49,7 @@ class Model(object):
         self.summarize()
 
         self.results.save_results()
-        self.results.save_total_dispositions()
+        # self.results.save_total_dispositions()
         #self.results.save_fuel_captured()
         #self.results.save_end_use_products()
 
@@ -185,7 +185,7 @@ class Model(object):
 
         discarded_products[nm.Fields.discard_wood_paper] = discarded_products.groupby(by=[nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]).agg({nm.Fields.discarded_products_results: np.cumsum})
         
-        self.results.self.discarded_wood_paper = discarded_products
+        self.results.discarded_wood_paper = discarded_products
         self.results.working_table = discarded_products
         
         return

@@ -3,15 +3,15 @@ from config import gch
 
 if __name__ == '__main__':
 
-    # i = input_download.InputDownload()
-    # i.downloads()
+    i = input_download.InputDownload()
+    i.downloads()
 
-    # m = model.Model()
-    # m.run()
+    m = model.Model()
+    m.run()
 
-    r = results.Results()
-    r.load_results()
+    m.results.pickle()
 
+    r = results.Results.unpickle()
     r.total_yearly_harvest()
 
     print('model finished.')
