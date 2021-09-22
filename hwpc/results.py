@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 from hwpc.names import Names as nm
 
 class Results(object):
@@ -19,8 +20,12 @@ class Results(object):
         self.working_table.to_csv('results.csv')
         return
       
+
     
     def save_total_dispositions(self):
+        exp = lambda x: 10**(x)
+        log = lambda x: np.log(x)
+
         df = pd.DataFrame(self.working_table)
         # burned = df[df[nm.Fields.discard_destination_id] == 0] 
         recycled = df[df[nm.Fields.discard_destination_id] == 1]
@@ -48,16 +53,18 @@ class Results(object):
         recycled_carbon = recycled.groupby(by='Year')[nm.Fields.carbon].sum()
         recycled_carbon.to_csv('total_recycled_carbon.csv')
         plt.title('Total Cumulative Carbon in Recovered Products in Use')
+        # plt.yscale("function", functions=(exp, log))
         plt.xlabel('Years')
-        plt.ylabel('Metric Tons C')
+        plt.ylabel('Metric Tons CO2e')
         plt.plot(recycled_carbon)
         plt.show()
 
         recycled_emit = recycled.groupby(by='Year')[nm.Fields.co2].sum()
         recycled_emit.to_csv('total_recycled_emitted.csv')
         plt.title('Total Cumulative Cabon Emitted from Recovered Products')
+        # plt.yscale("function", functions=(exp, log))
         plt.xlabel('Years')
-        plt.ylabel('Metric Tons C')
+        plt.ylabel('Metric Tons CO2e')
         plt.plot(recycled_emit)
         plt.show()
 
@@ -71,6 +78,7 @@ class Results(object):
         landfills_carbon = landfills.groupby(by='Year')[nm.Fields.carbon].sum()
         landfills_carbon.to_csv('total_landfills_carbon.csv')
         plt.title('Total Cumulative Cabon in Landfills')
+        # plt.yscale("function", functions=(exp, log))
         plt.xlabel('Years')
         plt.ylabel('Metric Tons C')
         plt.plot(landfills_carbon)
@@ -79,8 +87,9 @@ class Results(object):
         landfills_emit = landfills.groupby(by='Year')[nm.Fields.co2].sum()
         landfills_emit.to_csv('total_landfills_emitted.csv')
         plt.title('Total Cumulative Cabon Emitted from Landfills')
+        # plt.yscale("function", functions=(exp, log))
         plt.xlabel('Years')
-        plt.ylabel('Metric Tons C')
+        plt.ylabel('Metric Tons CO2e')
         plt.plot(landfills_emit)
         plt.show()
 
@@ -88,6 +97,7 @@ class Results(object):
         dumps_carbon = dumps.groupby(by='Year')[nm.Fields.carbon].sum()
         dumps_carbon.to_csv('total_dumps_carbon.csv')
         plt.title('Total Cumulative Cabon in Dumps')
+        # plt.yscale("function", functions=(exp, log))
         plt.xlabel('Years')
         plt.ylabel('Metric Tons C')
         plt.plot(dumps_carbon)
@@ -96,6 +106,7 @@ class Results(object):
         dumps_emit = dumps.groupby(by='Year')[nm.Fields.co2].sum()
         dumps_emit.to_csv('total_dumps_emit.csv')
         plt.title('Total Cumulative Cabon Emitted from Dumps')
+        # plt.yscale("function", functions=(exp, log))
         plt.xlabel('Years')
         plt.ylabel('Metric Tons C')
         plt.plot(dumps_emit)
