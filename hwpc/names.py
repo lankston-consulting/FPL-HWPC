@@ -101,5 +101,7 @@ class Names(singleton.Singleton):
         carbon = 'mtcarbon'
         co2 = 'co2e'
 
+        def c(name):
+            return name + '_' + Names.Fields.carbon
 
 

@@ -1,12 +1,22 @@
 import pandas as pd
+import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 from hwpc.names import Names as nm
+
 
 class Results(object):
 
     def __init__(self) -> None:
         super().__init__()
+
+        self.timber_products = None
+        self.primary_products = None
+        self.end_use_products = None
+        self.products_in_use = None
+        self.discarded_products = None
+        self.discarded_wood_paper = None
+        self.dispositions = None
 
         self.working_table = None
 
@@ -14,14 +24,21 @@ class Results(object):
 
         self.fuel_captured = None
 
-        self.end_use_products_step = None
+        return
+
+    def pickle(self) -> None:
+        with open('results.pkl', 'wb') as p:
+            pickle.dump(self, p)
+
+    @classmethod
+    def unpickle(cls):
+        with open('results.pkl', 'rb') as p:
+            return pickle.load(p)
 
     def save_results(self):
         self.working_table.to_csv('results.csv')
         return
-      
-
-    
+        
     def save_total_dispositions(self):
         exp = lambda x: 10**(x)
         log = lambda x: np.log(x)
@@ -129,4 +146,14 @@ class Results(object):
     
     def save_end_use_products(self):
         # self.end_use_products_step.to_csv('end_use_products.csv')
+        return
+
+    def total_yearly_harvest(self):
+        df = pd.DataFrame(self.timber_products)
+        print(df)
+        n = nm.Fields.c(nm.Fields.timber_product_results)
+        # df[n] = df[nm.Fields.timber_product_results] * df[nm.Fields.conversion_factor]
+        # df_sum = df.groupby(by=nm.Fields.harvest_year)[n].mode()
+        print(df_sum)
+
         return

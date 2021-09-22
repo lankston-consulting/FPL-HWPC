@@ -49,7 +49,7 @@ class Model(object):
         self.summarize()
 
         self.results.save_results()
-        self.results.save_total_dispositions()
+        # self.results.save_total_dispositions()
         #self.results.save_fuel_captured()
         #self.results.save_end_use_products()
 
@@ -71,6 +71,8 @@ class Model(object):
 
         timber_products = timber_products.dropna()
 
+        self.results.timber_products = timber_products
+
         # Calculate primary products (CCF) by multiplying the timber-to-primary ratio for each 
         # primary product by the amount of the corresponding timber product. Then convert to MgC
         # by multiplying by the CCF-to-MgC ratio for that primary product.
@@ -85,9 +87,7 @@ class Model(object):
 
         primary_products = primary_products.dropna()
 
-             
-
-        # self.results.timber_products = timber_products
+        self.results.primary_products = primary_products
         self.results.working_table = primary_products
 
         return
@@ -108,9 +108,7 @@ class Model(object):
 
         end_use = end_use.dropna()
 
-        # self.print_debug_df(end_use)
-
-        self.results.end_use_products_step = end_use
+        self.results.end_use_products = end_use
         self.results.working_table = end_use
 
         return
@@ -138,9 +136,8 @@ class Model(object):
             return df
             
         products_in_use = end_use.groupby(by=nm.Fields.end_use_id).apply(halflife_func)
-
-        # self.print_debug_df(products_in_use)
-
+        
+        self.results.products_in_use = products_in_use
         self.results.working_table = products_in_use
 
         return
@@ -180,14 +177,17 @@ class Model(object):
         # discarded disposition totals for stuff discarded in year i.
 
         discarded_products[nm.Fields.discard_dispositions] = discarded_products[nm.Fields.discarded_products_adjusted] * discarded_products[nm.Fields.discard_destination_ratio]
+        self.results.discarded_products = discarded_products
 
         # Calculate the amount of wood and paper from year y discarded in year i by 
         # summing all discards up, summing all paper discards up, and then subtracting
         # the paper total from the grand total to get the amount of wood.
 
         discarded_products[nm.Fields.discard_wood_paper] = discarded_products.groupby(by=[nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]).agg({nm.Fields.discarded_products_results: np.cumsum})
-
+        
+        self.results.discarded_wood_paper = discarded_products
         self.results.working_table = discarded_products
+        
         return
 
     def calculate_dispositions(self):
@@ -244,6 +244,8 @@ class Model(object):
         
         df_key = [nm.Fields.timber_product_id, nm.Fields.end_use_id, nm.Fields.primary_product_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]
         dispositions = dispositions.groupby(by=df_key).apply(halflife_func)
+        
+        self.results.dispositions = dispositions
         self.results.working_table = dispositions
         
         max_year = dispositions[nm.Fields.harvest_year].max()
@@ -263,8 +265,6 @@ class Model(object):
 
         self.results.working_table = dispositions
 
-        print(dispositions.dtypes)
-
         # Loop through all of the primary products that are fuel and add the amounts of that
         #  product to the total for this year.
         df_keys = [nm.Fields.harvest_year, nm.Fields.primary_product_id, nm.Fields.primary_product_results]
@@ -272,8 +272,6 @@ class Model(object):
         fuel_captured = fuel_captured.rename(columns={nm.Fields.primary_product_results: nm.Fields.burned_with_energy_capture})
 
         self.results.fuel_captured = fuel_captured
-
-        
 
         return
 
