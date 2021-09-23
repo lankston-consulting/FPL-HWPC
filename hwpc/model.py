@@ -49,7 +49,7 @@ class Model(object):
         self.summarize()
 
         self.results.save_results()
-        # self.results.save_total_dispositions()
+        self.results.save_total_dispositions()
         #self.results.save_fuel_captured()
         #self.results.save_end_use_products()
 
