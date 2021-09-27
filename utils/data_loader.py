@@ -43,3 +43,14 @@ class DataLoader(ABC):
 
         return None
     
+    @abstractmethod
+    def upload_blob(path: str):
+
+        """Abstract method for uploading files to the cloud for front end use.
+
+        Returns:
+            path: A reasonable path name that the cloud service will understand
+        """
+
+        return None
+    

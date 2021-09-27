@@ -3,15 +3,16 @@ from os import stat
 import numpy as np
 import pandas as pd
 from utils import data_reader
+from utils import pickler
 from utils import singleton
 
 from hwpc.names import Names as nm
 
 
-class ModelData(singleton.Singleton):
+class ModelData(pickler.Pickler, singleton.Singleton):
 
     data = dict()
-    np_data = dict()
+    region = None
 
     primary_product_to_timber_product = dict()
     end_use_to_timber_product = dict()
@@ -39,6 +40,42 @@ class ModelData(singleton.Singleton):
         self._set_disposition_halflifes()
         self._set_disposition_halflifes_map()
 
+    def __getstate__(self):
+        ret = self.__dict__.copy()
+        ret['cls_data'] = ModelData.data
+        ret['cls_region'] = ModelData.region
+
+        ret['cls_primary_product_to_timber_product'] = ModelData.primary_product_to_timber_product
+        ret['cls_end_use_to_timber_product'] = ModelData.end_use_to_timber_product
+        ret['cls_end_use_to_primary_product'] = ModelData.end_use_to_primary_product
+
+        ret['cls_disposition_to_halflife'] = ModelData.disposition_to_halflife
+
+        ret['cls_discard_types_dict'] = ModelData.discard_types_dict
+
+        ret['cls_paper_val'] = ModelData.paper_val
+        ret['cls_wood_val'] = ModelData.wood_val
+
+        return ret
+
+    def __setstate__(self, state):
+        ModelData.data = state.pop('cls_data')
+        ModelData.region = state.pop('cls_region')
+
+        ModelData.primary_product_to_timber_product = state.pop('cls_primary_product_to_timber_product')
+        ModelData.end_use_to_timber_product = state.pop('cls_end_use_to_timber_product')
+        ModelData.end_use_to_primary_product = state.pop('cls_end_use_to_primary_product')
+
+        ModelData.disposition_to_halflife = state.pop('cls_disposition_to_halflife')
+
+        ModelData.discard_types_dict = state.pop('cls_discard_types_dict')
+
+        ModelData.paper_val = state.pop('cls_paper_val')
+        ModelData.wood_val = state.pop('cls_wood_val')
+
+        self.__dict__.update(state)
+
+
     @staticmethod
     def load_data() -> None:
         """Read data into pandas DataFrames
@@ -60,28 +97,49 @@ class ModelData(singleton.Singleton):
         Examples could be sorting years, checking for matching yearly data, ratios summing
         to zero, etc.
         """
+        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
 
-        # TODO move the renaming here from model.py
-        # ModelData.data[nm.Tables.timber_products] = ModelData.data[nm.Tables.timber_products].rename(columns={nm.Fields.ratio: nm.Fields.timber_product_ratio})
-        # ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
-        # ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[nm.Tables.end_use_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
+        ModelData.data[nm.Tables.primary_products] = ModelData.data[nm.Tables.primary_products].rename(columns={nm.Fields.id: nm.Fields.primary_product_id})
 
+        ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[nm.Tables.end_use_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
 
-        # Prep the harvest data table by sorting years in ascending order
-        ModelData.data[nm.Tables.harvest].sort_values(by=[nm.Fields.harvest_year], inplace=True)
+        ModelData.data[nm.Tables.end_use_halflifes] = ModelData.data[nm.Tables.end_use_halflifes].rename(columns={nm.Fields.id: nm.Fields.end_use_id})
 
-        df = ModelData.data[nm.Tables.timber_products].melt(id_vars=nm.Fields.timber_product_id, 
-                                                               var_name=nm.Fields.harvest_year, 
-                                                               value_name=nm.Fields.ratio)
+        ModelData.data[nm.Tables.discard_disposition_ratios] = ModelData.data[nm.Tables.discard_disposition_ratios].rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
+
+        # Melt the timber_product_data table to make years rows
+        df = ModelData.data[nm.Tables.timber_products_data].melt(id_vars=nm.Fields.timber_product_id, 
+                                                            var_name=nm.Fields.harvest_year, 
+                                                            value_name=nm.Fields.timber_product_ratio)
         
+        # Just in case the year was read as a string, parse to numeric
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
-        ModelData.data[nm.Tables.timber_products] = df
+        ModelData.data[nm.Tables.timber_products_data] = df
 
+        # Parse the region and attempt to pull in default data
+        region = ModelData.data[nm.Tables.region].columns[0]
+        region_match = ModelData.get_region_id(region)
 
+        if region_match:
+            df = ModelData.data[nm.Tables.primary_product_ratios] 
+            ModelData.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.id] == region_match]
+        else:
+            # Melt the primary_product_data table to make years rows
+            try:
+                df = ModelData.data[nm.Tables.primary_products_data].melt(id_vars=nm.Fields.primary_product_id, 
+                                                                        var_name=nm.Fields.harvest_year, 
+                                                                        value_name=nm.Fields.ratio)
+            except:
+                ModelData.data[nm.Tables.primary_products_data] =  ModelData.data[nm.Tables.primary_products_data].rename(columns={'Primary Product ID': nm.Fields.primary_product_id})
+                df = ModelData.data[nm.Tables.primary_products_data].melt(id_vars=nm.Fields.primary_product_id, 
+                                                                            var_name=nm.Fields.harvest_year, 
+                                                                            value_name=nm.Fields.ratio)
 
-        df = ModelData.data[nm.Tables.end_use_halflifes]
-        df = df.rename(columns={nm.Fields.id: nm.Fields.end_use_id})
-        ModelData.data[nm.Tables.end_use_halflifes] = df
+            df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
+            ModelData.data[nm.Tables.primary_product_ratios] = df
+
+        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
+
         return
 
     @staticmethod
@@ -103,7 +161,10 @@ class ModelData(singleton.Singleton):
             int: A numeric ID for the region
         """
         regions = ModelData.data[nm.Tables.regions]
-        match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.id].iloc[0]
+        if region in regions[nm.Fields.region_name].unique():
+            match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.id].iloc[0]
+        else:
+            match_region = None
         return match_region
 
     @staticmethod

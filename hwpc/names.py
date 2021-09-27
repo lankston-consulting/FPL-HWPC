@@ -2,9 +2,10 @@ from utils import singleton
 
 class Names(singleton.Singleton):
     class Tables(singleton.Singleton):
-        ids = 'ids'
+        ids = 'id_lookup'
         harvest = 'harvest_data'
-        timber_products = 'timber_product_data'
+        timber_products_data = 'timber_product_data'
+        primary_products_data = 'primary_product_data'
         primary_products = 'primary_products'
         primary_product_ratios = 'primary_product_ratios'
         end_use_ratios = 'end_use_ratios'
@@ -12,6 +13,7 @@ class Names(singleton.Singleton):
         discard_destinations = 'discard_destinations'
         discard_types = 'discard_types'
         discard_disposition_ratios = 'discarded_disposition_ratios'
+        region = 'region'
         regions = 'regions'
         energy_capture = 'x_burned_energy_capture'
     
@@ -61,6 +63,8 @@ class Names(singleton.Singleton):
         wood_halflife = 'WoodHalfLife'
 
         fuel = 'Fuel'
+        conversion_factor = 'ConversionFactor'
+
 
         #########################################
         ## Results
@@ -72,6 +76,7 @@ class Names(singleton.Singleton):
         products_in_use = 'products_in_use'
         discarded_products_results = 'discarded_products'
         running_discarded_products = 'cum_discarded_products'
+        discarded_products_adjustment = 'discarded_products_adjustment'
         discarded_products_adjusted = 'discarded_products_adjusted'
         discard_paper = 'discarded_paper'
         discard_wood = 'discarded_wood'
@@ -93,5 +98,10 @@ class Names(singleton.Singleton):
 
         burned_with_energy_capture = 'burned_captured'
 
+        carbon = 'mtcarbon'
+        co2 = 'co2e'
+
+        def c(name):
+            return name + '_' + Names.Fields.carbon
 
 
