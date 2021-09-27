@@ -208,7 +208,15 @@ class Results(pickler.Pickler):
     
     def save_discarded_wood_or_paper(self):
         dwp = pd.DataFrame(self.discarded_wood_paper)
+        dwp = dwp.groupby(by='Year')[nm.Fields.discard_wood_paper].sum()
         dwp.to_csv("discarded_wood_or_paper.csv")
+        plt.subplots_adjust(bottom=0.45)
+        plt.title('Total Cumulative Carbon Emitted from Dumps')
+        plt.xlabel('Inventory Year')
+        plt.ylabel('Metric Tons C')
+        plt.plot(dwp)
+        plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
+        plt.savefig('results/total_discarded_wood_or_paper')
         return 
 
     def total_yearly_harvest(self):
