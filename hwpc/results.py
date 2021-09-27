@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 from config import gch
 
@@ -30,6 +31,9 @@ class Results(pickler.Pickler):
         self.fuel_captured = None
 
         self.md = model_data.ModelData()
+
+        if not os.path.exists('results'):
+            os.makedirs('results')
 
         return
 
