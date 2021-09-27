@@ -1,18 +1,21 @@
 import json
 import os
 import shutil
+
 from config import gch
+
+from hwpc.names import Names as nm 
 
 class InputDownload(object):
 
     def __init__(self) -> None:
         super().__init__()
 
-    def downloads(self, path):
+    def downloads(self):
         if not os.path.exists('data'):
             os.makedirs('data')
 
-        with (gch.download_file('hwpcarbon-data', path)) as online_data:
+        with (gch.download_file('hwpcarbon-data', nm.Output.output_path + '/user_input.json')) as online_data:
 
             with open("utils/default_paths.json", "r") as readjson:
                 default_json = json.load(readjson)

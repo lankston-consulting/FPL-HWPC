@@ -104,4 +104,6 @@ class Names(singleton.Singleton):
         def c(name):
             return name + '_' + Names.Fields.carbon
 
+    class Output(singleton.Singleton):
+        output_path = ''
 

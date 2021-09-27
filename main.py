@@ -1,13 +1,26 @@
 import argparse
-
-from hwpc import model, model_data, input_download, results
 import config
 
+from hwpc import model
+from hwpc import model_data
+from hwpc import input_download
+from hwpc import names
+from hwpc import results
+
 def run(args):
+
+    names.Names()
+    names.Names.Tables()
+    names.Names.Fields()
+    names.Names.Output()
+
+    names.Names.Output.output_path = args.i
+
     i = input_download.InputDownload()
-    i.downloads(args.i)
+    i.downloads()
 
     m = model.Model()
+
     m.run()
 
     m.md.pickle()
@@ -20,13 +33,15 @@ def run(args):
 
     print('model finished.')
 
+    return
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
         '-i', 
         help='Path to the uploaded user data.', 
-        default='hpwc-user-inputs/user_request_20210927_193455/user_input.json',
+        default='hpwc-user-inputs/user_request_20210927_193455',
     )
     
     args, _ = parser.parse_known_args()

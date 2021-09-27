@@ -1,7 +1,7 @@
 import json
-from os import stat
 import numpy as np
 import pandas as pd
+
 from utils import data_reader
 from utils import pickler
 from utils import singleton
@@ -27,9 +27,6 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     def __init__(self) -> None:
         super().__init__()
-        nm()
-        nm().Tables()
-        nm().Fields()
         
         self.load_data()
         self.prep_data() 

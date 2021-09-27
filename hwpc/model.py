@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 
-import sys
-
 from hwpc import model_data
 from hwpc import results
 from hwpc.names import Names as nm
@@ -49,7 +47,7 @@ class Model(object):
         self.summarize()
 
         self.results.save_results()
-        #self.results.save_total_dispositions()
+        self.results.save_total_dispositions()
         #self.results.save_fuel_captured()
         #self.results.save_end_use_products()
         self.results.save_discarded_wood_or_paper()

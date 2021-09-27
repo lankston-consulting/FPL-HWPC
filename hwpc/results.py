@@ -1,11 +1,13 @@
-import pandas as pd
-import pickle
-import matplotlib.pyplot as plt
-from hwpc import model_data
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from config import gch
+
+from hwpc import model_data
 from hwpc.names import Names as nm
 from utils import pickler
-from config import gch
+
 
 
 class Results(pickler.Pickler):
@@ -65,8 +67,8 @@ class Results(pickler.Pickler):
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
         plt.plot(cum_products)
         plt.savefig('results/total_end_use_products',pad_inches=0.1)
-        gch.upload_blob('hwpcarbon-data','results/total_end_use_products.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_end_use_products.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_end_use_products.png','hpwc-user-inputs/user_request_20210915_125413/results/total_end_use_products.png')
+        gch.upload_blob('hwpcarbon-data','results/total_end_use_products.csv', nm.Output.output_path + '/results/total_end_use_products.csv')
+        gch.upload_blob('hwpcarbon-data','results/total_end_use_products.png', nm.Output.output_path + '/results/total_end_use_products.png')
         plt.clf()
 
         # CUMULATIVE RECOVERED PRODUCTS CARBON
@@ -81,8 +83,8 @@ class Results(pickler.Pickler):
         txt = "Figure. Total cumulative metric tons carbon stored in recovered products in use manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in recovered products in use are recycled wood and paper that reenters the products in use category."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         plt.savefig('results/total_recycled_carbon')
-        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_recycled_carbon.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.png','hpwc-user-inputs/user_request_20210915_125413/results/total_recycled_carbon.png')
+        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.csv', nm.Output.output_path + '/results/total_recycled_carbon.csv')
+        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.png', nm.Output.output_path + '/results/total_recycled_carbon.png')
         plt.clf()
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
@@ -97,8 +99,8 @@ class Results(pickler.Pickler):
         txt = "Figure. Total cumulative metric tons carbon emitted from recovered products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from recovered products in use is recycled wood and paper that reenters the products in use category. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         plt.savefig('results/total_recycled_carbon_emitted')
-        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_recycled_carbon_emitted.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.png','hpwc-user-inputs/user_request_20210915_125413/results/total_recycled_carbon_emitted.png')
+        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.csv', nm.Output.output_path + '/results/total_recycled_carbon_emitted.csv')
+        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.png', nm.Output.output_path + '/results/total_recycled_carbon_emitted.png')
         plt.clf()
 
         # CUMULATIVE DISCARD COMPOST CO2E
@@ -113,8 +115,8 @@ class Results(pickler.Pickler):
         txt = "Figure. Total cumulative metric tons carbon emitted from composted discarded harvested wood products manufactured from total timber harvested in ppd from 1906 to 2018. No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other greenhouse gases such as methane."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         plt.savefig('results/total_composted_carbon_emitted')
-        gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_composted_carbon_emitted.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.png','hpwc-user-inputs/user_request_20210915_125413/results/total_composted_carbon_emitted.png')
+        gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.csv', nm.Output.output_path + '/results/total_composted_carbon_emitted.csv')
+        gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.png', nm.Output.output_path + '/results/total_composted_carbon_emitted.png')
         plt.clf()
 
         # CUMULATIVE DISCARD LANDFILL CARBON
@@ -129,8 +131,8 @@ class Results(pickler.Pickler):
         txt = "Figure. Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         plt.savefig('results/total_landfills_carbon')
-        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_landfills_carbon.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.png','hpwc-user-inputs/user_request_20210915_125413/results/total_landfills_carbon.png')
+        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.csv', nm.Output.output_path + '/results/total_landfills_carbon.csv')
+        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.png', nm.Output.output_path + '/results/total_landfills_carbon.png')
         plt.clf()
 
         # CUMULATIVE DISCARD LANDFILL CO2E
@@ -145,8 +147,8 @@ class Results(pickler.Pickler):
         txt = "Figure. Total cumulative metric tons carbon emitted from discarded produts in landfills manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in landfills is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Carbon emissions are displayed in usnits of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         plt.savefig('results/total_landfills_carbon_emitted')
-        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_landfills_carbon_emitted.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.png','hpwc-user-inputs/user_request_20210915_125413/results/total_landfills_carbon_emitted.png')
+        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.csv', nm.Output.output_path + '/results/total_landfills_carbon_emitted.csv')
+        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.png', nm.Output.output_path + '/results/total_landfills_carbon_emitted.png')
         plt.clf()
         
         # CUMULATIVE DISCARD DUMPS CARBON
@@ -161,8 +163,8 @@ class Results(pickler.Pickler):
         txt = "Figure. Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         plt.savefig('results/total_dumps_carbon')
-        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_dumps_carbon.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.png','hpwc-user-inputs/user_request_20210915_125413/results/total_dumps_carbon.png')
+        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.csv', nm.Output.output_path + '/results/total_dumps_carbon.csv')
+        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.png', nm.Output.output_path + '/results/total_dumps_carbon.png')
         plt.clf()
 
         # CUMULATIVE DISCARD DUMPS CO2E
@@ -177,8 +179,8 @@ class Results(pickler.Pickler):
         txt = "Figure. Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         plt.savefig('results/total_dumps_carbon_emitted')
-        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_dumps_carbon_emitted.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.png','hpwc-user-inputs/user_request_20210915_125413/results/total_dumps_carbon_emitted.png')
+        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.csv', nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv')
+        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.png', nm.Output.output_path + '/results/total_dumps_carbon_emitted.png')
         plt.clf()
 
         self.total_dispositions.to_csv('results/total_dispositions.csv')

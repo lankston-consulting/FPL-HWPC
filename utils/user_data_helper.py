@@ -1,9 +1,9 @@
 from google.cloud import storage
 import tempfile
-from utils.data_loader import DataLoader
+from utils import data_loader
 
 
-class UserData(DataLoader):
+class UserData(data_loader.DataLoader):
     _client = None
     _instance = None
 
