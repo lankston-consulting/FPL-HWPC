@@ -73,6 +73,7 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_end_use_products',pad_inches=0.1)
         gch.upload_blob('hwpcarbon-data','results/total_end_use_products.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_end_use_products.csv')
         gch.upload_blob('hwpcarbon-data','results/total_end_use_products.png','hpwc-user-inputs/user_request_20210915_125413/results/total_end_use_products.png')
+        plt.clf()
 
         # CUMULATIVE RECOVERED PRODUCTS CARBON
         recycled_carbon = recycled.groupby(by='Year')[nm.Fields.carbon].sum()
@@ -88,6 +89,7 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_recycled_carbon')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_recycled_carbon.csv')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.png','hpwc-user-inputs/user_request_20210915_125413/results/total_recycled_carbon.png')
+        plt.clf()
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
         recycled_emit = recycled.groupby(by='Year')[nm.Fields.co2].sum()
@@ -103,6 +105,7 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_recycled_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_recycled_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.png','hpwc-user-inputs/user_request_20210915_125413/results/total_recycled_carbon_emitted.png')
+        plt.clf()
 
         # CUMULATIVE DISCARD COMPOST CO2E
         composted_emit = composted.groupby(by='Year')[nm.Fields.co2].sum()
@@ -118,6 +121,7 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_composted_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_composted_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.png','hpwc-user-inputs/user_request_20210915_125413/results/total_composted_carbon_emitted.png')
+        plt.clf()
 
         # CUMULATIVE DISCARD LANDFILL CARBON
         landfills_carbon = landfills.groupby(by='Year')[nm.Fields.carbon].sum()
@@ -133,6 +137,7 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_landfills_carbon')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_landfills_carbon.csv')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.png','hpwc-user-inputs/user_request_20210915_125413/results/total_landfills_carbon.png')
+        plt.clf()
 
         # CUMULATIVE DISCARD LANDFILL CO2E
         landfills_emit = landfills.groupby(by='Year')[nm.Fields.co2].sum()
@@ -148,6 +153,7 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_landfills_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_landfills_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.png','hpwc-user-inputs/user_request_20210915_125413/results/total_landfills_carbon_emitted.png')
+        plt.clf()
         
         # CUMULATIVE DISCARD DUMPS CARBON
         dumps_carbon = dumps.groupby(by='Year')[nm.Fields.carbon].sum()
@@ -163,6 +169,7 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_dumps_carbon')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_dumps_carbon.csv')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.png','hpwc-user-inputs/user_request_20210915_125413/results/total_dumps_carbon.png')
+        plt.clf()
 
         # CUMULATIVE DISCARD DUMPS CO2E
         dumps_emit = dumps.groupby(by='Year')[nm.Fields.co2].sum()
@@ -178,6 +185,7 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_dumps_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.csv','hpwc-user-inputs/user_request_20210915_125413/results/total_dumps_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.png','hpwc-user-inputs/user_request_20210915_125413/results/total_dumps_carbon_emitted.png')
+        plt.clf()
 
         self.total_dispositions.to_csv('results/total_dispositions.csv')
         return
