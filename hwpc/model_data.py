@@ -100,7 +100,6 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
 
         ModelData.data[nm.Tables.primary_products] = ModelData.data[nm.Tables.primary_products].rename(columns={nm.Fields.id: nm.Fields.primary_product_id})
-        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
 
         ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[nm.Tables.end_use_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
 
@@ -138,6 +137,8 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
             df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
             ModelData.data[nm.Tables.primary_product_ratios] = df
+
+        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
 
         return
 

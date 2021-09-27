@@ -31,7 +31,7 @@ class Results(pickler.Pickler):
         return
 
     def save_results(self):
-        self.working_table.to_csv('results.csv')
+        self.working_table.to_csv('results/results.csv')
         return
         
     def save_total_dispositions(self):

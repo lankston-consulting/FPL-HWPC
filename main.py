@@ -3,8 +3,8 @@ import config
 
 if __name__ == '__main__':
 
-    # i = input_download.InputDownload()
-    # i.downloads()
+    i = input_download.InputDownload()
+    i.downloads()
 
     m = model.Model()
     m.run()
