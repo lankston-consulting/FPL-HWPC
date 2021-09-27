@@ -66,7 +66,6 @@ class Model(object):
         # IF MgC, convert to CCF. The rest of the model uses CCF.
 
         timber_products = self.timber_product_ratios.merge(self.harvests, how='outer')
-        timber_products = timber_products.rename(columns={nm.Fields.ratio: nm.Fields.timber_product_ratio})
         timber_products[nm.Fields.timber_product_results] = timber_products[nm.Fields.timber_product_ratio] * timber_products[nm.Fields.ccf]
 
         timber_products = timber_products.dropna()
@@ -79,7 +78,6 @@ class Model(object):
         
         # Append the timber product id to the primary product table
         primary_products = self.primary_product_ratios
-        primary_products = primary_products.rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
         primary_products[nm.Fields.timber_product_id] = primary_products[nm.Fields.primary_product_id].map(self.md.primary_product_to_timber_product)
 
         primary_products = timber_products.merge(primary_products, how='outer', on=[nm.Fields.harvest_year, nm.Fields.timber_product_id])
@@ -100,7 +98,6 @@ class Model(object):
         # corresponding primary product.
 
         end_use = self.end_use_ratios
-        end_use = end_use.rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
         end_use[nm.Fields.primary_product_id] = end_use[nm.Fields.end_use_id].map(self.md.end_use_to_primary_product)
 
         end_use = end_use.merge(self.results.working_table, how='outer', on=[nm.Fields.harvest_year, nm.Fields.primary_product_id])
@@ -158,7 +155,6 @@ class Model(object):
         products_in_use[nm.Fields.discarded_products_adjusted] = products_in_use[nm.Fields.discarded_products_results] - products_in_use[nm.Fields.discarded_products_adjustment]
 
         discarded_disposition_ratios = self.discarded_disposition_ratios
-        discarded_disposition_ratios = discarded_disposition_ratios.rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
         discarded_disposition_ratios = discarded_disposition_ratios.sort_values(by=[nm.Fields.discard_type_id, nm.Fields.discard_destination_id, nm.Fields.harvest_year])
 
         discarded_products = products_in_use.merge(discarded_disposition_ratios, how='outer', on=nm.Fields.harvest_year)
@@ -260,7 +256,6 @@ class Model(object):
         """
         dispositions = self.results.working_table
         primary_products = self.md.data[nm.Tables.primary_products]
-        primary_products = primary_products.rename(columns={nm.Fields.id: nm.Fields.primary_product_id})
         dispositions = dispositions.merge(primary_products, how='outer', on=[nm.Fields.timber_product_id, nm.Fields.primary_product_id])
 
         self.results.working_table = dispositions

@@ -1,6 +1,7 @@
 import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
+from hwpc import model_data
 from hwpc.names import Names as nm
 from utils import pickler
 
@@ -24,16 +25,9 @@ class Results(pickler.Pickler):
 
         self.fuel_captured = None
 
+        self.md = model_data.ModelData()
+
         return
-
-    # def pickle(self) -> None:
-    #     with open('results.pkl', 'wb') as p:
-    #         pickle.dump(self, p)
-
-    # @classmethod
-    # def unpickle(cls):
-    #     with open('results.pkl', 'rb') as p:
-    #         return pickle.load(p)
 
     def save_results(self):
         self.working_table.to_csv('results.csv')
@@ -140,10 +134,12 @@ class Results(pickler.Pickler):
         return
 
     def total_yearly_harvest(self):
+
         df = pd.DataFrame(self.primary_products)
-        print(df)
-        df = df.merge()
+        print(self.md.data[nm.Tables.primary_products])
+        df = df.merge(self.md.data[nm.Tables.primary_products], how='outer', on=[nm.Fields.timber_product_id, nm.Fields.primary_product_id])
         n = nm.Fields.c(nm.Fields.timber_product_results)
+        print(df)
         # df[n] = df[nm.Fields.timber_product_results] * df[nm.Fields.conversion_factor]
         # df_sum = df.groupby(by=nm.Fields.harvest_year)[n].mode()
 

@@ -97,16 +97,21 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         Examples could be sorting years, checking for matching yearly data, ratios summing
         to zero, etc.
         """
+        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
 
-        # TODO move the renaming here from model.py
-        # ModelData.data[nm.Tables.timber_products] = ModelData.data[nm.Tables.timber_products].rename(columns={nm.Fields.ratio: nm.Fields.timber_product_ratio})
-        # ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
-        # ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[nm.Tables.end_use_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
+        ModelData.data[nm.Tables.primary_products] = ModelData.data[nm.Tables.primary_products].rename(columns={nm.Fields.id: nm.Fields.primary_product_id})
+        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
+
+        ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[nm.Tables.end_use_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
+
+        ModelData.data[nm.Tables.end_use_halflifes] = ModelData.data[nm.Tables.end_use_halflifes].rename(columns={nm.Fields.id: nm.Fields.end_use_id})
+
+        ModelData.data[nm.Tables.discard_disposition_ratios] = ModelData.data[nm.Tables.discard_disposition_ratios].rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
 
         # Melt the timber_product_data table to make years rows
         df = ModelData.data[nm.Tables.timber_products_data].melt(id_vars=nm.Fields.timber_product_id, 
                                                             var_name=nm.Fields.harvest_year, 
-                                                            value_name=nm.Fields.ratio)
+                                                            value_name=nm.Fields.timber_product_ratio)
         
         # Just in case the year was read as a string, parse to numeric
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
@@ -134,10 +139,6 @@ class ModelData(pickler.Pickler, singleton.Singleton):
             df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
             ModelData.data[nm.Tables.primary_product_ratios] = df
 
-
-        df = ModelData.data[nm.Tables.end_use_halflifes]
-        df = df.rename(columns={nm.Fields.id: nm.Fields.end_use_id})
-        ModelData.data[nm.Tables.end_use_halflifes] = df
         return
 
     @staticmethod
