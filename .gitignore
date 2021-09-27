@@ -138,5 +138,8 @@ dmypy.json
 # Local History for Visual Studio Code
 .history/
 
+data/*
+results/*
+
 hwpc-sa.json
 
