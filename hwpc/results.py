@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import json
 import os
 
 from config import gch
@@ -42,6 +43,7 @@ class Results(pickler.Pickler):
         return
         
     def save_total_dispositions(self):
+        results_json = {}
 
         df = pd.DataFrame(self.working_table)
         # burned = df[df[nm.Fields.discard_destination_id] == 0] 
@@ -73,6 +75,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_end_use_products',pad_inches=0.1)
         gch.upload_blob('hwpcarbon-data','results/total_end_use_products.csv', nm.Output.output_path + '/results/total_end_use_products.csv')
         gch.upload_blob('hwpcarbon-data','results/total_end_use_products.png', nm.Output.output_path + '/results/total_end_use_products.png')
+        results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
+        results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
         plt.clf()
 
         # CUMULATIVE RECOVERED PRODUCTS CARBON
@@ -89,6 +93,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_recycled_carbon')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.csv', nm.Output.output_path + '/results/total_recycled_carbon.csv')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.png', nm.Output.output_path + '/results/total_recycled_carbon.png')
+        results_json["total_recycled_carbon.csv"] = nm.Output.output_path + '/results/total_recycled_carbon.csv'
+        results_json["total_recycled_carbon.png"] = nm.Output.output_path + '/results/total_recycled_carbon.png'
         plt.clf()
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
@@ -105,6 +111,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_recycled_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.csv', nm.Output.output_path + '/results/total_recycled_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.png', nm.Output.output_path + '/results/total_recycled_carbon_emitted.png')
+        results_json["total_recycled_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_recycled_carbon_emitted.csv'
+        results_json["total_recycled_carbon_emitted.png"] = nm.Output.output_path + '/results/total_recycled_carbon_emitted.png'
         plt.clf()
 
         # CUMULATIVE DISCARD COMPOST CO2E
@@ -121,6 +129,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_composted_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.csv', nm.Output.output_path + '/results/total_composted_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.png', nm.Output.output_path + '/results/total_composted_carbon_emitted.png')
+        results_json["total_composted_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_composted_carbon_emitted.csv'
+        results_json["total_composted_carbon_emitted.png"] = nm.Output.output_path + '/results/total_composted_carbon_emitted.png'
         plt.clf()
 
         # CUMULATIVE DISCARD LANDFILL CARBON
@@ -137,6 +147,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_landfills_carbon')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.csv', nm.Output.output_path + '/results/total_landfills_carbon.csv')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.png', nm.Output.output_path + '/results/total_landfills_carbon.png')
+        results_json["total_landfills_carbon.csv"] = nm.Output.output_path + '/results/total_landfills_carbon.csv'
+        results_json["total_landfills_carbon.png"] = nm.Output.output_path + '/results/total_landfills_carbon.png'
         plt.clf()
 
         # CUMULATIVE DISCARD LANDFILL CO2E
@@ -153,6 +165,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_landfills_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.csv', nm.Output.output_path + '/results/total_landfills_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.png', nm.Output.output_path + '/results/total_landfills_carbon_emitted.png')
+        results_json["total_landfills_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_landfills_carbon_emitted.csv'
+        results_json["total_landfills_carbon_emitted.png"] = nm.Output.output_path + '/results/total_landfills_carbon_emitted.png'
         plt.clf()
         
         # CUMULATIVE DISCARD DUMPS CARBON
@@ -169,6 +183,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_dumps_carbon')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.csv', nm.Output.output_path + '/results/total_dumps_carbon.csv')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.png', nm.Output.output_path + '/results/total_dumps_carbon.png')
+        results_json["total_dumps_carbon.csv"] = nm.Output.output_path + '/results/total_dumps_carbon.csv'
+        results_json["total_dumps_carbon.png"] = nm.Output.output_path + '/results/total_dumps_carbon.png'
         plt.clf()
 
         # CUMULATIVE DISCARD DUMPS CO2E
@@ -185,8 +201,14 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_dumps_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.csv', nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.png', nm.Output.output_path + '/results/total_dumps_carbon_emitted.png')
+        results_json["total_dumps_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv'
+        results_json["total_dumps_carbon_emitted.png"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.png'
         plt.clf()
 
+        with open('results/results.json', 'w') as outfile:
+            json.dump(results_json, outfile)
+
+        gch.upload_blob('hwpcarbon-data','results/results.json', nm.Output.output_path + '/results/results.json')
         self.total_dispositions.to_csv('results/total_dispositions.csv')
         return
     
