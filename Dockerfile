@@ -11,9 +11,10 @@ COPY utils/* utils/
 
 COPY __init__.py __init__.py
 COPY config.py config.py
-# COPY hwpc-sa.json hwpc-sa.json
+COPY hwpccalc.py hwpccalc.py
 COPY main.py main.py
 
 EXPOSE 8080
 
-ENTRYPOINT [ "python", "main.py" ]
+# ENTRYPOINT [ "python", "main.py" ]
+CMD python main.py
