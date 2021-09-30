@@ -14,4 +14,6 @@ COPY config.py config.py
 # COPY hwpc-sa.json hwpc-sa.json
 COPY main.py main.py
 
+EXPOSE 8080
+
 ENTRYPOINT [ "python", "main.py" ]
