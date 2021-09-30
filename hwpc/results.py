@@ -33,7 +33,7 @@ class Results(pickler.Pickler):
         self.fuel_captured = None
 
         self.md = model_data.ModelData()
-        self.zip = zip.ZipFile('results.zip', mode='w')
+        self.zip = zip.ZipFile('results/results.zip', mode='w')
 
         if not os.path.exists('results'):
             os.makedirs('results')
@@ -223,7 +223,7 @@ class Results(pickler.Pickler):
         results_json["total_dumps_carbon_emitted.png"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.png'
         plt.clf()
         self.zip.close()
-        gch.upload_blob('hwpcarbon-data',self.zip, nm.Output.output_path + '/results/results.zip')
+        gch.upload_blob('hwpcarbon-data','results/results.zip', nm.Output.output_path + '/results/results.zip')
         with open('results/results.json', 'w') as outfile:
             json.dump(results_json, outfile)
 
