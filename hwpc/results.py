@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import json
 import os
+import zipfile as zip
 
 from config import gch
 
@@ -32,6 +33,7 @@ class Results(pickler.Pickler):
         self.fuel_captured = None
 
         self.md = model_data.ModelData()
+        self.zip = zip.ZipFile('results.zip', mode='w')
 
         if not os.path.exists('results'):
             os.makedirs('results')
@@ -75,6 +77,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_end_use_products',pad_inches=0.1)
         gch.upload_blob('hwpcarbon-data','results/total_end_use_products.csv', nm.Output.output_path + '/results/total_end_use_products.csv')
         gch.upload_blob('hwpcarbon-data','results/total_end_use_products.png', nm.Output.output_path + '/results/total_end_use_products.png')
+        self.zip.write('results/total_end_use_products.png',arcname='total_end_use_products.png')
+        self.zip.write('results/total_end_use_products.csv',arcname='total_end_use_products.csv')
         results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
         results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
         plt.clf()
@@ -93,6 +97,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_recycled_carbon')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.csv', nm.Output.output_path + '/results/total_recycled_carbon.csv')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.png', nm.Output.output_path + '/results/total_recycled_carbon.png')
+        self.zip.write('results/total_recycled_carbon.png',arcname='total_recycled_carbon.png')
+        self.zip.write('results/total_recycled_carbon.csv',arcname='total_recycled_carbon.csv')
         results_json["total_recycled_carbon.csv"] = nm.Output.output_path + '/results/total_recycled_carbon.csv'
         results_json["total_recycled_carbon.png"] = nm.Output.output_path + '/results/total_recycled_carbon.png'
         plt.clf()
@@ -111,6 +117,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_recycled_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.csv', nm.Output.output_path + '/results/total_recycled_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.png', nm.Output.output_path + '/results/total_recycled_carbon_emitted.png')
+        self.zip.write('results/total_recycled_carbon_emitted.png',arcname='total_recycled_carbon_emitted.png')
+        self.zip.write('results/total_recycled_carbon_emitted.csv',arcname='total_recycled_carbon_emitted.csv')
         results_json["total_recycled_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_recycled_carbon_emitted.csv'
         results_json["total_recycled_carbon_emitted.png"] = nm.Output.output_path + '/results/total_recycled_carbon_emitted.png'
         plt.clf()
@@ -129,6 +137,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_composted_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.csv', nm.Output.output_path + '/results/total_composted_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.png', nm.Output.output_path + '/results/total_composted_carbon_emitted.png')
+        self.zip.write('results/total_composted_carbon_emitted.png',arcname='total_composted_carbon_emitted.png')
+        self.zip.write('results/total_composted_carbon_emitted.csv',arcname='total_composted_carbon_emitted.csv')
         results_json["total_composted_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_composted_carbon_emitted.csv'
         results_json["total_composted_carbon_emitted.png"] = nm.Output.output_path + '/results/total_composted_carbon_emitted.png'
         plt.clf()
@@ -147,6 +157,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_landfills_carbon')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.csv', nm.Output.output_path + '/results/total_landfills_carbon.csv')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.png', nm.Output.output_path + '/results/total_landfills_carbon.png')
+        self.zip.write('results/total_landfills_carbon.png',arcname='total_landfills_carbon.png')
+        self.zip.write('results/total_landfills_carbon.csv',arcname='total_landfills_carbon.csv')
         results_json["total_landfills_carbon.csv"] = nm.Output.output_path + '/results/total_landfills_carbon.csv'
         results_json["total_landfills_carbon.png"] = nm.Output.output_path + '/results/total_landfills_carbon.png'
         plt.clf()
@@ -165,6 +177,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_landfills_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.csv', nm.Output.output_path + '/results/total_landfills_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.png', nm.Output.output_path + '/results/total_landfills_carbon_emitted.png')
+        self.zip.write('results/total_landfills_carbon_emitted.png',arcname='total_landfills_carbon_emitted.png')
+        self.zip.write('results/total_landfills_carbon_emitted.csv',arcname='total_landfills_carbon_emitted.csv')
         results_json["total_landfills_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_landfills_carbon_emitted.csv'
         results_json["total_landfills_carbon_emitted.png"] = nm.Output.output_path + '/results/total_landfills_carbon_emitted.png'
         plt.clf()
@@ -183,6 +197,8 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_dumps_carbon')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.csv', nm.Output.output_path + '/results/total_dumps_carbon.csv')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.png', nm.Output.output_path + '/results/total_dumps_carbon.png')
+        self.zip.write('results/total_dumps_carbon.png',arcname='total_dumps_carbon.png')
+        self.zip.write('results/total_dumps_carbon.csv',arcname='total_dumps_carbon.csv')
         results_json["total_dumps_carbon.csv"] = nm.Output.output_path + '/results/total_dumps_carbon.csv'
         results_json["total_dumps_carbon.png"] = nm.Output.output_path + '/results/total_dumps_carbon.png'
         plt.clf()
@@ -201,10 +217,13 @@ class Results(pickler.Pickler):
         plt.savefig('results/total_dumps_carbon_emitted')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.csv', nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv')
         gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.png', nm.Output.output_path + '/results/total_dumps_carbon_emitted.png')
+        self.zip.write('results/total_dumps_carbon_emitted.png',arcname='total_dumps_carbon_emitted.png')
+        self.zip.write('results/total_dumps_carbon_emitted.csv',arcname='total_dumps_carbon_emitted.csv')
         results_json["total_dumps_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv'
         results_json["total_dumps_carbon_emitted.png"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.png'
         plt.clf()
-
+        self.zip.close()
+        gch.upload_blob('hwpcarbon-data',self.zip, nm.Output.output_path + '/results/results.zip')
         with open('results/results.json', 'w') as outfile:
             json.dump(results_json, outfile)
 
