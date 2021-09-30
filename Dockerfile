@@ -11,7 +11,7 @@ COPY utils/* utils/
 
 COPY __init__.py __init__.py
 COPY config.py config.py
-COPY hwpc-sa.json hwpc-sa.json
+# COPY hwpc-sa.json hwpc-sa.json
 COPY main.py main.py
 
 ENTRYPOINT [ "python", "main.py" ]

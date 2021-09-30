@@ -35,7 +35,7 @@ class Model(object):
 
         self.results = results.Results()
 
-    def run(self, region='West', iterations=1):
+    def run(self):
         
         self.calculate_primary_product_mcg()
         self.calculate_end_use_products()
@@ -282,7 +282,7 @@ class Model(object):
         # self.memory_usage(dispositions)
 
         # TODO finish this function
-
+        # Burned dispositions only? Is this NOT FUEL only?
 
 
         return

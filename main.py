@@ -1,49 +1,23 @@
-import argparse
-import config
+from flask import Flask, request
 
-from hwpc import model
-from hwpc import model_data
-from hwpc import input_download
-from hwpc import names
-from hwpc import results
+import hwpccalc
 
-def run(args):
+app = Flask(__name__)
 
-    names.Names()
-    names.Names.Tables()
-    names.Names.Fields()
-    names.Names.Output()
-
-    names.Names.Output.output_path = args.i
-
-    i = input_download.InputDownload()
-    i.downloads()
-
-    m = model.Model()
-
-    m.run()
-
-    m.md.pickle()
-    m.results.pickle()
-
-    md = model_data.ModelData.unpickle()
-
-    r = results.Results.unpickle()
-    r.total_yearly_harvest()
-
-    print('model finished.')
-
-    return
+@app.route('/', methods=['GET'])
+def handle():
+    p = request.args.get('p')
+    print(p)
+    hwpccalc.run(p)
+    return '', 200, {}
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    
-    parser.add_argument(
-        '-i', 
-        help='Path to the uploaded user data.', 
-        default='hpwc-user-inputs/user_request_20210927_193455',
-    )
-    
-    args, _ = parser.parse_known_args()
+    # This is used when running locally only. When deploying to Google App
+    # Engine, a webserver process such as Gunicorn will serve the app. This
+    # can be configured by adding an `entrypoint` to app.yaml.
 
-    run(args)
+    # Flask's development server will automatically serve static files in
+    # the "static" directory. See:
+    # http://flask.pocoo.org/docs/1.0/quickstart/#static-files. Once deployed,
+    # App Engine itself will serve those files as configured in app.yaml.
+    app.run(host='127.0.0.1', port=8080, debug=True)
