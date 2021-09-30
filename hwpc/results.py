@@ -223,7 +223,8 @@ class Results(pickler.Pickler):
         results_json["total_dumps_carbon_emitted.png"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.png'
         plt.clf()
         self.zip.close()
-        gch.upload_blob('hwpcarbon-data','results/results.zip', nm.Output.output_path + '/results/results.zip')
+        zipped_file = gch.upload_blob('hwpcarbon-data','results/results.zip', nm.Output.output_path + '/results/results.zip')
+        zipped_file.make_public()
         with open('results/results.json', 'w') as outfile:
             json.dump(results_json, outfile)
 
