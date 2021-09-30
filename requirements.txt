@@ -3,4 +3,5 @@ numpy
 pandas
 pytest
 google-cloud-storage
+gunicorn
 matplotlib
