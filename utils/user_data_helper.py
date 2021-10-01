@@ -80,16 +80,16 @@ class UserData(data_loader.DataLoader):
         blob.upload_from_filename(source_file_name)
         return blob
 
-    
-    def make_public(self, client=None):
-        """Update blob's ACL, granting read access to anonymous users.
+    # @staticmethod
+    # def make_public(blob):
+    #     """Update blob's ACL, granting read access to anonymous users.
 
-        :type client: :class:`~google.cloud.storage.client.Client` or
-                        ``NoneType``
-        :param client: Optional. The client to use.  If not passed, falls back
-                        to the ``client`` stored on the blob's bucket.
-        """
-        self.acl.all().grant_read()
-        self.acl.save(client=client)
+    #     :type client: :class:`~google.cloud.storage.client.Client` or
+    #                     ``NoneType``
+    #     :param client: Optional. The client to use.  If not passed, falls back
+    #                     to the ``client`` stored on the blob's bucket.
+    #     """
+    #     blob.acl.all().grant_read()
+    #     blob.acl.save(client=UserData._client)
 
 

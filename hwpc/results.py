@@ -224,7 +224,7 @@ class Results(pickler.Pickler):
         plt.clf()
         self.zip.close()
         zipped_file = gch.upload_blob('hwpcarbon-data','results/results.zip', nm.Output.output_path + '/results/results.zip')
-        zipped_file.make_public()
+        # zipped_file.make_public()
         with open('results/results.json', 'w') as outfile:
             json.dump(results_json, outfile)
 
