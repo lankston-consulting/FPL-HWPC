@@ -281,9 +281,9 @@ class Model(object):
         discard_destinations = self.md.data[nm.Tables.discard_destinations]
         burned = discard_destinations[discard_destinations[nm.Fields.discard_description] == 'Burned'][nm.Fields.discard_destination_id].iloc[0]
 
-        df_keys = [nm.Fields.harvest_year, nm.Fields.primary_product_id, nm.Fields.primary_product_results]
-
         burned_not_captured = dispositions_not_fuel[dispositions_not_fuel[nm.Fields.discard_destination_id] == burned]
+        burned_not_captured = burned_not_captured[[nm.Fields.harvest_year, ]]
+
 
         # TODO finish this function
         # Burned dispositions only? Is this NOT FUEL only?
