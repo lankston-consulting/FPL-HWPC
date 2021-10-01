@@ -29,7 +29,7 @@ class Results(pickler.Pickler):
 
         self.total_dispositions = None
 
-        self.fuel_captured = None
+        self.burned_captured = None
 
         self.md = model_data.ModelData()
 

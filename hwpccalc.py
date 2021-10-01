@@ -7,7 +7,7 @@ from hwpc import input_download
 from hwpc import names
 from hwpc import results
 
-def run(path):
+def run(path='hpwc-user-inputs/user_request_20210929_130704'):
 
     names.Names()
     names.Names.Tables()
@@ -36,14 +36,15 @@ def run(path):
     return
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    # parser = argparse.ArgumentParser()
     
-    parser.add_argument(
-        '-p', 
-        help='Path to the uploaded user data.', 
-        
-    )
+    # parser.add_argument(
+    #     '-p', 
+    #     help='Path to the uploaded user data.', 
+    #     default='hpwc-user-inputs/user_request_20210929_130704',
+    # )
     
-    args, _ = parser.parse_known_args()
+    # args, _ = parser.parse_known_args()
 
-    run(args)
+    # run(args)
+    run()
