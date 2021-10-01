@@ -160,12 +160,12 @@ class Model(object):
         discarded_products = discarded_products.dropna()
 
         # Zero out the stuff that was fuel.
-        # TODO what??
-        # discard_destinations = self.md.data[nm.Tables.discard_destinations]
-        # burned = discard_destinations[discard_destinations[nm.Fields.discard_description] == 'Burned'][nm.Fields.discard_destination_id].iloc[0]
+        # Later, we account for burned things that weren't fuel. So, we need to set "in use" to 0 because it's been burned.
+        discard_destinations = self.md.data[nm.Tables.discard_destinations]
+        burned = discard_destinations[discard_destinations[nm.Fields.discard_description] == 'Burned'][nm.Fields.discard_destination_id].iloc[0]
 
-        # df_filter = discarded_products[nm.Fields.discard_destination_id] == burned
-        # discarded_products.loc[df_filter, nm.Fields.products_in_use] = 0
+        df_filter = discarded_products[nm.Fields.discard_destination_id] == burned
+        discarded_products.loc[df_filter, nm.Fields.products_in_use] = 0
 
         # Multiply the amount discarded this year by the disposition ratios to get the
         # amount that goes into landfills, dumps, etc, and then add these to the 
@@ -197,8 +197,6 @@ class Model(object):
         landfill_id = destinations[destinations[nm.Fields.discard_description] == nm.Fields.landfills][nm.Fields.discard_destination_id].iloc[0]
         dump_id = destinations[destinations[nm.Fields.discard_description] == nm.Fields.dumps][nm.Fields.discard_destination_id].iloc[0]
         recycle_id = destinations[destinations[nm.Fields.discard_description] == nm.Fields.recycled][nm.Fields.discard_destination_id].iloc[0]
-
-        # self.print_debug_df_2(discarded_products)
 
         discard_types = self.md.discard_types_dict
 
@@ -257,6 +255,8 @@ class Model(object):
         primary_products = self.md.data[nm.Tables.primary_products]
         dispositions = dispositions.merge(primary_products, how='outer', on=[nm.Fields.timber_product_id, nm.Fields.primary_product_id])
 
+        # dispositions = 
+
         self.results.working_table = dispositions
 
         # Loop through all of the primary products that are fuel and add the amounts of that
@@ -265,7 +265,7 @@ class Model(object):
         fuel_captured = dispositions.loc[dispositions[nm.Fields.fuel] == 1, df_keys].drop_duplicates()
         fuel_captured = fuel_captured.rename(columns={nm.Fields.primary_product_results: nm.Fields.burned_with_energy_capture})
 
-        self.results.fuel_captured = fuel_captured
+        self.results.burned_captured = fuel_captured
 
         return
 
@@ -278,8 +278,12 @@ class Model(object):
         dispositions = self.results.working_table
         dispositions_not_fuel = dispositions[dispositions[nm.Fields.fuel] == 0]
 
-        # print(dispositions)
-        # self.memory_usage(dispositions)
+        discard_destinations = self.md.data[nm.Tables.discard_destinations]
+        burned = discard_destinations[discard_destinations[nm.Fields.discard_description] == 'Burned'][nm.Fields.discard_destination_id].iloc[0]
+
+        df_keys = [nm.Fields.harvest_year, nm.Fields.primary_product_id, nm.Fields.primary_product_results]
+
+        burned_not_captured = dispositions_not_fuel[dispositions_not_fuel[nm.Fields.discard_destination_id] == burned]
 
         # TODO finish this function
         # Burned dispositions only? Is this NOT FUEL only?

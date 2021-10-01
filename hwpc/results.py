@@ -30,7 +30,7 @@ class Results(pickler.Pickler):
 
         self.total_dispositions = None
 
-        self.fuel_captured = None
+        self.burned_captured = None
 
         self.md = model_data.ModelData()
         self.zip = zip.ZipFile('results/results.zip', mode='w')
