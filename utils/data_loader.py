@@ -54,6 +54,3 @@ class DataLoader(ABC):
 
         return None
 
-    @abstractmethod
-    def make_public():
-        return None
