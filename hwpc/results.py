@@ -3,10 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import json
 import os
-import zipfile as zip
+import tempfile
+import zipfile
 
 from config import gch
-
 from hwpc import model_data
 from hwpc.names import Names as nm
 from utils import pickler
@@ -33,7 +33,9 @@ class Results(pickler.Pickler):
         self.burned_captured = None
 
         self.md = model_data.ModelData()
-        self.zip = zip.ZipFile('results/results.zip', mode='w')
+        tmpdir = tempfile.mkdtemp()
+        zip_fn = os.path.join(tmpdir, 'results.zip')
+        self.zip = zipfile.ZipFile(zip_fn, mode='w')
 
         if not os.path.exists('results'):
             os.makedirs('results')
@@ -41,7 +43,8 @@ class Results(pickler.Pickler):
         return
 
     def save_results(self):
-        self.working_table.to_csv('results/results.csv')
+        with tempfile.NamedTemporaryFile as temp:
+            self.working_table.to_csv('results.csv')
         return
         
     def save_total_dispositions(self):
@@ -65,7 +68,9 @@ class Results(pickler.Pickler):
 
         # CUMULATIVE DISCARDED PRODUCTS
         cum_products = df.groupby(by='Year')[nm.Fields.running_discarded_products].sum()
-        cum_products.to_csv('results/total_end_use_products.csv')
+        with tempfile.NamedTemporaryFile as temp:
+            cum_products.to_csv('total_end_use_products.csv')
+        self.zip.write(temp,arcname='total_end_use_products.csv')
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon in End Use Products in Use')
         plt.xlabel('Inventory Year')
@@ -74,18 +79,23 @@ class Results(pickler.Pickler):
         txt = "Figure. Total cumulative metric tons carbon stored in end-use products in use manufactured from total timber harvested in ppd from 1906 to 2018. The recalcitrance of carbon in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products in use pool in a given inventory year includes products in use and recovered products."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
         plt.plot(cum_products)
-        plt.savefig('results/total_end_use_products',pad_inches=0.1)
-        gch.upload_blob('hwpcarbon-data','results/total_end_use_products.csv', nm.Output.output_path + '/results/total_end_use_products.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_end_use_products.png', nm.Output.output_path + '/results/total_end_use_products.png')
-        self.zip.write('results/total_end_use_products.png',arcname='total_end_use_products.png')
-        self.zip.write('results/total_end_use_products.csv',arcname='total_end_use_products.csv')
+        with tempfile.TemporaryFile(suffix=".png") as tmpfile:
+            plt.savefig(tmpfile, format="png") # File position is at the end of the file.
+            tmpfile.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.write(tmpfile,arcname='total_end_use_products.png')
+        #plt.savefig('results/total_end_use_products',pad_inches=0.1)
+        #gch.upload_blob('hwpcarbon-data','results/total_end_use_products.csv', nm.Output.output_path + '/results/total_end_use_products.csv')
+        #gch.upload_blob('hwpcarbon-data','results/total_end_use_products.png', nm.Output.output_path + '/results/total_end_use_products.png')
+        
         results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
         results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
         plt.clf()
 
         # CUMULATIVE RECOVERED PRODUCTS CARBON
         recycled_carbon = recycled.groupby(by='Year')[nm.Fields.carbon].sum()
-        recycled_carbon.to_csv('results/total_recycled_carbon.csv')
+        with tempfile.NamedTemporaryFile as temp:
+            recycled_carbon.to_csv('total_recycled_carbon.csv')
+        self.zip.write(temp,arcname='total_recycled_carbon.csv')
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon in Recovered Products in Use')
         plt.xlabel('Inventory Year')
@@ -94,18 +104,25 @@ class Results(pickler.Pickler):
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Figure. Total cumulative metric tons carbon stored in recovered products in use manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in recovered products in use are recycled wood and paper that reenters the products in use category."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        plt.savefig('results/total_recycled_carbon')
-        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.csv', nm.Output.output_path + '/results/total_recycled_carbon.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.png', nm.Output.output_path + '/results/total_recycled_carbon.png')
-        self.zip.write('results/total_recycled_carbon.png',arcname='total_recycled_carbon.png')
-        self.zip.write('results/total_recycled_carbon.csv',arcname='total_recycled_carbon.csv')
+        with tempfile.TemporaryFile(suffix=".png") as tmpfile:
+            plt.savefig(tmpfile, format="png") # File position is at the end of the file.
+            tmpfile.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.write(tmpfile,arcname='total_recycled_carbon.png')
+        #plt.savefig('results/total_recycled_carbon')
+        # gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.csv', nm.Output.output_path + '/results/total_recycled_carbon.csv')
+        # gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.png', nm.Output.output_path + '/results/total_recycled_carbon.png')
+        # self.zip.write('results/total_recycled_carbon.png',arcname='total_recycled_carbon.png')
+        # self.zip.write('results/total_recycled_carbon.csv',arcname='total_recycled_carbon.csv')
         results_json["total_recycled_carbon.csv"] = nm.Output.output_path + '/results/total_recycled_carbon.csv'
         results_json["total_recycled_carbon.png"] = nm.Output.output_path + '/results/total_recycled_carbon.png'
         plt.clf()
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
         recycled_emit = recycled.groupby(by='Year')[nm.Fields.co2].sum()
-        recycled_emit.to_csv('results/total_recycled_carbon_emitted.csv')
+        with tempfile.NamedTemporaryFile as temp:
+            recycled_carbon.to_csv('total_recycled_carbon_emitted.csv')
+        self.zip.write(temp,arcname='total_recycled_carbon_emitted.csv')
+        # recycled_emit.to_csv('results/total_recycled_carbon_emitted.csv')
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon Emitted from Recovered Products')
         plt.xlabel('Inventory Year')
@@ -114,18 +131,25 @@ class Results(pickler.Pickler):
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Figure. Total cumulative metric tons carbon emitted from recovered products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from recovered products in use is recycled wood and paper that reenters the products in use category. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        plt.savefig('results/total_recycled_carbon_emitted')
-        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.csv', nm.Output.output_path + '/results/total_recycled_carbon_emitted.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.png', nm.Output.output_path + '/results/total_recycled_carbon_emitted.png')
-        self.zip.write('results/total_recycled_carbon_emitted.png',arcname='total_recycled_carbon_emitted.png')
-        self.zip.write('results/total_recycled_carbon_emitted.csv',arcname='total_recycled_carbon_emitted.csv')
+        with tempfile.TemporaryFile(suffix=".png") as tmpfile:
+            plt.savefig(tmpfile, format="png") # File position is at the end of the file.
+            tmpfile.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.write(tmpfile,arcname='total_recycled_carbon_emitted.png')
+        #plt.savefig('results/total_recycled_carbon_emitted')
+        # gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.csv', nm.Output.output_path + '/results/total_recycled_carbon_emitted.csv')
+        # gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon_emitted.png', nm.Output.output_path + '/results/total_recycled_carbon_emitted.png')
+        # self.zip.write('results/total_recycled_carbon_emitted.png',arcname='total_recycled_carbon_emitted.png')
+        # self.zip.write('results/total_recycled_carbon_emitted.csv',arcname='total_recycled_carbon_emitted.csv')
         results_json["total_recycled_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_recycled_carbon_emitted.csv'
         results_json["total_recycled_carbon_emitted.png"] = nm.Output.output_path + '/results/total_recycled_carbon_emitted.png'
         plt.clf()
 
         # CUMULATIVE DISCARD COMPOST CO2E
         composted_emit = composted.groupby(by='Year')[nm.Fields.co2].sum()
-        composted_emit.to_csv('results/total_composted_carbon_emitted.csv')
+        with tempfile.NamedTemporaryFile as temp:
+            recycled_carbon.to_csv('total_composted_carbon_emitted.csv')
+        self.zip.write(temp,arcname='total_composted_carbon_emitted.csv')
+        #composted_emit.to_csv('results/total_composted_carbon_emitted.csv')
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon Emitted from Compost')
         plt.xlabel('Inventory Year')
@@ -134,18 +158,25 @@ class Results(pickler.Pickler):
         plt.plot(composted_emit)
         txt = "Figure. Total cumulative metric tons carbon emitted from composted discarded harvested wood products manufactured from total timber harvested in ppd from 1906 to 2018. No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other greenhouse gases such as methane."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        plt.savefig('results/total_composted_carbon_emitted')
-        gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.csv', nm.Output.output_path + '/results/total_composted_carbon_emitted.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.png', nm.Output.output_path + '/results/total_composted_carbon_emitted.png')
-        self.zip.write('results/total_composted_carbon_emitted.png',arcname='total_composted_carbon_emitted.png')
-        self.zip.write('results/total_composted_carbon_emitted.csv',arcname='total_composted_carbon_emitted.csv')
+        with tempfile.TemporaryFile(suffix=".png") as tmpfile:
+            plt.savefig(tmpfile, format="png") # File position is at the end of the file.
+            tmpfile.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.write(tmpfile,arcname='total_composted_carbon_emitted.png')
+        # plt.savefig('results/total_composted_carbon_emitted')
+        # gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.csv', nm.Output.output_path + '/results/total_composted_carbon_emitted.csv')
+        # gch.upload_blob('hwpcarbon-data','results/total_composted_carbon_emitted.png', nm.Output.output_path + '/results/total_composted_carbon_emitted.png')
+        # self.zip.write('results/total_composted_carbon_emitted.png',arcname='total_composted_carbon_emitted.png')
+        # self.zip.write('results/total_composted_carbon_emitted.csv',arcname='total_composted_carbon_emitted.csv')
         results_json["total_composted_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_composted_carbon_emitted.csv'
         results_json["total_composted_carbon_emitted.png"] = nm.Output.output_path + '/results/total_composted_carbon_emitted.png'
         plt.clf()
 
         # CUMULATIVE DISCARD LANDFILL CARBON
         landfills_carbon = landfills.groupby(by='Year')[nm.Fields.carbon].sum()
-        landfills_carbon.to_csv('results/total_landfills_carbon.csv')
+        with tempfile.NamedTemporaryFile as temp:
+            recycled_carbon.to_csv('total_landfills_carbon.csv')
+        self.zip.write(temp,arcname='total_landfills_carbon.csv')
+        #landfills_carbon.to_csv('results/total_landfills_carbon.csv')
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon in Landfills')
         plt.xlabel('Inventory Year')
@@ -154,18 +185,25 @@ class Results(pickler.Pickler):
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Figure. Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        plt.savefig('results/total_landfills_carbon')
-        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.csv', nm.Output.output_path + '/results/total_landfills_carbon.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.png', nm.Output.output_path + '/results/total_landfills_carbon.png')
-        self.zip.write('results/total_landfills_carbon.png',arcname='total_landfills_carbon.png')
-        self.zip.write('results/total_landfills_carbon.csv',arcname='total_landfills_carbon.csv')
+        with tempfile.TemporaryFile(suffix=".png") as tmpfile:
+            plt.savefig(tmpfile, format="png") # File position is at the end of the file.
+            tmpfile.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.write(tmpfile,arcname='total_landfills_carbon.png')
+        # plt.savefig('results/total_landfills_carbon')
+        # gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.csv', nm.Output.output_path + '/results/total_landfills_carbon.csv')
+        # gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon.png', nm.Output.output_path + '/results/total_landfills_carbon.png')
+        # self.zip.write('results/total_landfills_carbon.png',arcname='total_landfills_carbon.png')
+        # self.zip.write('results/total_landfills_carbon.csv',arcname='total_landfills_carbon.csv')
         results_json["total_landfills_carbon.csv"] = nm.Output.output_path + '/results/total_landfills_carbon.csv'
         results_json["total_landfills_carbon.png"] = nm.Output.output_path + '/results/total_landfills_carbon.png'
         plt.clf()
 
         # CUMULATIVE DISCARD LANDFILL CO2E
         landfills_emit = landfills.groupby(by='Year')[nm.Fields.co2].sum()
-        landfills_emit.to_csv('results/total_landfills_carbon_emitted.csv')
+        with tempfile.NamedTemporaryFile as temp:
+            recycled_carbon.to_csv('total_landfills_carbon_emitted.csv')
+        self.zip.write(temp,arcname='total_landfills_carbon_emitted.csv')
+        #landfills_emit.to_csv('results/total_landfills_carbon_emitted.csv')
         plt.subplots_adjust(bottom=0.45)
         plt.title('Total Cumulative Carbon Emitted from Landfills')
         plt.xlabel('Inventory Year')
@@ -174,18 +212,25 @@ class Results(pickler.Pickler):
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Figure. Total cumulative metric tons carbon emitted from discarded produts in landfills manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in landfills is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Carbon emissions are displayed in usnits of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        plt.savefig('results/total_landfills_carbon_emitted')
-        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.csv', nm.Output.output_path + '/results/total_landfills_carbon_emitted.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.png', nm.Output.output_path + '/results/total_landfills_carbon_emitted.png')
-        self.zip.write('results/total_landfills_carbon_emitted.png',arcname='total_landfills_carbon_emitted.png')
-        self.zip.write('results/total_landfills_carbon_emitted.csv',arcname='total_landfills_carbon_emitted.csv')
+        with tempfile.TemporaryFile(suffix=".png") as tmpfile:
+            plt.savefig(tmpfile, format="png") # File position is at the end of the file.
+            tmpfile.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.write(tmpfile,arcname='total_landfills_carbon_emitted.png')
+        # plt.savefig('results/total_landfills_carbon_emitted')
+        # gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.csv', nm.Output.output_path + '/results/total_landfills_carbon_emitted.csv')
+        # gch.upload_blob('hwpcarbon-data','results/total_landfills_carbon_emitted.png', nm.Output.output_path + '/results/total_landfills_carbon_emitted.png')
+        # self.zip.write('results/total_landfills_carbon_emitted.png',arcname='total_landfills_carbon_emitted.png')
+        # self.zip.write('results/total_landfills_carbon_emitted.csv',arcname='total_landfills_carbon_emitted.csv')
         results_json["total_landfills_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_landfills_carbon_emitted.csv'
         results_json["total_landfills_carbon_emitted.png"] = nm.Output.output_path + '/results/total_landfills_carbon_emitted.png'
         plt.clf()
         
         # CUMULATIVE DISCARD DUMPS CARBON
         dumps_carbon = dumps.groupby(by='Year')[nm.Fields.carbon].sum()
-        dumps_carbon.to_csv('results/total_dumps_carbon.csv')
+        with tempfile.NamedTemporaryFile as temp:
+            recycled_carbon.to_csv('total_dumps_carbon.csv')
+        self.zip.write(temp,arcname='total_dumps_carbon.csv')
+        # dumps_carbon.to_csv('results/total_dumps_carbon.csv')
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon in Dumps')
         plt.xlabel('Inventory Year')
@@ -194,18 +239,25 @@ class Results(pickler.Pickler):
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Figure. Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        plt.savefig('results/total_dumps_carbon')
-        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.csv', nm.Output.output_path + '/results/total_dumps_carbon.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.png', nm.Output.output_path + '/results/total_dumps_carbon.png')
-        self.zip.write('results/total_dumps_carbon.png',arcname='total_dumps_carbon.png')
-        self.zip.write('results/total_dumps_carbon.csv',arcname='total_dumps_carbon.csv')
+        with tempfile.TemporaryFile(suffix=".png") as tmpfile:
+            plt.savefig(tmpfile, format="png") # File position is at the end of the file.
+            tmpfile.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.write(tmpfile,arcname='total_dumps_carbon.png')
+        # plt.savefig('results/total_dumps_carbon')
+        # gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.csv', nm.Output.output_path + '/results/total_dumps_carbon.csv')
+        # gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon.png', nm.Output.output_path + '/results/total_dumps_carbon.png')
+        # self.zip.write('results/total_dumps_carbon.png',arcname='total_dumps_carbon.png')
+        # self.zip.write('results/total_dumps_carbon.csv',arcname='total_dumps_carbon.csv')
         results_json["total_dumps_carbon.csv"] = nm.Output.output_path + '/results/total_dumps_carbon.csv'
         results_json["total_dumps_carbon.png"] = nm.Output.output_path + '/results/total_dumps_carbon.png'
         plt.clf()
 
         # CUMULATIVE DISCARD DUMPS CO2E
         dumps_emit = dumps.groupby(by='Year')[nm.Fields.co2].sum()
-        dumps_emit.to_csv('results/total_dumps_carbon_emitted.csv')
+        with tempfile.NamedTemporaryFile as temp:
+            recycled_carbon.to_csv('total_dumps_carbon_emitted.csv')
+        self.zip.write(temp,arcname='total_dumps_carbon_emitted.csv')
+        # dumps_emit.to_csv('results/total_dumps_carbon_emitted.csv')
         plt.subplots_adjust(bottom=0.45)
         plt.title('Total Cumulative Carbon Emitted from Dumps')
         plt.xlabel('Inventory Year')
@@ -214,22 +266,26 @@ class Results(pickler.Pickler):
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Figure. Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        plt.savefig('results/total_dumps_carbon_emitted')
-        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.csv', nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv')
-        gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.png', nm.Output.output_path + '/results/total_dumps_carbon_emitted.png')
-        self.zip.write('results/total_dumps_carbon_emitted.png',arcname='total_dumps_carbon_emitted.png')
-        self.zip.write('results/total_dumps_carbon_emitted.csv',arcname='total_dumps_carbon_emitted.csv')
+        with tempfile.TemporaryFile(suffix=".png") as tmpfile:
+            plt.savefig(tmpfile, format="png") # File position is at the end of the file.
+            tmpfile.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.write(tmpfile,arcname='total_dumps_carbon_emitted.png')
+        # plt.savefig('results/total_dumps_carbon_emitted')
+        # gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.csv', nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv')
+        # gch.upload_blob('hwpcarbon-data','results/total_dumps_carbon_emitted.png', nm.Output.output_path + '/results/total_dumps_carbon_emitted.png')
+        # self.zip.write('results/total_dumps_carbon_emitted.png',arcname='total_dumps_carbon_emitted.png')
+        # self.zip.write('results/total_dumps_carbon_emitted.csv',arcname='total_dumps_carbon_emitted.csv')
         results_json["total_dumps_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv'
         results_json["total_dumps_carbon_emitted.png"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.png'
         plt.clf()
+        gch.upload_blob('hwpcarbon-data',self.zip, nm.Output.output_path + '/results/results.zip')
         self.zip.close()
-        zipped_file = gch.upload_blob('hwpcarbon-data','results/results.zip', nm.Output.output_path + '/results/results.zip')
         # zipped_file.make_public()
-        with open('results/results.json', 'w') as outfile:
-            json.dump(results_json, outfile)
+        # with open('results/results.json', 'w') as outfile:
+        #     json.dump(results_json, outfile)
 
-        gch.upload_blob('hwpcarbon-data','results/results.json', nm.Output.output_path + '/results/results.json')
-        self.total_dispositions.to_csv('results/total_dispositions.csv')
+        # gch.upload_blob('hwpcarbon-data','results/results.json', nm.Output.output_path + '/results/results.json')
+        # self.total_dispositions.to_csv('results/total_dispositions.csv')
         return
     
     def save_fuel_captured(self):
