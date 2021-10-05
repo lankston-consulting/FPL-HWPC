@@ -80,6 +80,23 @@ class UserData(data_loader.DataLoader):
         blob.upload_from_filename(source_file_name)
         return blob
 
+    @staticmethod
+    def upload_temp(bucket_name, source_file_obj, destination_blob_name):
+        """
+        Upload a file object from disk. Works with temp files, should also work with "real" files as long
+        as they're open as a file object. TODO test real files
+        :param bucket_name: Bucket to upload file to
+        :param source_file_obj: An active file object to upload
+        :param destination_blob_name: A name, including any "subdirectories", to upload the blob to (but not bucket)
+        :return:
+        """
+        bucket = UserData._client.bucket(bucket_name)
+        blob = bucket.blob(destination_blob_name)
+
+        blob.upload_from_file(source_file_obj)
+        #We return the blob object in order to make the temporary file public for download in main.py
+        return blob
+
     # @staticmethod
     # def make_public(blob):
     #     """Update blob's ACL, granting read access to anonymous users.
