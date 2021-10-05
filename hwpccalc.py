@@ -23,13 +23,13 @@ def run(path='hpwc-user-inputs/user_request_20210929_130704'):
 
     m.run()
 
-    m.md.pickle()
-    m.results.pickle()
+    # m.md.pickle()
+    # m.results.pickle()
 
-    md = model_data.ModelData.unpickle()
+    # md = model_data.ModelData.unpickle()
 
-    r = results.Results.unpickle()
-    r.total_yearly_harvest()
+    # r = results.Results.unpickle()
+    # r.total_yearly_harvest()
 
     print('model finished.')
 
