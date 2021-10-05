@@ -37,14 +37,12 @@ class Results(pickler.Pickler):
         zip_fn = os.path.join(tmpdir, 'results.zip')
         self.zip = zipfile.ZipFile(zip_fn, mode='w')
 
-        if not os.path.exists('results'):
-            os.makedirs('results')
-
         return
 
     def save_results(self):
         with tempfile.NamedTemporaryFile as temp:
-            self.working_table.to_csv('results.csv')
+            self.working_table.to_csv(temp)
+            self.zip.write(temp, arcname='results.csv')
         return
         
     def save_total_dispositions(self):
@@ -69,7 +67,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE DISCARDED PRODUCTS
         cum_products = df.groupby(by='Year')[nm.Fields.running_discarded_products].sum()
         with tempfile.NamedTemporaryFile as temp:
-            cum_products.to_csv('total_end_use_products.csv')
+            cum_products.to_csv(temp)
             self.zip.write(temp, arcname='total_end_use_products.csv')
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon in End Use Products in Use')
@@ -94,7 +92,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE RECOVERED PRODUCTS CARBON
         recycled_carbon = recycled.groupby(by='Year')[nm.Fields.carbon].sum()
         with tempfile.NamedTemporaryFile as temp:
-            recycled_carbon.to_csv('total_recycled_carbon.csv')
+            recycled_carbon.to_csv(temp)
             self.zip.write(temp,arcname='total_recycled_carbon.csv')
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon in Recovered Products in Use')
@@ -120,7 +118,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE RECOVERED PRODUCTS CO2E
         recycled_emit = recycled.groupby(by='Year')[nm.Fields.co2].sum()
         with tempfile.NamedTemporaryFile as temp:
-            recycled_carbon.to_csv('total_recycled_carbon_emitted.csv')
+            recycled_carbon.to_csv(temp)
             self.zip.write(temp,arcname='total_recycled_carbon_emitted.csv')
         # recycled_emit.to_csv('results/total_recycled_carbon_emitted.csv')
         plt.subplots_adjust(bottom=0.4)
@@ -147,7 +145,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE DISCARD COMPOST CO2E
         composted_emit = composted.groupby(by='Year')[nm.Fields.co2].sum()
         with tempfile.NamedTemporaryFile as temp:
-            recycled_carbon.to_csv('total_composted_carbon_emitted.csv')
+            recycled_carbon.to_csv(temp)
             self.zip.write(temp,arcname='total_composted_carbon_emitted.csv')
         #composted_emit.to_csv('results/total_composted_carbon_emitted.csv')
         plt.subplots_adjust(bottom=0.4)
@@ -174,7 +172,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE DISCARD LANDFILL CARBON
         landfills_carbon = landfills.groupby(by='Year')[nm.Fields.carbon].sum()
         with tempfile.NamedTemporaryFile as temp:
-            recycled_carbon.to_csv('total_landfills_carbon.csv')
+            recycled_carbon.to_csv(temp)
             self.zip.write(temp,arcname='total_landfills_carbon.csv')
         #landfills_carbon.to_csv('results/total_landfills_carbon.csv')
         plt.subplots_adjust(bottom=0.4)
@@ -201,7 +199,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE DISCARD LANDFILL CO2E
         landfills_emit = landfills.groupby(by='Year')[nm.Fields.co2].sum()
         with tempfile.NamedTemporaryFile as temp:
-            recycled_carbon.to_csv('total_landfills_carbon_emitted.csv')
+            recycled_carbon.to_csv(temp)
             self.zip.write(temp,arcname='total_landfills_carbon_emitted.csv')
         #landfills_emit.to_csv('results/total_landfills_carbon_emitted.csv')
         plt.subplots_adjust(bottom=0.45)
@@ -228,7 +226,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE DISCARD DUMPS CARBON
         dumps_carbon = dumps.groupby(by='Year')[nm.Fields.carbon].sum()
         with tempfile.NamedTemporaryFile as temp:
-            recycled_carbon.to_csv('total_dumps_carbon.csv')
+            recycled_carbon.to_csv(temp)
             self.zip.write(temp,arcname='total_dumps_carbon.csv')
         # dumps_carbon.to_csv('results/total_dumps_carbon.csv')
         plt.subplots_adjust(bottom=0.4)
@@ -255,7 +253,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE DISCARD DUMPS CO2E
         dumps_emit = dumps.groupby(by='Year')[nm.Fields.co2].sum()
         with tempfile.NamedTemporaryFile as temp:
-            recycled_carbon.to_csv('total_dumps_carbon_emitted.csv')
+            recycled_carbon.to_csv(temp)
             self.zip.write(temp,arcname='total_dumps_carbon_emitted.csv')
         # dumps_emit.to_csv('results/total_dumps_carbon_emitted.csv')
         plt.subplots_adjust(bottom=0.45)
