@@ -33,9 +33,10 @@ class Results(pickler.Pickler):
         self.burned_captured = None
 
         self.md = model_data.ModelData()
-        tmpdir = tempfile.mkdtemp()
-        zip_fn = os.path.join(tmpdir, 'results.zip')
-        self.zip = zipfile.ZipFile(zip_fn, mode='w')
+
+        self.tmp = tempfile.SpooledTemporaryFile()
+        
+        self.zip = zipfile.ZipFile(self.tmp, 'w', zipfile.ZIP_DEFLATED)
 
         return
 
@@ -276,8 +277,14 @@ class Results(pickler.Pickler):
         results_json["total_dumps_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv'
         results_json["total_dumps_carbon_emitted.png"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.png'
         plt.clf()
+
+        self.tmp.seek(0)
+
         gch.upload_blob('hwpcarbon-data',self.zip, nm.Output.output_path + '/results/results.zip')
+
         self.zip.close()
+        self.tmp.close()
+        
         # zipped_file.make_public()
         # with open('results/results.json', 'w') as outfile:
         #     json.dump(results_json, outfile)
