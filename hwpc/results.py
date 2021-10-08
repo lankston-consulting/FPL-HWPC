@@ -20,6 +20,7 @@ class Results(pickler.Pickler):
         super().__init__()
 
         self.timber_products = None
+        self.harvests = None
         self.primary_products = None
         self.end_use_products = None
         self.products_in_use = None
@@ -52,6 +53,8 @@ class Results(pickler.Pickler):
         results_json = {}
 
         df = pd.DataFrame(self.working_table)
+        timber_products = pd.DataFrame(self.timber_products)
+        harvests = pd.DataFrame(self.harvests)
         burned = df[df[nm.Fields.discard_destination_id] == 0] 
         burned_w_energy_capture = burned[burned[nm.Fields.fuel]==1]
         burned_wo_energy_capture = burned[burned[nm.Fields.fuel]==0]
@@ -75,6 +78,19 @@ class Results(pickler.Pickler):
             cum_products.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('total_end_use_products.csv', temp.read())
+        
+        # TOTAL HARVEST AND TIMBER RESULTS
+        timber_products_results = timber_products.groupby(by='Year')[nm.Fields.timber_product_results].sum()
+        with tempfile.TemporaryFile() as temp:
+            timber_products_results.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('annual_timber_product_output.csv', temp.read())
+
+        harvests_results = timber_products[[nm.Fields.harvest_year, nm.Fields.ccf]]
+        with tempfile.TemporaryFile() as temp:
+            harvests_results.drop_duplicates().sort_values(nm.Fields.harvest_year).to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('annual_harvests_output.csv', temp.read())
 
         # Defunct code for generating pdfs    
         # with tempfile.NamedTemporaryFile() as temp:
