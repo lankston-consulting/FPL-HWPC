@@ -79,19 +79,6 @@ class Results(pickler.Pickler):
             temp.seek(0)
             self.zip.writestr('total_end_use_products.csv', temp.read())
         
-        # TOTAL HARVEST AND TIMBER RESULTS
-        timber_products_results = timber_products.groupby(by='Year')[nm.Fields.timber_product_results].sum()
-        with tempfile.TemporaryFile() as temp:
-            timber_products_results.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('annual_timber_product_output.csv', temp.read())
-
-        harvests_results = timber_products[[nm.Fields.harvest_year, nm.Fields.ccf]]
-        with tempfile.TemporaryFile() as temp:
-            harvests_results.drop_duplicates().sort_values(nm.Fields.harvest_year).to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('annual_harvests_output.csv', temp.read())
-
         # Defunct code for generating pdfs    
         # with tempfile.NamedTemporaryFile() as temp:
         #     cum_products.to_csv(temp)
@@ -113,12 +100,47 @@ class Results(pickler.Pickler):
             plt.savefig(temp, format="png", pad_inches=0.1) # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('total_end_use_products.png', temp.read())
-        #plt.savefig('results/total_end_use_products',pad_inches=0.1)
-        #gch.upload_blob('hwpcarbon-data','results/total_end_use_products.csv', nm.Output.output_path + '/results/total_end_use_products.csv')
-        #gch.upload_blob('hwpcarbon-data','results/total_end_use_products.png', nm.Output.output_path + '/results/total_end_use_products.png')
-        
         results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
         results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
+        plt.clf()
+
+        # TOTAL HARVEST AND TIMBER RESULTS
+        timber_products_results = timber_products.groupby(by='Year')[nm.Fields.timber_product_results].sum()
+        with tempfile.TemporaryFile() as temp:
+            timber_products_results.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('annual_timber_product_output.csv', temp.read())
+
+        harvests_results = timber_products[[nm.Fields.harvest_year, nm.Fields.ccf]]
+        harvests_results.set_index(nm.Fields.harvest_year, inplace=True, drop=True)
+        harvests_results = harvests_results[~harvests_results.index.duplicated(keep='first')]
+
+        with tempfile.TemporaryFile() as temp:
+            harvests_results.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('annual_harvests_output.csv', temp.read())
+        
+        fig, ax1 = plt.subplots()
+        color = 'tab:red'
+        plt.subplots_adjust(bottom=0.4)
+        plt.title('Annual Harvest and Timber Product Output')
+        ax1.set_xlabel('Inventory Year')
+        ax1.set_ylabel('Timber Product Output (Million Metric Tons C)', color=color)
+        ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
+        txt = "Annual total timber harvest and product output in ppd converted to metric tons of carbon, from 1906 to 2018"
+        plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
+        ax1.plot(timber_products_results, color=color)
+        ax2 = ax1.twinx()
+        color = 'tab:blue'
+        ax2.set_ylabel('Harvest (Million MBF)', color=color)
+        ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
+        ax2.plot(harvests_results, color=color)
+        with tempfile.TemporaryFile(suffix=".png") as temp:
+            plt.savefig(temp, format="png", pad_inches=0.1) # File position is at the end of the file.
+            temp.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read())
+        # results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
+        # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
         plt.clf()
 
         # CUMULATIVE RECOVERED PRODUCTS CARBON
@@ -139,11 +161,6 @@ class Results(pickler.Pickler):
             plt.savefig(temp, format="png", pad_inches=0.1) # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('total_recycled_carbon.png', temp.read())
-        #plt.savefig('results/total_recycled_carbon')
-        # gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.csv', nm.Output.output_path + '/results/total_recycled_carbon.csv')
-        # gch.upload_blob('hwpcarbon-data','results/total_recycled_carbon.png', nm.Output.output_path + '/results/total_recycled_carbon.png')
-        # self.zip.write('results/total_recycled_carbon.png',arcname='total_recycled_carbon.png')
-        # self.zip.write('results/total_recycled_carbon.csv',arcname='total_recycled_carbon.csv')
         results_json["total_recycled_carbon.csv"] = nm.Output.output_path + '/results/total_recycled_carbon.csv'
         results_json["total_recycled_carbon.png"] = nm.Output.output_path + '/results/total_recycled_carbon.png'
         plt.clf()
