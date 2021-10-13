@@ -111,8 +111,9 @@ class Results(pickler.Pickler):
         ax2.set_ylabel('Harvest (Million MBF)', color=color)
         ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         ax2.plot(harvests_results, color=color)
+        # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
         with tempfile.TemporaryFile(suffix=".png") as temp:
-            plt.savefig(temp, format="png", pad_inches=0.1) # File position is at the end of the file.
+            plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read())
         # results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
