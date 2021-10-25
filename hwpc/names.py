@@ -106,4 +106,5 @@ class Names(singleton.Singleton):
 
     class Output(singleton.Singleton):
         output_path = ''
+        run_name=''
 

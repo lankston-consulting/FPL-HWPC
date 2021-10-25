@@ -6,6 +6,7 @@ import json
 import os
 import tempfile
 import zipfile
+import zlib
 
 from config import gch
 from hwpc import model_data
@@ -38,7 +39,7 @@ class Results(pickler.Pickler):
     
         self.zip_buffer = BytesIO()
         
-        self.zip = zipfile.ZipFile(self.zip_buffer, mode='a')
+        self.zip = zipfile.ZipFile(self.zip_buffer, mode='a',compression=zipfile.ZIP_DEFLATED,allowZip64=False)
 
         return
 
@@ -55,21 +56,12 @@ class Results(pickler.Pickler):
         df = pd.DataFrame(self.working_table)
         timber_products = pd.DataFrame(self.timber_products)
         burned = df[df[nm.Fields.discard_destination_id] == 0] 
-        burned_w_energy_capture = burned[burned[nm.Fields.fuel]==1]
+        burned_w_energy_capture = self.burned_captured
         burned_wo_energy_capture = burned[burned[nm.Fields.fuel]==0]
         recycled = df[df[nm.Fields.discard_destination_id] == 1]
         composted = df[df[nm.Fields.discard_destination_id] == 2]
         landfills = df[df[nm.Fields.discard_destination_id] == 3]
         dumps = df[df[nm.Fields.discard_destination_id] == 4]
-
-        # burned = burned.groupby(by='Year')[['discarded_products_adjusted','DiscardDestinationRatio']]
-        # burned = burned.agg(burned)
-        # burned.to_csv('total_dispositions_0.csv')
-        # plt.title('Total Cumulative Carbon in End Use Products in Use')
-        # plt.xlabel('Years')
-        # plt.ylabel('Metric Tons C (10^6)')
-        # plt.plot(burned)
-        # plt.show()
 
         # CUMULATIVE DISCARDED PRODUCTS
         cum_products = df.groupby(by='Year')[nm.Fields.running_discarded_products].sum()
@@ -98,7 +90,7 @@ class Results(pickler.Pickler):
         
         fig, ax1 = plt.subplots()
         color = 'tab:red'
-        plt.subplots_adjust(bottom=0.4)
+        plt.subplots_adjust(bottom=0.2)
         plt.title('Annual Harvest and Timber Product Output')
         ax1.set_xlabel('Inventory Year')
         ax1.set_ylabel('Timber Product Output (Million Metric Tons C)', color=color)
@@ -123,7 +115,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE RECOVERED PRODUCTS CARBON
         recycled_carbon = recycled.groupby(by='Year')[nm.Fields.carbon].sum()
         self.generate_graph(recycled_carbon,
-                        0.4,
+                        0.3,
                         'Total Cumulative Carbon in Recovered Products in Use',
                         'Total cumulative metric tons carbon stored in recovered products in use manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in recovered products in use are recycled wood and paper that reenters the products in use category.',
                         'total_recycled_carbon',
@@ -133,13 +125,13 @@ class Results(pickler.Pickler):
         recycled_emit = recycled.groupby(by='Year')[nm.Fields.co2].sum()
         self.generate_graph(recycled_emit,
                         0.4,
-                        'Total Cumulative Carbon Emitted from Recovered Products',
+                        'Total Cumulative Carbon Emitted from \n Recovered Products',
                         'Total cumulative metric tons carbon emitted from recovered products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from recovered products in use is recycled wood and paper that reenters the products in use category. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
                         'total_recycled_carbon_emitted',
                         'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_w_energy_capture_emit = burned_w_energy_capture.groupby(by='Year')[nm.Fields.co2].sum()
+        burned_w_energy_capture_emit = burned_w_energy_capture.groupby(by='Year')[nm.Fields.burned_with_energy_capture].sum()
         self.generate_graph(burned_w_energy_capture_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture',
@@ -168,7 +160,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE DISCARD LANDFILL CARBON
         landfills_carbon = landfills.groupby(by='Year')[nm.Fields.carbon].sum()
         self.generate_graph(landfills_carbon,
-                        0.5,
+                        0.35,
                         'Total Cumulative Carbon in Landfills',
                         'Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool.',
                         'total_landfills_carbon',
@@ -187,7 +179,7 @@ class Results(pickler.Pickler):
         dumps_carbon = dumps.groupby(by='Year')[nm.Fields.carbon].sum()
         self.generate_graph(dumps_carbon,
                         0.45,
-                        'Total Cumulative Carbon Emitted from Dumps',
+                        'Total Cumulative Carbon in Dumps',
                         'Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills.',
                         'total_dumps_carbon',
                         'Metric Tons C')
@@ -201,10 +193,9 @@ class Results(pickler.Pickler):
                         'total_dumps_carbon_emitted',
                         'Metric Tons CO2e')
         
-
         self.zip_buffer.seek(0)
 
-        gch.upload_temp('hwpcarbon-data', self.zip_buffer, nm.Output.output_path + '/results/results.zip')
+        gch.upload_temp('hwpcarbon-data', self.zip_buffer, nm.Output.output_path + '/results/'+nm.Output.run_name+".zip")
 
         self.zip.close()
         self.zip_buffer.close()

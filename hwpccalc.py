@@ -10,12 +10,14 @@ from hwpc import results
 def run(path='hpwc-user-inputs/d2ecd1ba-e0bb-4598-962a-926c009f9c91'):
     # 
     #hpwc-user-inputs/user_request_20210929_130704
+    path = path.split(',')
     names.Names()
     names.Names.Tables()
     names.Names.Fields()
     names.Names.Output()
 
-    names.Names.Output.output_path = path
+    names.Names.Output.output_path = path[0]
+    names.Names.Output.run_name=path[1]
 
     i = input_download.InputDownload()
     i.downloads()
