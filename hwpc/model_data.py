@@ -165,7 +165,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         """
         regions = ModelData.data[nm.Tables.regions]
         if region in regions[nm.Fields.region_name].unique():
-            match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.id].iloc[0]
+            match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.region_id].iloc[0]
         else:
             match_region = None
         return match_region
