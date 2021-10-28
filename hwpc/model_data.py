@@ -125,7 +125,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
         if region_match:
             df = ModelData.data[nm.Tables.primary_product_ratios] 
-            ModelData.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.id] == region_match]
+            ModelData.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.region_id] == region_match]
         else:
             # Melt the primary_product_data table to make years rows
             try:
@@ -165,7 +165,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         """
         regions = ModelData.data[nm.Tables.regions]
         if region in regions[nm.Fields.region_name].unique():
-            match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.region_id].iloc[0]
+            match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.id].iloc[0]
         else:
             match_region = None
         return match_region
