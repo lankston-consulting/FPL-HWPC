@@ -75,7 +75,7 @@ class Names(singleton.Singleton):
         end_use_results = 'end_use'
         products_in_use = 'products_in_use'
         discarded_products_results = 'discarded_products'
-        running_discarded_products = 'cum_discarded_products'
+        running_discarded_products = 'discarded_products_cumsum'
         discarded_products_adjustment = 'discarded_products_adjustment'
         discarded_products_adjusted = 'discarded_products_adjusted'
         discard_paper = 'discarded_paper'

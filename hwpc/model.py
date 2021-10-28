@@ -64,7 +64,7 @@ class Model(object):
         # TODO convert mgc I guess?   
         # IF MgC, convert to CCF. The rest of the model uses CCF.
 
-        timber_products = self.timber_product_ratios.merge(self.harvests, how='outer')
+        timber_products = self.harvests.merge(self.timber_product_ratios, how='outer')
         timber_products[nm.Fields.timber_product_results] = timber_products[nm.Fields.timber_product_ratio] * timber_products[nm.Fields.ccf]
 
         timber_products = timber_products.dropna()
@@ -99,7 +99,7 @@ class Model(object):
         end_use = self.end_use_ratios
         end_use[nm.Fields.primary_product_id] = end_use[nm.Fields.end_use_id].map(self.md.end_use_to_primary_product)
 
-        end_use = end_use.merge(self.results.working_table, how='outer', on=[nm.Fields.harvest_year, nm.Fields.primary_product_id])
+        end_use = self.results.working_table.merge(end_use, how='outer', on=[nm.Fields.harvest_year, nm.Fields.primary_product_id])
         end_use[nm.Fields.end_use_results] = end_use[nm.Fields.end_use_ratio] * end_use[nm.Fields.primary_product_results]
 
         end_use = end_use.dropna()
@@ -167,13 +167,6 @@ class Model(object):
         df_filter = discarded_products[nm.Fields.discard_destination_id] == burned
         discarded_products.loc[df_filter, nm.Fields.products_in_use] = 0
 
-        # Multiply the amount discarded this year by the disposition ratios to get the
-        # amount that goes into landfills, dumps, etc, and then add these to the 
-        # discarded disposition totals for stuff discarded in year i.
-
-        discarded_products[nm.Fields.discard_dispositions] = discarded_products[nm.Fields.discarded_products_adjusted] * discarded_products[nm.Fields.discard_destination_ratio]
-        self.results.discarded_products = discarded_products
-
         # Calculate the amount of wood and paper from year y discarded in year i by 
         # summing all discards up, summing all paper discards up, and then subtracting
         # the paper total from the grand total to get the amount of wood.
@@ -181,6 +174,15 @@ class Model(object):
         discarded_products[nm.Fields.discard_wood_paper] = discarded_products.groupby(by=[nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]).agg({nm.Fields.discarded_products_results: np.cumsum})
         
         self.results.discarded_wood_paper = discarded_products
+
+        # Multiply the amount discarded this year by the disposition ratios to get the
+        # amount that goes into landfills, dumps, etc, and then add these to the 
+        # discarded disposition totals for stuff discarded in year i.
+
+        discarded_products[nm.Fields.discard_dispositions] = discarded_products[nm.Fields.discarded_products_adjusted] * discarded_products[nm.Fields.discard_destination_ratio]
+        self.results.discarded_products = discarded_products
+
+
         self.results.working_table = discarded_products
         
         return
@@ -254,8 +256,6 @@ class Model(object):
         dispositions = self.results.working_table
         primary_products = self.md.data[nm.Tables.primary_products]
         dispositions = dispositions.merge(primary_products, how='outer', on=[nm.Fields.timber_product_id, nm.Fields.primary_product_id])
-
-        # dispositions = 
 
         self.results.working_table = dispositions
 
