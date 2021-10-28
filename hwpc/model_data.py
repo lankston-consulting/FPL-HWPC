@@ -105,9 +105,15 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         ModelData.data[nm.Tables.discard_disposition_ratios] = ModelData.data[nm.Tables.discard_disposition_ratios].rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
 
         # Melt the timber_product_data table to make years rows
-        df = ModelData.data[nm.Tables.timber_products_data].melt(id_vars=nm.Fields.timber_product_id, 
-                                                            var_name=nm.Fields.harvest_year, 
-                                                            value_name=nm.Fields.timber_product_ratio)
+        try:
+            df = ModelData.data[nm.Tables.timber_products_data].melt(id_vars=nm.Fields.timber_product_id, 
+                                                                     var_name=nm.Fields.harvest_year, 
+                                                                     value_name=nm.Fields.timber_product_ratio)
+        except:
+            ModelData.data[nm.Tables.primary_products_data] =  ModelData.data[nm.Tables.primary_products_data].rename(columns={'Timber Product ID': nm.Fields.timber_product_id})
+            df = ModelData.data[nm.Tables.timber_products_data].melt(id_vars=nm.Fields.timber_product_id, 
+                                                                     var_name=nm.Fields.harvest_year, 
+                                                                     value_name=nm.Fields.timber_product_ratio)
         
         # Just in case the year was read as a string, parse to numeric
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
