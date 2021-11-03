@@ -25,8 +25,8 @@ class Results(pickler.Pickler):
         self.primary_products = None
         self.end_use_products = None
         self.products_in_use = None
-        self.discarded_products = None
         self.discarded_wood_paper = None
+        self.discarded_products = None
         self.dispositions = None
 
         self.working_table = None

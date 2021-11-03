@@ -5,7 +5,6 @@
     "ccf_to_metric_tons_carbon":"default_data/ccf_to_metric_tons_carbon.csv",
     "discard_burned_w_energy_capture":"default_data/discard_burned_w_energy_capture.csv",
     "discard_destinations":"default_data/discard_destinations.csv",
-    "discard_half_lives":"default_data/discard_half_lives.csv",
     "discard_ratios":"default_data/discard_ratios.csv",
     "discard_types":"default_data/discard_types.csv",
     "discarded_disposition_ratios":"default_data/discarded_disposition_ratios.csv",

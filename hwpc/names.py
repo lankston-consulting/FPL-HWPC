@@ -9,7 +9,7 @@ class Names(singleton.Singleton):
         primary_products = 'primary_products'
         primary_product_ratios = 'primary_product_ratios'
         end_use_ratios = 'end_use_ratios'
-        end_use_halflifes = 'end_use_products'
+        end_use_products = 'end_use_products'
         discard_destinations = 'discard_destinations'
         discard_types = 'discard_types'
         discard_disposition_ratios = 'discarded_disposition_ratios'
@@ -78,11 +78,11 @@ class Names(singleton.Singleton):
         running_discarded_products = 'discarded_products_cumsum'
         discarded_products_adjustment = 'discarded_products_adjustment'
         discarded_products_adjusted = 'discarded_products_adjusted'
-        discard_paper = 'discarded_paper'
-        discard_wood = 'discarded_wood'
-        discard_wood_paper = 'discarded_wood_or_paper'
+        discarded_products_type_sum = 'discarded_products_type_sum'
         discard_dispositions = 'discard_dispositions'
 
+
+        paper_flag = 'Paper'
 
         burned = 'Burned'
         recycled = 'Recycled'
@@ -92,9 +92,13 @@ class Names(singleton.Singleton):
 
         can_decay = 'can_decay'
         decay_ratio = 'decay_ratio'
-        running_can_decay = 'cum_can_decay'
+        running_can_decay = 'can_decay_cumsum'
 
         discard_remaining = 'discard_remaining'
+
+        emitted = 'emitted'
+        emitted_sum = 'emitted_sum'
+        present = 'present'
 
         burned_with_energy_capture = 'burned_captured'
 
