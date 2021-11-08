@@ -10,8 +10,10 @@ CORS(app)
 @app.route('/', methods=['GET'])
 def handle():
     p = request.args.get('p')
+    q = request.args.get('q')
     print(p)
-    hwpccalc.run(p)
+    print(q)
+    hwpccalc.run(p,q)
     return p, 200, {}
 
 if __name__ == '__main__':
