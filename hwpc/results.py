@@ -24,18 +24,30 @@ class Results(pickler.Pickler):
         self.harvests = None
         self.primary_products = None
         self.end_use_products = None
-        self.products_in_use = None
         self.discarded_wood_paper = None
         self.discarded_products = None
         self.dispositions = None
 
-        self.emissions = None
+        
 
         self.working_table = None
 
         self.total_dispositions = None
 
         self.burned_captured = None
+        
+        # Final output collections
+        self.burned = None
+        self.composted = None
+        self.products_in_use = None
+        self.recovered_in_use = None
+        self.in_landfills = None
+        self.in_dumps = None
+        self.fuelwood = None
+        self.emissions = None
+        self.all_in_use = None
+
+        ##################################
 
         self.md = model_data.ModelData()
     

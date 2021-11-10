@@ -320,28 +320,35 @@ class Model(object):
         burned_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.burned][nm.Fields.discard_destination_id].iloc[0]
         df_keys = [nm.Fields.harvest_year, C(nm.Fields.emitted_sum)]
         burned = results.loc[results[nm.Fields.discard_destination_id] == burned_id, df_keys].drop_duplicates()
+        self.results.burned = burned
 
         composted_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.composted][nm.Fields.discard_destination_id].iloc[0]
         composted = results.loc[results[nm.Fields.discard_destination_id] == composted_id, df_keys].drop_duplicates()
+        self.results.composted = composted
 
         products_in_use = self.results.products_in_use.merge(conversion, on=nm.Fields.primary_product_id)
         products_in_use[C(nm.Fields.products_in_use)] = results[nm.Fields.products_in_use] * results[nm.Fields.conversion_factor]
         products_in_use = products_in_use.groupby(by=[nm.Fields.harvest_year]).agg({C(nm.Fields.products_in_use): np.sum})
+        self.results.products_in_use = products_in_use
 
         df_keys = [nm.Fields.harvest_year, C(nm.Fields.present)]
         recycled_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.recycled][nm.Fields.discard_destination_id].iloc[0]
         recovered_in_use = results.loc[results[nm.Fields.discard_destination_id] == recycled_id, df_keys].drop_duplicates()
+        self.results.recovered_in_use = recovered_in_use
 
         landfill_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.landfills][nm.Fields.discard_destination_id].iloc[0]
         in_landfills = results.loc[results[nm.Fields.discard_destination_id] == landfill_id, df_keys].drop_duplicates()
+        self.results.in_landfills  = in_landfills
 
         dump_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.dumps][nm.Fields.discard_destination_id].iloc[0]
         in_dumps = results.loc[results[nm.Fields.discard_destination_id] == dump_id, df_keys].drop_duplicates()
+        self.results.in_dumps = in_dumps
 
         fuelwood = self.results.burned_captured.merge(conversion, on=nm.Fields.primary_product_id)
         fuelwood[C(nm.Fields.primary_product_results)] = fuelwood[nm.Fields.primary_product_results] * fuelwood[nm.Fields.conversion_factor]
         fuelwood = fuelwood.groupby(by=nm.Fields.harvest_year).agg({C(nm.Fields.primary_product_results): np.sum})
         fuelwood[C(nm.Fields.burned_with_energy_capture)] = fuelwood.sort_values(by=nm.Fields.harvest_year).agg({C(nm.Fields.primary_product_results): np.cumsum})
+        self.results.fuelwood = fuelwood
 
         df_keys = [nm.Fields.harvest_year, C(nm.Fields.emitted_sum)]
         landfills_emitted = results.loc[results[nm.Fields.discard_destination_id] == landfill_id, df_keys].drop_duplicates()
@@ -354,7 +361,8 @@ class Model(object):
 
         all_in_use = products_in_use.merge(recovered_in_use, how='inner', on=nm.Fields.harvest_year).drop_duplicates()
         all_in_use[nm.Fields.carbon] = all_in_use[C(nm.Fields.products_in_use)] + all_in_use[C(nm.Fields.present)]
-
+        self.results.all_in_use = all_in_use
+        
         self.results.working_table = results
 
         return
