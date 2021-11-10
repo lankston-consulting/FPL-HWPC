@@ -83,8 +83,9 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         with open('data/inputs.json') as f:
             j = json.load(f)
             for k in j:
+                no_csv = k.replace('.csv', '')
                 p = j[k]
-                ModelData.data[k] = dr.read_file(p)
+                ModelData.data[no_csv] = dr.read_file(p)
         
         return
 
