@@ -29,6 +29,8 @@ class Results(pickler.Pickler):
         self.discarded_products = None
         self.dispositions = None
 
+        self.emissions = None
+
         self.working_table = None
 
         self.total_dispositions = None

@@ -16,6 +16,7 @@ class Names(singleton.Singleton):
         region = 'region'
         regions = 'regions'
         energy_capture = 'x_burned_energy_capture'
+        ccf_c_conversion = 'ccf_to_metric_tons_carbon'
     
     class Fields(singleton.Singleton):
 
@@ -102,7 +103,7 @@ class Names(singleton.Singleton):
 
         burned_with_energy_capture = 'burned_captured'
 
-        carbon = 'mtcarbon'
+        carbon = 'mtc'
         co2 = 'co2e'
 
         def c(name):
