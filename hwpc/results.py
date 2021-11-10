@@ -51,6 +51,19 @@ class Results(pickler.Pickler):
             temp.seek(0)
             self.zip.writestr('results.csv', temp.read())
         return
+    def get_emissions(self):
+
+        with tempfile.TemporaryFile() as temp:
+            self.emissions.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('results.csv', temp.read())
+
+        gch.upload_temp('hwpcarbon-data', self.zip_buffer, nm.Output.output_path + '/results/'+nm.Output.run_name+".zip")
+
+        self.zip.close()
+        self.zip_buffer.close()
+
+        return
         
     def save_total_dispositions(self):
         results_json = {}

@@ -140,7 +140,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
             df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
             ModelData.data[nm.Tables.primary_product_ratios] = df
-
+        
         ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
 
         return
