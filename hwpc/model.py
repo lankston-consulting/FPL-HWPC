@@ -48,8 +48,7 @@ class Model(object):
         self.convert_emissions_c02_e()
 
         self.results.save_results()
-        self.results.get_emissions()
-        #self.results.save_total_dispositions()
+        self.results.save_total_dispositions()
 
         return
 
