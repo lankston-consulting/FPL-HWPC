@@ -193,9 +193,14 @@ class Results(pickler.Pickler):
             temp.seek(0)
             self.zip.writestr('swds.csv', temp.read())
         
+        total_in_use = pd.DataFrame(self.all_in_use)
+        products_in_use = total_in_use[[nm.Fields.harvest_year, nm.Fields.products_in_use+"_"+nm.Fields.carbon]]
+        products_in_use.set_index(nm.Fields.harvest_year, inplace=True, drop=True)
+        products_in_use = products_in_use[~products_in_use.index.duplicated(keep='first')]
+        swds = total_in_use.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
         fig, ax1 = plt.subplots()
-        plt.subplots_adjust(bottom=0.2)
-        plt.title('Annual Harvest and Timber Product Output')
+        plt.subplots_adjust(bottom=0.4)
+        plt.title('Total Cumulative Carbon Stocks')
         color = 'tab:red'
         ax1.set_xlabel('Inventory Year')
         ax1.set_ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
@@ -203,11 +208,17 @@ class Results(pickler.Pickler):
         txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
         ax1.plot(products_in_use, color=color)
-        ax1.fill(color=color,alpha=0.5)
+        color = 'tab:blue'
+        ax1.plot(swds, color=color)
+        plt.show
 
 # GRAPH GENERATION IN DEBUGGER
 # total_in_use = pd.DataFrame(self.all_in_use)
-# products_in_use = total_in_use.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon].sum()
+# products_in_use = total_in_use[[nm.Fields.harvest_year, nm.Fields.products_in_use+"_"+nm.Fields.carbon]]
+# products_in_use.set_index(nm.Fields.harvest_year, inplace=True, drop=True)
+# products_in_use = products_in_use[~products_in_use.index.duplicated(keep='first')]
+
+# print(products_in_use)
 # swds = total_in_use.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
 # fig, ax1 = plt.subplots()
 # plt.subplots_adjust(bottom=0.4)
@@ -219,6 +230,7 @@ class Results(pickler.Pickler):
 # txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
 # plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
 # ax1.plot(products_in_use, color=color)
+# plt.show
 # color = 'tab:blue'
 # ax1.plot(swds, color=color)
 # plt.show
