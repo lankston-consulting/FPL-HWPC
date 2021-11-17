@@ -238,28 +238,26 @@ class Results(pickler.Pickler):
 
 
 
-final = pd.DataFrame(self.final)
-print(len(final.index))
-#WILL NEED TO MAKE THIS FLEXIBLE TO NUMBER OF YEARS FROM USER INPUT
-N = final.count()
-ind = np.arange(N)
-products_in_use_change = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon+"_change"].sum()
-print(products_in_use_change)
-swds = final.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon+"_change"].sum()
-fig, ax1 = plt.subplots()
-plt.subplots_adjust(bottom=0.4)
-plt.title('Total Cumulative Carbon Stocks')
-color = 'tab:red'
-ax1.set_xlabel('Inventory Year')
-ax1.set_ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
-ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-ax1.axhline(0, color='grey', linewidth=0.8)
-txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
-plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-p1 = ax1.bar(ind,products_in_use, bottom = swds,label="Products In Use")
-color = 'tab:blue'
-p2 = ax1.bar(ind,swds, color=color)
-plt.show
+# final = pd.DataFrame(self.final)
+# N = len(final.index)
+# ind = np.arange(N)
+# products_in_use_change = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon+"_change"].sum()
+# print(products_in_use_change)
+# swds = final.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon+"_change"].sum()
+# fig, ax1 = plt.subplots()
+# plt.subplots_adjust(bottom=0.4)
+# plt.title('Total Cumulative Carbon Stocks')
+# color = 'tab:red'
+# ax1.set_xlabel('Inventory Year')
+# ax1.set_ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
+# ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
+# ax1.axhline(0, color='grey', linewidth=0.8)
+# txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
+# plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
+# p1 = ax1.bar(ind,products_in_use, bottom = swds,label="Products In Use")
+# color = 'tab:blue'
+# p2 = ax1.bar(ind,swds, color=color)
+# plt.show
 
 
 
