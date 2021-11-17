@@ -175,7 +175,7 @@ class Results(pickler.Pickler):
                         0.5,
                         'Total Cumulative Carbon Emitted from Fuelwood with Energy Capture',
                         'Total cumulative metric tons carbon emitted from fuelwood and wood waste used for fuel with energy capture from total timber harvested in ppd from 1906 to 2018. Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
-                        'total_Fuelwood_carbon_emitted',
+                        'total_dumps_carbon_emitted',
                         'Metric Tons CO2e')
         
         fuelwood_emit = emission_fuelwood.groupby(by='Year')[nm.Fields.burned_with_energy_capture+"_"+nm.Fields.co2e].sum()
@@ -183,7 +183,7 @@ class Results(pickler.Pickler):
                         0.5,
                         'Total Cumulative Carbon Emitted from Dumps',
                         'Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
-                        'total_dumps_carbon_emitted',
+                        'total_Fuelwood_carbon_emitted',
                         'Metric Tons CO2e')
 
         #CARBON STOCKS
