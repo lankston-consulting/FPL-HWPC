@@ -69,6 +69,7 @@ class Results(pickler.Pickler):
         results_json = {}
 
         df = pd.DataFrame(self.working_table)
+        final = pd.DataFrame(self.final)
         emission_fuelwood = pd.DataFrame(self.emissions['fuelwood'])
         emission_dumps =  pd.DataFrame(self.emissions['dumps_emitted'])
         emission_landfills =  pd.DataFrame(self.emissions['landfills_emitted'])
@@ -211,16 +212,15 @@ class Results(pickler.Pickler):
         ax1.plot(products_in_use, color=color)
         color = 'tab:blue'
         ax1.plot(swds, color=color)
-        plt.show
+        with tempfile.TemporaryFile(suffix=".png") as temp:
+            plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
+            temp.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.writestr('total_cumulative_carbon_stocks.png', temp.read())
 
 # GRAPH GENERATION IN DEBUGGER
-# total_in_use = pd.DataFrame(self.all_in_use)
-# products_in_use = total_in_use[[nm.Fields.harvest_year, nm.Fields.products_in_use+"_"+nm.Fields.carbon]]
-# products_in_use.set_index(nm.Fields.harvest_year, inplace=True, drop=True)
-# products_in_use = products_in_use[~products_in_use.index.duplicated(keep='first')]
-
-# print(products_in_use)
-# swds = total_in_use.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
+# final = pd.DataFrame(self.final)
+# products_in_use = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon].sum()
+# swds = final.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
 # fig, ax1 = plt.subplots()
 # plt.subplots_adjust(bottom=0.4)
 # plt.title('Total Cumulative Carbon Stocks')
@@ -230,11 +230,37 @@ class Results(pickler.Pickler):
 # ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
 # txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
 # plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-# ax1.plot(products_in_use, color=color)
-# plt.show
+# ax1.plot(products_in_use, color=color,label="Products in Use")
 # color = 'tab:blue'
-# ax1.plot(swds, color=color)
+# ax1.plot(swds, color=color,label="SWDS")
+# ax1.legend()
 # plt.show
+
+
+
+final = pd.DataFrame(self.final)
+print(len(final.index))
+#WILL NEED TO MAKE THIS FLEXIBLE TO NUMBER OF YEARS FROM USER INPUT
+N = final.count()
+ind = np.arange(N)
+products_in_use_change = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon+"_change"].sum()
+print(products_in_use_change)
+swds = final.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon+"_change"].sum()
+fig, ax1 = plt.subplots()
+plt.subplots_adjust(bottom=0.4)
+plt.title('Total Cumulative Carbon Stocks')
+color = 'tab:red'
+ax1.set_xlabel('Inventory Year')
+ax1.set_ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
+ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
+ax1.axhline(0, color='grey', linewidth=0.8)
+txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
+plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
+p1 = ax1.bar(ind,products_in_use, bottom = swds,label="Products In Use")
+color = 'tab:blue'
+p2 = ax1.bar(ind,swds, color=color)
+plt.show
+
 
 
 
@@ -263,12 +289,13 @@ class Results(pickler.Pickler):
         ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Annual total timber harvest and product output in ppd converted to metric tons of carbon, from 1906 to 2018"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-        ax1.plot(timber_products_results, color=color)
+        ax1.plot(timber_products_results, color=color,label="Timber Products")
         ax2 = ax1.twinx()
         color = 'tab:blue'
         ax2.set_ylabel('Harvest (Million MBF)', color=color)
         ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-        ax2.plot(harvests_results, color=color)
+        ax2.plot(harvests_results, color=color,label="Annual Harvest")
+        plt.legend()
         # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
