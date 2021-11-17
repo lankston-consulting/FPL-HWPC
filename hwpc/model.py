@@ -49,8 +49,7 @@ class Model(object):
         self.final_table()
 
         self.results.save_results()
-        self.results.get_emissions()
-        #self.results.save_total_dispositions()
+        self.results.save_total_dispositions()
 
         return
 
