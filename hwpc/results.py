@@ -71,16 +71,12 @@ class Results(pickler.Pickler):
         df = pd.DataFrame(self.working_table)
         final = pd.DataFrame(self.final)
         emission_fuelwood = pd.DataFrame(self.emissions['fuelwood'])
-        print(emission_fuelwood)
         emission_dumps =  pd.DataFrame(self.emissions['dumps_emitted'])
         emission_landfills =  pd.DataFrame(self.emissions['landfills_emitted'])
-        print(emission_landfills)
         emission_recycled =  pd.DataFrame(self.emissions['recycled_emitted'])
-        print(emission_recycled)
         dumps = pd.DataFrame(self.in_dumps)
         landfills = dumps = pd.DataFrame(self.in_landfills)
         burned = pd.DataFrame(self.burned)
-        print(burned)
         composted = pd.DataFrame(self.composted)
         timber_products = pd.DataFrame(self.timber_products)
         total_in_use = pd.DataFrame(self.all_in_use)
@@ -173,17 +169,17 @@ class Results(pickler.Pickler):
         dumps_emit = emission_dumps.groupby(by='Year')[nm.Fields.dumps+"_"+nm.Fields.co2e].sum()
         self.generate_graph(dumps_emit,
                         0.5,
-                        'Total Cumulative Carbon Emitted from Fuelwood with Energy Capture',
-                        'Total cumulative metric tons carbon emitted from fuelwood and wood waste used for fuel with energy capture from total timber harvested in ppd from 1906 to 2018. Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
+                        'Total Cumulative Carbon Emitted from Dumps',
+                        'Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
                         'total_dumps_carbon_emitted',
                         'Metric Tons CO2e')
-        
+        emission_fuelwood = pd.DataFrame(self.emissions['fuelwood'])
         fuelwood_emit = emission_fuelwood.groupby(by='Year')[nm.Fields.burned_with_energy_capture+"_"+nm.Fields.co2e].sum()
         self.generate_graph(fuelwood_emit,
                         0.5,
-                        'Total Cumulative Carbon Emitted from Dumps',
-                        'Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
-                        'total_Fuelwood_carbon_emitted',
+                        'Total Cumulative Carbon Emitted from Fuelwood with Energy Capture',
+                        'Total cumulative metric tons carbon emitted from fuelwood and wood waste used for fuel with energy capture from total timber harvested in ppd from 1906 to 2018. Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
+                        'total_fuelwood_carbon_emitted',
                         'Metric Tons CO2e')
 
         #CARBON STOCKS
@@ -360,6 +356,7 @@ class Results(pickler.Pickler):
         return
 
     def generate_graph(self,data_frame,adjust_bottom,title,txt,file_name,y_axis):
+        print(data_frame)
 
         with tempfile.TemporaryFile() as temp:
             data_frame.to_csv(temp)
