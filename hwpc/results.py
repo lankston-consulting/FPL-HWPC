@@ -71,12 +71,16 @@ class Results(pickler.Pickler):
         df = pd.DataFrame(self.working_table)
         final = pd.DataFrame(self.final)
         emission_fuelwood = pd.DataFrame(self.emissions['fuelwood'])
+        print(emission_fuelwood)
         emission_dumps =  pd.DataFrame(self.emissions['dumps_emitted'])
         emission_landfills =  pd.DataFrame(self.emissions['landfills_emitted'])
+        print(emission_landfills)
         emission_recycled =  pd.DataFrame(self.emissions['recycled_emitted'])
+        print(emission_recycled)
         dumps = pd.DataFrame(self.in_dumps)
         landfills = dumps = pd.DataFrame(self.in_landfills)
         burned = pd.DataFrame(self.burned)
+        print(burned)
         composted = pd.DataFrame(self.composted)
         timber_products = pd.DataFrame(self.timber_products)
         total_in_use = pd.DataFrame(self.all_in_use)
@@ -103,7 +107,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
-        recycled_emit = emission_recycled.groupby(by='Year')[nm.Fields.co2].sum()
+        recycled_emit = emission_recycled.groupby(by='Year')[nm.Fields.recycled+"_"+nm.Fields.co2e].sum()
         self.generate_graph(recycled_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from \n Recovered Products',
@@ -121,7 +125,7 @@ class Results(pickler.Pickler):
         #                 'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_wo_energy_capture_emit = burned.groupby(by='Year')[nm.Fields.co2].sum()
+        burned_wo_energy_capture_emit = burned.groupby(by='Year')[nm.Fields.emitted_sum+"_"+nm.Fields.co2e].sum()
         self.generate_graph(burned_wo_energy_capture_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture',
@@ -130,7 +134,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE DISCARD COMPOST CO2E
-        composted_emit = composted.groupby(by='Year')[nm.Fields.co2e].sum()
+        composted_emit = composted.groupby(by='Year')[nm.Fields.composted+"_"+nm.Fields.co2e].sum()
         self.generate_graph(composted_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Compost',
@@ -148,7 +152,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE DISCARD LANDFILL CO2E
-        landfills_emit = emission_landfills.groupby(by='Year')[nm.Fields.co2].sum()
+        landfills_emit = emission_landfills.groupby(by='Year')[nm.Fields.landfills+"_"+nm.Fields.co2e].sum()
         self.generate_graph(landfills_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Landfills',
@@ -166,7 +170,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE DISCARD DUMPS CO2E
-        dumps_emit = emission_dumps.groupby(by='Year')[nm.Fields.co2].sum()
+        dumps_emit = emission_dumps.groupby(by='Year')[nm.Fields.dumps+"_"+nm.Fields.co2e].sum()
         self.generate_graph(dumps_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Fuelwood with Energy Capture',
@@ -174,7 +178,7 @@ class Results(pickler.Pickler):
                         'total_Fuelwood_carbon_emitted',
                         'Metric Tons CO2e')
         
-        fuelwood_emit = emission_fuelwood.groupby(by='Year')[nm.Fields.co2].sum()
+        fuelwood_emit = emission_fuelwood.groupby(by='Year')[nm.Fields.burned_with_energy_capture+"_"+nm.Fields.co2e].sum()
         self.generate_graph(fuelwood_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Dumps',
@@ -195,11 +199,9 @@ class Results(pickler.Pickler):
             temp.seek(0)
             self.zip.writestr('swds.csv', temp.read())
         
-        total_in_use = pd.DataFrame(self.all_in_use)
-        products_in_use = total_in_use[[nm.Fields.harvest_year, nm.Fields.products_in_use+"_"+nm.Fields.carbon]]
-        products_in_use.set_index(nm.Fields.harvest_year, inplace=True, drop=True)
-        products_in_use = products_in_use[~products_in_use.index.duplicated(keep='first')]
-        swds = total_in_use.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
+        final = pd.DataFrame(self.final)
+        products_in_use = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon].sum()
+        swds = final.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
         fig, ax1 = plt.subplots()
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon Stocks')
@@ -209,9 +211,10 @@ class Results(pickler.Pickler):
         ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-        ax1.plot(products_in_use, color=color)
+        ax1.plot(products_in_use, color=color,label="Products in Use")
         color = 'tab:blue'
-        ax1.plot(swds, color=color)
+        ax1.plot(swds, color=color,label="SWDS")
+        ax1.legend()
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
@@ -237,7 +240,6 @@ class Results(pickler.Pickler):
 # plt.show
 
 
-
 # final = pd.DataFrame(self.final)
 # N = len(final.index)
 # ind = np.arange(N)
@@ -258,9 +260,6 @@ class Results(pickler.Pickler):
 # color = 'tab:blue'
 # p2 = ax1.bar(ind,swds, color=color)
 # plt.show
-
-
-
 
         # TOTAL HARVEST AND TIMBER RESULTS
         timber_products_results = timber_products.groupby(by='Year')[nm.Fields.timber_product_results].sum()
