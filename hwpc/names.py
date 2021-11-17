@@ -104,10 +104,16 @@ class Names(singleton.Singleton):
         burned_with_energy_capture = 'burned_captured'
 
         carbon = 'mtc'
-        co2 = 'co2e'
+        co2e = 'co2e'
 
         def c(name):
             return name + '_' + Names.Fields.carbon
+
+        def change(name):
+            return name + '_' + 'change'
+
+        def co2(name):
+            return name + '_' + Names.Fields.co2e
 
     class Output(singleton.Singleton):
         output_path = ''

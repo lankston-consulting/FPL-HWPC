@@ -46,6 +46,7 @@ class Results(pickler.Pickler):
         self.fuelwood = None
         self.emissions = None
         self.all_in_use = None
+        self.final = None
 
         ##################################
 
@@ -63,6 +64,7 @@ class Results(pickler.Pickler):
             temp.seek(0)
             self.zip.writestr('results.csv', temp.read())
         return
+        
     def get_emissions(self):
 
         with tempfile.TemporaryFile() as temp:
@@ -149,7 +151,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
-        recycled_emit = recycled.groupby(by='Year')[nm.Fields.co2].sum()
+        recycled_emit = recycled.groupby(by='Year')[nm.Fields.co2e].sum()
         self.generate_graph(recycled_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from \n Recovered Products',
@@ -167,7 +169,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_wo_energy_capture_emit = burned_wo_energy_capture.groupby(by='Year')[nm.Fields.co2].sum()
+        burned_wo_energy_capture_emit = burned_wo_energy_capture.groupby(by='Year')[nm.Fields.co2e].sum()
         self.generate_graph(burned_wo_energy_capture_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture',
@@ -176,7 +178,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE DISCARD COMPOST CO2E
-        composted_emit = composted.groupby(by='Year')[nm.Fields.co2].sum()
+        composted_emit = composted.groupby(by='Year')[nm.Fields.co2e].sum()
         self.generate_graph(composted_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Compost',
@@ -194,7 +196,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE DISCARD LANDFILL CO2E
-        landfills_emit = landfills.groupby(by='Year')[nm.Fields.co2].sum()
+        landfills_emit = landfills.groupby(by='Year')[nm.Fields.co2e].sum()
         self.generate_graph(landfills_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Landfills',
@@ -212,7 +214,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE DISCARD DUMPS CO2E
-        dumps_emit = dumps.groupby(by='Year')[nm.Fields.co2].sum()
+        dumps_emit = dumps.groupby(by='Year')[nm.Fields.co2e].sum()
         self.generate_graph(dumps_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Dumps',
