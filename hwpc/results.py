@@ -81,13 +81,6 @@ class Results(pickler.Pickler):
         timber_products = pd.DataFrame(self.timber_products)
         total_in_use = pd.DataFrame(self.all_in_use)
         recycled = pd.DataFrame(self.recovered_in_use)
-
-# dumps = pd.DataFrame(self.in_dumps)
-# dumps_carbon = dumps[nm.Fields.present+"_"+nm.Fields.carbon]
-# landfills = pd.DataFrame(self.in_landfills)
-# landfills_carbon = landfills[nm.Fields.present+"_"+nm.Fields.carbon]
-# print(dumps_carbon)
-# print(landfills_carbon)
         
 
         # CUMULATIVE DISCARDED PRODUCTS
@@ -201,17 +194,14 @@ class Results(pickler.Pickler):
             temp.seek(0)
             self.zip.writestr('swds.csv', temp.read())
         
-        final = pd.DataFrame(self.final)
-        products_in_use = final[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
-        swds = final[nm.Fields.present+"_"+nm.Fields.carbon]
         fig, ax1 = plt.subplots()
-        plt.subplots_adjust(bottom=0.4)
+        plt.subplots_adjust(bottom=0.45)
         plt.title('Total Cumulative Carbon Stocks')
         color = 'tab:red'
         ax1.set_xlabel('Inventory Year')
         ax1.set_ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
         ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-        txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
+        txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
         ax1.plot(products_in_use, color=color,label="Products in Use")
         color = 'tab:blue'
@@ -221,26 +211,26 @@ class Results(pickler.Pickler):
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('total_cumulative_carbon_stocks.png', temp.read())
-
+        plt.clf()
 # GRAPH GENERATION IN DEBUGGER
 # final = pd.DataFrame(self.final)
-# products_in_use = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon].sum()
-# swds = final.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
+# products_in_use = final[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
+# swds = final[nm.Fields.present+"_"+nm.Fields.carbon]
 # fig, ax1 = plt.subplots()
-# plt.subplots_adjust(bottom=0.4)
+# plt.subplots_adjust(bottom=0.5)
 # plt.title('Total Cumulative Carbon Stocks')
 # color = 'tab:red'
 # ax1.set_xlabel('Inventory Year')
 # ax1.set_ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
 # ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-# txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
+# txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
 # plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
 # ax1.plot(products_in_use, color=color,label="Products in Use")
 # color = 'tab:blue'
 # ax1.plot(swds, color=color,label="SWDS")
 # ax1.legend()
-# plt.show
-
+# plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+# plt.show()
 
 # final = pd.DataFrame(self.final)
 # N = len(final.index)
@@ -361,8 +351,6 @@ class Results(pickler.Pickler):
         return
 
     def generate_graph(self,data_frame,adjust_bottom,title,txt,file_name,y_axis):
-        print(file_name)
-        print(data_frame)
 
         with tempfile.TemporaryFile() as temp:
             data_frame.to_csv(temp)
