@@ -75,12 +75,19 @@ class Results(pickler.Pickler):
         emission_landfills =  pd.DataFrame(self.emissions['landfills_emitted'])
         emission_recycled =  pd.DataFrame(self.emissions['recycled_emitted'])
         dumps = pd.DataFrame(self.in_dumps)
-        landfills = dumps = pd.DataFrame(self.in_landfills)
+        landfills = pd.DataFrame(self.in_landfills)
         burned = pd.DataFrame(self.burned)
         composted = pd.DataFrame(self.composted)
         timber_products = pd.DataFrame(self.timber_products)
         total_in_use = pd.DataFrame(self.all_in_use)
         recycled = pd.DataFrame(self.recovered_in_use)
+
+# dumps = pd.DataFrame(self.in_dumps)
+# dumps_carbon = dumps[nm.Fields.present+"_"+nm.Fields.carbon]
+# landfills = pd.DataFrame(self.in_landfills)
+# landfills_carbon = landfills[nm.Fields.present+"_"+nm.Fields.carbon]
+# print(dumps_carbon)
+# print(landfills_carbon)
         
 
         # CUMULATIVE DISCARDED PRODUCTS
@@ -354,6 +361,7 @@ class Results(pickler.Pickler):
         return
 
     def generate_graph(self,data_frame,adjust_bottom,title,txt,file_name,y_axis):
+        print(file_name)
         print(data_frame)
 
         with tempfile.TemporaryFile() as temp:
