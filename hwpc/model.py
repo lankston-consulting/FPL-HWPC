@@ -1,3 +1,5 @@
+from datetime import timedelta
+import math
 import numpy as np
 import pandas as pd
 
@@ -117,17 +119,16 @@ class Model(object):
         end_use = self.results.working_table
         # Make sure the rows are ascending to do the half life. Don't do this inplace
         end_use = end_use.sort_values(by=nm.Fields.harvest_year)
-
-        end_use_halflives = self.end_use_products[[nm.Fields.end_use_id, nm.Fields.end_use_halflife]]
+        end_use = end_use.merge(self.end_use_products, how='outer', on=[nm.Fields.primary_product_id, nm.Fields.end_use_id])
         
         def halflife_func(df):
-            id = df[nm.Fields.end_use_id].iloc[0]
-            halflife = end_use_halflives[end_use_halflives[nm.Fields.end_use_id] == id]
-            halflife = halflife[nm.Fields.end_use_halflife].iloc[0]
+            # id = df[nm.Fields.end_use_id].iloc[0]
+            halflife = df[nm.Fields.end_use_halflife].iloc[0]
 
             if halflife == 0:
                 df.loc[:, nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
             else:  
+                halflife = 1 - math.exp(-math.log(2) / halflife)
                 df.loc[:, nm.Fields.products_in_use] = df[nm.Fields.end_use_results].ewm(halflife=halflife).mean() * self.end_use_loss_factor
             
             return df
@@ -155,7 +156,8 @@ class Model(object):
         products_in_use[nm.Fields.discarded_products_adjusted] = products_in_use[nm.Fields.discarded_products_results] - products_in_use[nm.Fields.discarded_products_adjustment]
 
         # Merge in the end_use_products table to get the Fuel binary flag and the Paper binary flag
-        discarded_products = products_in_use.merge(self.end_use_products, how='outer', on=[nm.Fields.primary_product_id, nm.Fields.end_use_id])
+        # discarded_products = products_in_use.merge(self.end_use_products, how='outer', on=[nm.Fields.primary_product_id, nm.Fields.end_use_id])
+        discarded_products = products_in_use
 
         # Zero out the stuff that was fuel.
         df_filter = discarded_products[nm.Fields.fuel] == 1
@@ -226,10 +228,12 @@ class Model(object):
 
         def halflife_func(df):
             halflife = df[nm.Fields.decay_ratio].iloc[0]
+
             if halflife == 0:
                 df.loc[:, nm.Fields.discard_remaining] = 0
             else:  
-                df.loc[:, nm.Fields.discard_remaining] = df[nm.Fields.can_decay].ewm(halflife=halflife).mean() 
+                halflife = 1 - math.exp(-math.log(2) / halflife)
+                df.loc[:, nm.Fields.discard_remaining] = df[nm.Fields.can_decay].ewm(halflife=halflife, adjust=False).mean() 
             
             return df
         
