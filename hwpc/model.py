@@ -129,7 +129,7 @@ class Model(object):
                 df.loc[:, nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
             else:  
                 halflife = 1 - math.exp(-math.log(2) / halflife)
-                df.loc[:, nm.Fields.products_in_use] = df[nm.Fields.end_use_results].ewm(halflife=halflife).mean() * self.end_use_loss_factor
+                df.loc[:, nm.Fields.products_in_use] = df[nm.Fields.end_use_results].ewm(halflife=halflife, adjust=False).mean() * self.end_use_loss_factor
             
             return df
             
@@ -150,10 +150,10 @@ class Model(object):
         # then subtracting the amount discarded in previous years.
         products_in_use = self.results.working_table
         products_in_use[nm.Fields.discarded_products_results] = products_in_use[nm.Fields.end_use_results] - products_in_use[nm.Fields.products_in_use] 
-        products_in_use[nm.Fields.running_discarded_products] = products_in_use.groupby(by=nm.Fields.end_use_id).agg({nm.Fields.discarded_products_results: np.cumsum})
+        products_in_use[nm.Fields.running_discarded_products] = products_in_use.groupby(by=nm.Fields.end_use_id).agg({nm.Fields.discarded_products_results: np.cumsum}).shift(fill_value=0)
         
-        products_in_use[nm.Fields.discarded_products_adjustment] = products_in_use[nm.Fields.end_use_results] - products_in_use[nm.Fields.running_discarded_products]
-        products_in_use[nm.Fields.discarded_products_adjusted] = products_in_use[nm.Fields.discarded_products_results] - products_in_use[nm.Fields.discarded_products_adjustment]
+        # products_in_use[nm.Fields.discarded_products_adjustment] = products_in_use[nm.Fields.end_use_results] - products_in_use[nm.Fields.running_discarded_products]
+        products_in_use[nm.Fields.discarded_products_adjusted] = products_in_use[nm.Fields.discarded_products_results]
 
         # Merge in the end_use_products table to get the Fuel binary flag and the Paper binary flag
         # discarded_products = products_in_use.merge(self.end_use_products, how='outer', on=[nm.Fields.primary_product_id, nm.Fields.end_use_id])
@@ -177,7 +177,7 @@ class Model(object):
         # If the years mismatch, there will be NaN, so get rid of them
         discarded_products = discarded_products.dropna()
 
-        discarded_products[nm.Fields.discard_dispositions] = discarded_products[nm.Fields.discarded_products_type_sum] * discarded_products[nm.Fields.discard_destination_ratio]
+        discarded_products[nm.Fields.discard_dispositions] = discarded_products[nm.Fields.discarded_products_adjusted] * discarded_products[nm.Fields.discard_destination_ratio]
         self.results.discarded_products = discarded_products
 
         self.results.working_table = discarded_products

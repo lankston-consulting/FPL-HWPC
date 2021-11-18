@@ -75,7 +75,7 @@ class Results(pickler.Pickler):
         emission_landfills =  pd.DataFrame(self.emissions['landfills_emitted'])
         emission_recycled =  pd.DataFrame(self.emissions['recycled_emitted'])
         dumps = pd.DataFrame(self.in_dumps)
-        landfills = dumps = pd.DataFrame(self.in_landfills)
+        landfills = pd.DataFrame(self.in_landfills)
         burned = pd.DataFrame(self.burned)
         composted = pd.DataFrame(self.composted)
         timber_products = pd.DataFrame(self.timber_products)
