@@ -82,10 +82,9 @@ class Results(pickler.Pickler):
         total_in_use = pd.DataFrame(self.all_in_use)
         recycled = pd.DataFrame(self.recovered_in_use)
         
-        
 
         # CUMULATIVE DISCARDED PRODUCTS
-        cum_products = total_in_use.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
+        cum_products = total_in_use[nm.Fields.carbon]
         self.generate_graph(cum_products,
                         0.4,
                         'Total Cumulative Carbon in End Use Products in Use',
@@ -94,7 +93,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE RECOVERED PRODUCTS CARBON
-        recycled_carbon = recycled.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
+        recycled_carbon = recycled[nm.Fields.present+"_"+nm.Fields.carbon]
         self.generate_graph(recycled_carbon,
                         0.3,
                         'Total Cumulative Carbon in Recovered Products in Use',
@@ -103,7 +102,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
-        recycled_emit = emission_recycled.groupby(by='Year')[nm.Fields.recycled+"_"+nm.Fields.co2e].sum()
+        recycled_emit = emission_recycled[nm.Fields.recycled+"_"+nm.Fields.co2e]
         self.generate_graph(recycled_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from \n Recovered Products',
@@ -121,7 +120,7 @@ class Results(pickler.Pickler):
         #                 'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_wo_energy_capture_emit = burned.groupby(by='Year')[nm.Fields.emitted_sum+"_"+nm.Fields.co2e].sum()
+        burned_wo_energy_capture_emit = burned[nm.Fields.emitted_sum+"_"+nm.Fields.co2e]
         self.generate_graph(burned_wo_energy_capture_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture',
@@ -130,7 +129,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE DISCARD COMPOST CO2E
-        composted_emit = composted.groupby(by='Year')[nm.Fields.composted+"_"+nm.Fields.co2e].sum()
+        composted_emit = composted[nm.Fields.composted+"_"+nm.Fields.co2e]
         self.generate_graph(composted_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Compost',
@@ -139,7 +138,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE DISCARD LANDFILL CARBON
-        landfills_carbon = landfills.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
+        landfills_carbon = landfills[nm.Fields.present+"_"+nm.Fields.carbon]
         self.generate_graph(landfills_carbon,
                         0.35,
                         'Total Cumulative Carbon in Landfills',
@@ -148,7 +147,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE DISCARD LANDFILL CO2E
-        landfills_emit = emission_landfills.groupby(by='Year')[nm.Fields.landfills+"_"+nm.Fields.co2e].sum()
+        landfills_emit = emission_landfills[nm.Fields.landfills+"_"+nm.Fields.co2e]
         self.generate_graph(landfills_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Landfills',
@@ -157,7 +156,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
         
         # CUMULATIVE DISCARD DUMPS CARBON
-        dumps_carbon = dumps.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
+        dumps_carbon = dumps[nm.Fields.present+"_"+nm.Fields.carbon]
         self.generate_graph(dumps_carbon,
                         0.45,
                         'Total Cumulative Carbon in Dumps',
@@ -166,15 +165,15 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE DISCARD DUMPS CO2E
-        dumps_emit = emission_dumps.groupby(by='Year')[nm.Fields.dumps+"_"+nm.Fields.co2e].sum()
+        dumps_emit = emission_dumps[nm.Fields.dumps+"_"+nm.Fields.co2e]
         self.generate_graph(dumps_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Dumps',
                         'Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
                         'total_dumps_carbon_emitted',
                         'Metric Tons CO2e')
-        emission_fuelwood = pd.DataFrame(self.emissions['fuelwood'])
-        fuelwood_emit = emission_fuelwood.groupby(by='Year')[nm.Fields.burned_with_energy_capture+"_"+nm.Fields.co2e].sum()
+        
+        fuelwood_emit = emission_fuelwood[nm.Fields.burned_with_energy_capture+"_"+nm.Fields.co2e]
         self.generate_graph(fuelwood_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Fuelwood with Energy Capture',
@@ -183,21 +182,21 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         #CARBON STOCKS
-        products_in_use = total_in_use.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon].sum()
+        products_in_use = total_in_use[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
         with tempfile.TemporaryFile() as temp:
             products_in_use.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('products_in_use.csv', temp.read())
 
-        swds = total_in_use.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
+        swds = total_in_use[nm.Fields.present+"_"+nm.Fields.carbon]
         with tempfile.TemporaryFile() as temp:
             swds.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('swds.csv', temp.read())
         
         final = pd.DataFrame(self.final)
-        products_in_use = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon].sum()
-        swds = final.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon].sum()
+        products_in_use = final[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
+        swds = final[nm.Fields.present+"_"+nm.Fields.carbon]
         fig, ax1 = plt.subplots()
         plt.subplots_adjust(bottom=0.4)
         plt.title('Total Cumulative Carbon Stocks')
@@ -288,7 +287,6 @@ class Results(pickler.Pickler):
         ax2.set_ylabel('Harvest (Million MBF)', color=color)
         ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         ax2.plot(harvests_results, color=color,label="Annual Harvest")
-        plt.legend()
         # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
