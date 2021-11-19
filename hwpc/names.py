@@ -91,6 +91,7 @@ class Names(singleton.Singleton):
         landfills = 'Landfills'
         dumps = 'Dumps'
 
+        new_decay = 'new_decay'
         can_decay = 'can_decay'
         decay_ratio = 'decay_ratio'
         running_can_decay = 'can_decay_cumsum'
@@ -105,6 +106,8 @@ class Names(singleton.Singleton):
 
         carbon = 'mtc'
         co2e = 'co2e'
+
+        swds = 'swds'
 
         def c(name):
             return name + '_' + Names.Fields.carbon

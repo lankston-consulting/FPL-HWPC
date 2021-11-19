@@ -84,7 +84,7 @@ class Results(pickler.Pickler):
         
 
         # CUMULATIVE DISCARDED PRODUCTS
-        cum_products = total_in_use[nm.Fields.carbon]
+        cum_products = total_in_use[nm.Fields.c(nm.Fields.swds)]
         self.generate_graph(cum_products,
                         0.4,
                         'Total Cumulative Carbon in End Use Products in Use',

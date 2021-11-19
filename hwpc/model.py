@@ -204,11 +204,11 @@ class Model(object):
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio. This will be used in later iterations of the i loop.
         dispositions = self.results.working_table 
-        dispositions[nm.Fields.can_decay] = 0
+        dispositions[nm.Fields.new_decay] = 0
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
-        dispositions.loc[df_filter, nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] * (1 - discard_types[nm.Fields.paper][nm.Fields.landfill_fixed_ratio])
+        dispositions.loc[df_filter, nm.Fields.new_decay] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] * (1 - discard_types[nm.Fields.paper][nm.Fields.landfill_fixed_ratio])
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.wood_val)
-        dispositions.loc[df_filter, nm.Fields.can_decay] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] * (1 - discard_types[nm.Fields.wood][nm.Fields.landfill_fixed_ratio])
+        dispositions.loc[df_filter, nm.Fields.new_decay] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] * (1 - discard_types[nm.Fields.wood][nm.Fields.landfill_fixed_ratio])
 
         # set the decay ratios
         diposition_halflifes = self.md.disposition_to_halflife
@@ -220,7 +220,7 @@ class Model(object):
 
         # Get the amounts discarded in year y that are subject to decay.
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id)
-        dispositions.loc[~df_filter, nm.Fields.can_decay] = dispositions.loc[~df_filter, nm.Fields.discard_dispositions]
+        dispositions.loc[~df_filter, nm.Fields.new_decay] = dispositions.loc[~df_filter, nm.Fields.discard_dispositions]
 
         # Calculate the amounts that were discarded in year y that could decay but
         # are still remaining in year i, by plugging the amount subject to decay into
@@ -230,19 +230,20 @@ class Model(object):
             halflife = df[nm.Fields.decay_ratio].iloc[0]
 
             if halflife == 0:
-                df.loc[:, nm.Fields.discard_remaining] = 0
+                df.loc[:, nm.Fields.can_decay] = 0
             else:  
                 halflife = 1 - math.exp(-math.log(2) / halflife)
-                df.loc[:, nm.Fields.discard_remaining] = df[nm.Fields.can_decay].ewm(halflife=halflife, adjust=False).mean() 
+                df.loc[:, nm.Fields.can_decay] = df[nm.Fields.new_decay].ewm(halflife=halflife, adjust=False).mean() 
             
             return df
         
-        df_key = [nm.Fields.timber_product_id, nm.Fields.end_use_id, nm.Fields.primary_product_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]
+        df_key = [nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]
         dispositions = dispositions.groupby(by=df_key).apply(halflife_func)
+        dispositions[nm.Fields.discard_remaining] = dispositions.groupby(by=df_key)[nm.Fields.new_decay].cumsum()
 
         # Calculate emissions from stuff discarded in year y by subracting the amount
         # remaining from the total amount that could decay.
-        dispositions[nm.Fields.emitted] = dispositions[nm.Fields.can_decay] - dispositions[nm.Fields.discard_remaining]
+        dispositions[nm.Fields.emitted] = dispositions[nm.Fields.discard_remaining] - dispositions[nm.Fields.can_decay]
         # Add this year's emissions to the total for the current inventory year.
         dispositions[nm.Fields.emitted_sum] = dispositions.groupby(by=df_key).agg({nm.Fields.emitted: np.cumsum})
 
@@ -251,11 +252,11 @@ class Model(object):
         # Landfills are a bit different. Not all of it is subject to decay, so get the fixed amount and add it to present through time
         # Something like discard_dispositions - can_decay -> cumsum
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
-        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] - dispositions.loc[df_filter, nm.Fields.can_decay]
+        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] - dispositions.loc[df_filter, nm.Fields.new_decay]
         dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter].groupby(by=df_key).agg({nm.Fields.present: np.cumsum})
 
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.wood_val)
-        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] - dispositions.loc[df_filter, nm.Fields.can_decay]
+        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] - dispositions.loc[df_filter, nm.Fields.new_decay]
         dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter].groupby(by=df_key).agg({nm.Fields.present: np.cumsum})
 
         self.results.dispositions = dispositions
@@ -364,7 +365,9 @@ class Model(object):
         self.results.emissions = {'fuelwood': fuelwood, 'landfills_emitted': landfills_emitted, 'dumps_emitted': dumps_emitted, 'recycled_emitted': recycled_emitted, 'burned_emitted': burned_emitted, 'compost_emitted': compost_emitted}
 
         all_in_use = products_in_use.merge(recovered_in_use, how='inner', on=nm.Fields.harvest_year).drop_duplicates()
-        all_in_use[nm.Fields.carbon] = all_in_use[C(nm.Fields.products_in_use)] + all_in_use[C(nm.Fields.present)]
+        all_in_use = all_in_use.merge(in_landfills, how='inner', on=nm.Fields.harvest_year).drop_duplicates()
+        all_in_use = all_in_use.merge(in_dumps, how='inner', on=nm.Fields.harvest_year).drop_duplicates()
+        all_in_use[C(nm.Fields.swds)] = all_in_use.drop(columns=[C(nm.Fields.products_in_use)]).sum(axis=1)
         self.results.all_in_use = all_in_use
         
         self.results.working_table = results
@@ -399,8 +402,7 @@ class Model(object):
         final[CHANGE(CO2(nm.Fields.burned_with_energy_capture))] = final[CO2(nm.Fields.burned_with_energy_capture)].diff()
         final[CHANGE(CO2(nm.Fields.emitted_sum))] = final[CO2(nm.Fields.emitted_sum)].diff()
         final[CHANGE(C(nm.Fields.products_in_use))] = final[C(nm.Fields.products_in_use)].diff()
-        final[CHANGE(C(nm.Fields.present))] = final[C(nm.Fields.present)].diff()
-        final[CHANGE(nm.Fields.carbon)] = final[nm.Fields.carbon].diff()
+        final[CHANGE(C(nm.Fields.swds))] = final[C(nm.Fields.swds)].diff()
 
         self.results.final = final
 
