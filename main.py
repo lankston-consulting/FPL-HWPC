@@ -10,7 +10,7 @@ CORS(app)
 @app.route('/', methods=['GET'])
 def handle():
     p = request.args.get('p')
-    q = request.args.get('&amp;q')
+    q = request.args.get('q')
     print(p)
     print(q)
     hwpccalc.run(p, q)
