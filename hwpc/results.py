@@ -48,6 +48,7 @@ class Results(pickler.Pickler):
         self.emissions = None
         self.all_in_use = None
         self.final = None
+        self.total_all_dispositions = None
 
         ##################################
 

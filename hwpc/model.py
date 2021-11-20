@@ -371,8 +371,11 @@ class Model(object):
 
         self.results.emissions = {'fuelwood': fuelwood, 'landfills_emitted': landfills_emitted, 'dumps_emitted': dumps_emitted, 'recycled_emitted': recycled_emitted, 'burned_emitted': burned_emitted, 'compost_emitted': compost_emitted}
 
+        recovered_in_use = recovered_in_use.rename(columns={C(nm.Fields.present): C('recovered')})
         all_in_use = products_in_use.merge(recovered_in_use, how='inner', on=nm.Fields.harvest_year).drop_duplicates()
+        in_landfills = in_landfills.rename(columns={C(nm.Fields.present): 'landfills_' + C(nm.Fields.present)})
         all_in_use = all_in_use.merge(in_landfills, how='inner', on=nm.Fields.harvest_year).drop_duplicates()
+        in_dumps = in_dumps.rename(columns={C(nm.Fields.present): 'dumps_' + C(nm.Fields.present)})
         all_in_use = all_in_use.merge(in_dumps, how='inner', on=nm.Fields.harvest_year).drop_duplicates()
         all_in_use[C(nm.Fields.swds)] = all_in_use.drop(columns=[C(nm.Fields.products_in_use)]).sum(axis=1)
         self.results.all_in_use = all_in_use
@@ -402,7 +405,24 @@ class Model(object):
         emissions['compost_emitted'][CO2(nm.Fields.composted)] = emissions['compost_emitted'][C(nm.Fields.emitted_sum)].apply(self.c_to_co2d)
 
         self.results.emissions = emissions
-        
+
+        total_all_dispositions = self.results.all_in_use
+        emissions['fuelwood'] = emissions['fuelwood'][CO2(nm.Fields.burned_with_energy_capture)]
+        total_all_dispositions = total_all_dispositions.merge(emissions['fuelwood'], on=nm.Fields.harvest_year)    
+        emissions['landfills_emitted'] = emissions['landfills_emitted'][CO2(nm.Fields.landfills)]
+        total_all_dispositions = total_all_dispositions.merge(emissions['landfills_emitted'], on=nm.Fields.harvest_year)
+        emissions['dumps_emitted'] = emissions['dumps_emitted'][CO2(nm.Fields.dumps)]
+        total_all_dispositions = total_all_dispositions.merge(emissions['dumps_emitted'], on=nm.Fields.harvest_year)
+        emissions['recycled_emitted'] = emissions['recycled_emitted'][CO2(nm.Fields.recycled)]
+        total_all_dispositions = total_all_dispositions.merge(emissions['recycled_emitted'], on=nm.Fields.harvest_year)
+        emissions['burned_emitted'] = emissions['burned_emitted'][CO2(nm.Fields.emitted_sum)]
+        emissions['burned_emitted'] = emissions['burned_emitted'].rename('burned_wo_energy_capture')
+        total_all_dispositions = total_all_dispositions.merge(emissions['burned_emitted'], on=nm.Fields.harvest_year)
+        emissions['compost_emitted'] = emissions['compost_emitted'][CO2(nm.Fields.composted)]
+        total_all_dispositions = total_all_dispositions.merge(emissions['compost_emitted'], on=nm.Fields.harvest_year)
+
+        self.results.total_all_dispositions = total_all_dispositions
+
         return
 
     def final_table(self):
