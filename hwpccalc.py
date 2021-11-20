@@ -16,7 +16,7 @@ def run(path='hpwc-user-inputs/83d4b4ef-d57a-4995-8342-489ca4d769b3', name='test
     names.Names.Output()
 
     names.Names.Output.output_path = path
-    names.Names.Output.run_name=name
+    names.Names.Output.run_name = name
 
     i = input_download.InputDownload()
     i.downloads()
