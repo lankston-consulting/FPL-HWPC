@@ -37,6 +37,7 @@ class Results(pickler.Pickler):
         self.burned_captured = None
         
         # Final output collections
+        self.annual_timber_products = None
         self.burned = None
         self.composted = None
         self.products_in_use = None
@@ -295,7 +296,7 @@ class Results(pickler.Pickler):
 
  
         self.zip_buffer.seek(0)
-        
+
         print('Output Path:', nm.Output.output_path)
         print('Run Name:', nm.Output.run_name)
 

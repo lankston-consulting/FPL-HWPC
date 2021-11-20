@@ -379,6 +379,13 @@ class Model(object):
         
         self.results.working_table = results
 
+        df_keys = [nm.Fields.harvest_year, nm.Fields.timber_product_id, nm.Fields.primary_product_id]
+        df_values = [nm.Fields.primary_product_results, nm.Fields.conversion_factor]
+        timber_products_conversion = results[df_keys + df_values].drop_duplicates()
+        timber_products_conversion[C(nm.Fields.primary_product_results)] = timber_products_conversion[nm.Fields.primary_product_results] * timber_products_conversion[nm.Fields.conversion_factor]
+        timber_products_agg = timber_products_conversion.groupby(by=[nm.Fields.harvest_year])[C(nm.Fields.primary_product_results)].sum()
+        self.results.annual_timber_products = timber_products_agg
+
         return
 
     def convert_emissions_c02_e(self):
