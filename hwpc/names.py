@@ -9,13 +9,14 @@ class Names(singleton.Singleton):
         primary_products = 'primary_products'
         primary_product_ratios = 'primary_product_ratios'
         end_use_ratios = 'end_use_ratios'
-        end_use_halflifes = 'end_use_products'
+        end_use_products = 'end_use_products'
         discard_destinations = 'discard_destinations'
         discard_types = 'discard_types'
         discard_disposition_ratios = 'discarded_disposition_ratios'
         region = 'region'
         regions = 'regions'
         energy_capture = 'x_burned_energy_capture'
+        ccf_c_conversion = 'ccf_to_metric_tons_carbon'
     
     class Fields(singleton.Singleton):
 
@@ -76,13 +77,13 @@ class Names(singleton.Singleton):
         products_in_use = 'products_in_use'
         discarded_products_results = 'discarded_products'
         running_discarded_products = 'discarded_products_cumsum'
-        discarded_products_adjustment = 'discarded_products_adjustment'
+        discarded_products_vintage = 'discarded_products_adjustment'
         discarded_products_adjusted = 'discarded_products_adjusted'
-        discard_paper = 'discarded_paper'
-        discard_wood = 'discarded_wood'
-        discard_wood_paper = 'discarded_wood_or_paper'
+        discarded_products_type_sum = 'discarded_products_type_sum'
         discard_dispositions = 'discard_dispositions'
 
+
+        paper_flag = 'Paper'
 
         burned = 'Burned'
         recycled = 'Recycled'
@@ -90,19 +91,33 @@ class Names(singleton.Singleton):
         landfills = 'Landfills'
         dumps = 'Dumps'
 
+        # new_decay = 'new_decay'
         can_decay = 'can_decay'
         decay_ratio = 'decay_ratio'
-        running_can_decay = 'cum_can_decay'
+        running_can_decay = 'can_decay_cumsum'
 
         discard_remaining = 'discard_remaining'
+        discard_remaining_sum = 'discard_remaining_sum'
+
+        emitted = 'emitted'
+        emitted_sum = 'emitted_sum'
+        present = 'present'
 
         burned_with_energy_capture = 'burned_captured'
 
-        carbon = 'mtcarbon'
-        co2 = 'co2e'
+        carbon = 'mtc'
+        co2e = 'co2e'
+
+        swds = 'swds'
 
         def c(name):
             return name + '_' + Names.Fields.carbon
+
+        def change(name):
+            return name + '_' + 'change'
+
+        def co2(name):
+            return name + '_' + Names.Fields.co2e
 
     class Output(singleton.Singleton):
         output_path = ''

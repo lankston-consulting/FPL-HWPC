@@ -83,8 +83,9 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         with open('data/inputs.json') as f:
             j = json.load(f)
             for k in j:
+                no_csv = k.replace('.csv', '')
                 p = j[k]
-                ModelData.data[k] = dr.read_file(p)
+                ModelData.data[no_csv] = dr.read_file(p)
         
         return
 
@@ -100,7 +101,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
         ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[nm.Tables.end_use_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
 
-        ModelData.data[nm.Tables.end_use_halflifes] = ModelData.data[nm.Tables.end_use_halflifes].rename(columns={nm.Fields.id: nm.Fields.end_use_id})
+        ModelData.data[nm.Tables.end_use_products] = ModelData.data[nm.Tables.end_use_products].rename(columns={nm.Fields.id: nm.Fields.end_use_id, nm.Fields.paper_flag: nm.Fields.discard_type_id})
 
         ModelData.data[nm.Tables.discard_disposition_ratios] = ModelData.data[nm.Tables.discard_disposition_ratios].rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
 
@@ -140,7 +141,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
             df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
             ModelData.data[nm.Tables.primary_product_ratios] = df
-
+        
         ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
 
         return
