@@ -295,8 +295,11 @@ class Results(pickler.Pickler):
 
  
         self.zip_buffer.seek(0)
+        
+        print('Output Path:', nm.Output.output_path)
+        print('Run Name:', nm.Output.run_name)
 
-        gch.upload_temp('hwpcarbon-data', self.zip_buffer, nm.Output.output_path + '/results/'+nm.Output.run_name+".zip")
+        gch.upload_temp('hwpcarbon-data', self.zip_buffer, nm.Output.output_path + '/results/' + nm.Output.run_name + '.zip')
 
         self.zip.close()
         self.zip_buffer.close()

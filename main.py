@@ -13,7 +13,7 @@ def handle():
     q = request.args.get('q')
     print(p)
     print(q)
-    hwpccalc.run(p,q)
+    hwpccalc.run(p, q)
     return p, 200, {}
 
 if __name__ == '__main__':
