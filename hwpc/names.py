@@ -77,7 +77,7 @@ class Names(singleton.Singleton):
         products_in_use = 'products_in_use'
         discarded_products_results = 'discarded_products'
         running_discarded_products = 'discarded_products_cumsum'
-        discarded_products_adjustment = 'discarded_products_adjustment'
+        discarded_products_vintage = 'discarded_products_adjustment'
         discarded_products_adjusted = 'discarded_products_adjusted'
         discarded_products_type_sum = 'discarded_products_type_sum'
         discard_dispositions = 'discard_dispositions'
@@ -91,12 +91,13 @@ class Names(singleton.Singleton):
         landfills = 'Landfills'
         dumps = 'Dumps'
 
-        new_decay = 'new_decay'
+        # new_decay = 'new_decay'
         can_decay = 'can_decay'
         decay_ratio = 'decay_ratio'
         running_can_decay = 'can_decay_cumsum'
 
         discard_remaining = 'discard_remaining'
+        discard_remaining_sum = 'discard_remaining_sum'
 
         emitted = 'emitted'
         emitted_sum = 'emitted_sum'
