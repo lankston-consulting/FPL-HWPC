@@ -56,6 +56,7 @@ class Names(singleton.Singleton):
         landfill_halflife = 'LandfillHalfLife'
         dump_halflife = 'DumpHalfLife'
         recycled_halflife = 'RecycledHalfLife'
+        recovered = 'recovered'
 
         paper = 'paper'
         wood = 'wood'

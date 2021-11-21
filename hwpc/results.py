@@ -72,6 +72,7 @@ class Results(pickler.Pickler):
 
         df = pd.DataFrame(self.working_table)
         final = pd.DataFrame(self.final)
+        primary_products = pd.DataFrame(self.primary_products)
         emission_fuelwood = pd.DataFrame(self.emissions['fuelwood'])
         emission_dumps =  pd.DataFrame(self.emissions['dumps_emitted'])
         emission_landfills =  pd.DataFrame(self.emissions['landfills_emitted'])
@@ -81,12 +82,13 @@ class Results(pickler.Pickler):
         burned = pd.DataFrame(self.burned)
         composted = pd.DataFrame(self.composted)
         timber_products = pd.DataFrame(self.timber_products)
+        annual_timber_products = pd.DataFrame(self.annual_timber_products)
         total_in_use = pd.DataFrame(self.all_in_use)
         recycled = pd.DataFrame(self.recovered_in_use)
-        
+        total_all_dispositions = pd.DataFrame(self.total_all_dispositions)
 
         # CUMULATIVE DISCARDED PRODUCTS
-        cum_products = total_in_use[nm.Fields.c(nm.Fields.swds)]
+        cum_products = total_all_dispositions[nm.Fields.c(nm.Fields.products_in_use)]
         self.generate_graph(cum_products,
                         0.4,
                         'Total Cumulative Carbon in End Use Products in Use',
@@ -95,7 +97,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE RECOVERED PRODUCTS CARBON
-        recycled_carbon = recycled[nm.Fields.present+"_"+nm.Fields.carbon]
+        recycled_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.recovered)]
         self.generate_graph(recycled_carbon,
                         0.3,
                         'Total Cumulative Carbon in Recovered Products in Use',
@@ -104,7 +106,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
-        recycled_emit = emission_recycled[nm.Fields.recycled+"_"+nm.Fields.co2e]
+        recycled_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.recycled)]
         self.generate_graph(recycled_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from \n Recovered Products',
@@ -122,7 +124,7 @@ class Results(pickler.Pickler):
         #                 'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_wo_energy_capture_emit = burned[nm.Fields.emitted_sum+"_"+nm.Fields.co2e]
+        burned_wo_energy_capture_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.emitted_sum)]
         self.generate_graph(burned_wo_energy_capture_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture',
@@ -131,7 +133,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE DISCARD COMPOST CO2E
-        composted_emit = composted[nm.Fields.composted+"_"+nm.Fields.co2e]
+        composted_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.composted)]
         self.generate_graph(composted_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Compost',
@@ -140,7 +142,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE DISCARD LANDFILL CARBON
-        landfills_carbon = landfills[nm.Fields.present+"_"+nm.Fields.carbon]
+        landfills_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.landfills+"_"+nm.Fields.present)]
         self.generate_graph(landfills_carbon,
                         0.35,
                         'Total Cumulative Carbon in Landfills',
@@ -149,7 +151,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE DISCARD LANDFILL CO2E
-        landfills_emit = emission_landfills[nm.Fields.landfills+"_"+nm.Fields.co2e]
+        landfills_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.landfills)]
         self.generate_graph(landfills_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Landfills',
@@ -158,7 +160,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
         
         # CUMULATIVE DISCARD DUMPS CARBON
-        dumps_carbon = dumps[nm.Fields.present+"_"+nm.Fields.carbon]
+        dumps_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.dumps+"_"+nm.Fields.present)]
         self.generate_graph(dumps_carbon,
                         0.45,
                         'Total Cumulative Carbon in Dumps',
@@ -167,7 +169,7 @@ class Results(pickler.Pickler):
                         'Metric Tons C')
 
         # CUMULATIVE DISCARD DUMPS CO2E
-        dumps_emit = emission_dumps[nm.Fields.dumps+"_"+nm.Fields.co2e]
+        dumps_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.dumps)]
         self.generate_graph(dumps_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Dumps',
@@ -175,7 +177,7 @@ class Results(pickler.Pickler):
                         'total_dumps_carbon_emitted',
                         'Metric Tons CO2e')
         
-        fuelwood_emit = emission_fuelwood[nm.Fields.burned_with_energy_capture+"_"+nm.Fields.co2e]
+        fuelwood_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.burned_with_energy_capture)]
         self.generate_graph(fuelwood_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Fuelwood with Energy Capture',
@@ -183,41 +185,60 @@ class Results(pickler.Pickler):
                         'total_fuelwood_carbon_emitted',
                         'Metric Tons CO2e')
 
+        # ALL DISPOSITIONS
+        with tempfile.TemporaryFile() as temp:
+            total_all_dispositions.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('all_dispositions.csv', temp.read())
+
+        #PRIMARY PRODUCTS
+        with tempfile.TemporaryFile() as temp:
+            primary_products.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('primary_products.csv', temp.read())
+
         #CARBON STOCKS
+        with tempfile.TemporaryFile() as temp:
+            total_in_use.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('final.csv', temp.read())
+
         products_in_use = total_in_use[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
         with tempfile.TemporaryFile() as temp:
             products_in_use.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('products_in_use.csv', temp.read())
 
-        swds = total_in_use[nm.Fields.present+"_"+nm.Fields.carbon]
+        swds = total_in_use[nm.Fields.swds]
         with tempfile.TemporaryFile() as temp:
             swds.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('swds.csv', temp.read())
         
-        fig, ax1 = plt.subplots()
+        
         plt.subplots_adjust(bottom=0.45)
         plt.title('Total Cumulative Carbon Stocks')
         color = 'tab:red'
-        ax1.set_xlabel('Inventory Year')
-        ax1.set_ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
-        ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
+        plt.xlabel('Inventory Year')
+        plt.ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
+        plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-        ax1.plot(products_in_use, color=color,label="Products in Use")
-        color = 'tab:blue'
-        ax1.plot(swds, color=color,label="SWDS")
-        ax1.legend()
+        plt.stackplot(total_all_dispositions.index,total_all_dispositions[nm.Fields.c(nm.Fields.products_in_use)].values,total_all_dispositions[nm.Fields.c(nm.Fields.swds)].values, colors=("tab:blue","tab:red"),labels=("Products In Use", "SWDS"))
+        #plt.stackplot(swds, color=color,label="SWDS")
+        plt.legend()
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('total_cumulative_carbon_stocks.png', temp.read())
         plt.clf()
+
+
 # GRAPH GENERATION IN DEBUGGER
 # final = pd.DataFrame(self.final)
+# print(final)
 # products_in_use = final[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
-# swds = final[nm.Fields.present+"_"+nm.Fields.carbon]
+# swds = final[nm.Fields.swds+"_"+nm.Fields.carbon]
 # fig, ax1 = plt.subplots()
 # plt.subplots_adjust(bottom=0.5)
 # plt.title('Total Cumulative Carbon Stocks')
@@ -227,13 +248,14 @@ class Results(pickler.Pickler):
 # ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
 # txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
 # plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-# ax1.plot(products_in_use, color=color,label="Products in Use")
-# color = 'tab:blue'
-# ax1.plot(swds, color=color,label="SWDS")
-# ax1.legend()
+# ax1.stackplot(products_in_use.index,products_in_use.values,swds.values, color=("tab:red","tab:blue"),labels=("Total Products in Use"), baseline='zero')
+# #plt.show()
+# #ax2.stackplot(x=swds.index, y=swds.values.T, color="tab:blue",labels="SWDS", baseline='zero')
+# plt.legend()
 # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
 # plt.show()
 
+# CARBON CHANGE
 # final = pd.DataFrame(self.final)
 # N = len(final.index)
 # ind = np.arange(N)
@@ -255,8 +277,52 @@ class Results(pickler.Pickler):
 # p2 = ax1.bar(ind,swds, color=color)
 # plt.show
 
+#TIMBER AND HARVEST
+# timber_products = pd.DataFrame(self.timber_products)
+# annual_timber_products = pd.DataFrame(self.annual_timber_products)
+
+# timber_products_results = annual_timber_products[nm.Fields.primary_product_results+"_"+nm.Fields.carbon]
+# print(timber_products_results)
+# # with tempfile.TemporaryFile() as temp:
+# #     timber_products_results.to_csv(temp)
+# #     temp.seek(0)
+# #     self.zip.writestr('annual_timber_product_output.csv', temp.read())
+
+# harvests_results =  timber_products.groupby(by='Year')[nm.Fields.timber_product_results].sum()
+# print(harvests_results)
+
+# # with tempfile.TemporaryFile() as temp:
+# #     harvests_results.to_csv(temp)
+# #     temp.seek(0)
+# #     self.zip.writestr('annual_harvests_output.csv', temp.read())
+
+# fig, ax1 = plt.subplots()
+# color = 'tab:red'
+# plt.subplots_adjust(bottom=0.2)
+# plt.title('Annual Harvest and Timber Product Output')
+# ax1.set_xlabel('Inventory Year')
+# ax1.set_ylabel('Timber Product Output (Million Metric Tons C)', color=color)
+
+# txt = "Annual total timber harvest and product output in ppd converted to metric tons of carbon, from 1906 to 2018"
+# plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
+# ax1.plot(timber_products_results, color=color,label="Timber Products")
+# #ax2 = ax1.twinx()
+# color = 'tab:blue'
+# #ax2.set_ylabel('Harvest (Million MBF)', color=color)
+# ax1.plot(harvests_results, color=color,label="Annual Harvest")
+
+# ax1.set_yticks(np.linspace(ax1.get_yticks()[1], ax1.get_yticks()[-1], len(ax2.get_yticks())-2))
+# # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+# # with tempfile.TemporaryFile(suffix=".png") as temp:
+# #     plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
+# #     temp.seek(0) # Rewind the file. (0: the beginning of the file)
+# #     self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read())
+# # results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
+# # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
+# plt.show()
+
         # TOTAL HARVEST AND TIMBER RESULTS
-        timber_products_results = timber_products.groupby(by='Year')[nm.Fields.timber_product_results].sum()
+        timber_products_results = annual_timber_products.groupby(by='Year')[nm.Fields.timber_product_results].sum()
         with tempfile.TemporaryFile() as temp:
             timber_products_results.to_csv(temp)
             temp.seek(0)
