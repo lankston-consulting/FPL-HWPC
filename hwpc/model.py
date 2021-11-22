@@ -435,6 +435,8 @@ class Model(object):
         CO2 = nm.Fields.co2
         CHANGE = nm.Fields.change
 
+        final[C(nm.Fields.products_in_use)] = final[C(nm.Fields.products_in_use)].cumsum()
+
         final[CHANGE(CO2(nm.Fields.burned_with_energy_capture))] = final[CO2(nm.Fields.burned_with_energy_capture)].diff()
         final[CHANGE(CO2(nm.Fields.emitted_sum))] = final[CO2(nm.Fields.emitted_sum)].diff()
         final[CHANGE(C(nm.Fields.products_in_use))] = final[C(nm.Fields.products_in_use)].diff()
