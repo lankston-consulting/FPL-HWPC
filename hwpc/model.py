@@ -387,6 +387,8 @@ class Model(object):
         timber_products_conversion = results[df_keys + df_values].drop_duplicates()
         timber_products_conversion[C(nm.Fields.primary_product_results)] = timber_products_conversion[nm.Fields.primary_product_results] * timber_products_conversion[nm.Fields.conversion_factor]
         timber_products_agg = timber_products_conversion.groupby(by=[nm.Fields.harvest_year])[C(nm.Fields.primary_product_results)].sum()
+        timber_products_agg = pd.DataFrame(timber_products_agg)
+        timber_products_agg = timber_products_agg.merge(self.harvests, on=nm.Fields.harvest_year)
         self.results.annual_timber_products = timber_products_agg
 
         return
