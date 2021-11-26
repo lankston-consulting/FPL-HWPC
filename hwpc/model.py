@@ -17,6 +17,7 @@ class Model(object):
 
         self.harvests = self.md.data[nm.Tables.harvest]
         self.harvests = self.harvests.sort_values(by=nm.Fields.harvest_year)
+        
 
         self.timber_product_ratios = self.md.data[nm.Tables.timber_products_data]
         self.primary_product_ratios = self.md.data[nm.Tables.primary_product_ratios]
@@ -69,6 +70,7 @@ class Model(object):
         timber_products = timber_products.sort_values(by=[nm.Fields.harvest_year, nm.Fields.timber_product_id])
 
         self.results.timber_products = timber_products
+        self.results.harvests = self.harvests
 
         # Calculate primary products (CCF) by multiplying the timber-to-primary ratio for each 
         # primary product by the amount of the corresponding timber product. Then convert to MgC
@@ -418,7 +420,7 @@ class Model(object):
         emissions['recycled_emitted'] = emissions['recycled_emitted'][CO2(nm.Fields.recycled)]
         total_all_dispositions = total_all_dispositions.merge(emissions['recycled_emitted'], on=nm.Fields.harvest_year)
         emissions['burned_emitted'] = emissions['burned_emitted'][CO2(nm.Fields.emitted_sum)]
-        emissions['burned_emitted'] = emissions['burned_emitted'].rename('burned_wo_energy_capture')
+        emissions['burned_emitted'] = emissions['burned_emitted'].rename(nm.Fields.burned_wo_energy_capture)
         total_all_dispositions = total_all_dispositions.merge(emissions['burned_emitted'], on=nm.Fields.harvest_year)
         emissions['compost_emitted'] = emissions['compost_emitted'][CO2(nm.Fields.composted)]
         total_all_dispositions = total_all_dispositions.merge(emissions['compost_emitted'], on=nm.Fields.harvest_year)

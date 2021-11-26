@@ -73,35 +73,27 @@ class Results(pickler.Pickler):
         df = pd.DataFrame(self.working_table)
         final = pd.DataFrame(self.final)
         primary_products = pd.DataFrame(self.primary_products)
-        emission_fuelwood = pd.DataFrame(self.emissions['fuelwood'])
-        emission_dumps =  pd.DataFrame(self.emissions['dumps_emitted'])
-        emission_landfills =  pd.DataFrame(self.emissions['landfills_emitted'])
-        emission_recycled =  pd.DataFrame(self.emissions['recycled_emitted'])
-        dumps = pd.DataFrame(self.in_dumps)
-        landfills = pd.DataFrame(self.in_landfills)
-        burned = pd.DataFrame(self.burned)
-        composted = pd.DataFrame(self.composted)
-        timber_products = pd.DataFrame(self.timber_products)
-        annual_timber_products = pd.DataFrame(self.annual_timber_products)
+        harvests = pd.DataFrame(self.harvests)
         total_in_use = pd.DataFrame(self.all_in_use)
         recycled = pd.DataFrame(self.recovered_in_use)
         total_all_dispositions = pd.DataFrame(self.total_all_dispositions)
+        annual_timber_products = pd.DataFrame(self.annual_timber_products)
 
         # CUMULATIVE DISCARDED PRODUCTS
         cum_products = total_all_dispositions[nm.Fields.c(nm.Fields.products_in_use)]
         self.generate_graph(cum_products,
                         0.4,
                         'Total Cumulative Carbon in End Use Products in Use',
-                        'Total cumulative metric tons carbon stored in end-use products in use manufactured from total timber harvested in ppd from 1906 to 2018. The recalcitrance of carbon in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products in use pool in a given inventory year includes products in use and recovered products.',
+                        'Total cumulative metric tons carbon stored in end-use products in use manufactured from total timber harvested from 1906 to 2018. The recalcitrance of carbon in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products in use pool in a given inventory year includes products in use and recovered products.',
                         'total_end_use_products',
                         'Metric Tons C')
 
         # CUMULATIVE RECOVERED PRODUCTS CARBON
-        recycled_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.recovered)]
+        recycled_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.recovered.lower())]
         self.generate_graph(recycled_carbon,
                         0.3,
                         'Total Cumulative Carbon in Recovered Products in Use',
-                        'Total cumulative metric tons carbon stored in recovered products in use manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in recovered products in use are recycled wood and paper that reenters the products in use category.',
+                        'Total cumulative metric tons carbon stored in recovered products in use manufactured from total timber harvested from 1906 to 2018. Carbon in recovered products in use are recycled wood and paper that reenters the products in use category.',
                         'total_recycled_carbon',
                         'Metric Tons C')
 
@@ -110,7 +102,7 @@ class Results(pickler.Pickler):
         self.generate_graph(recycled_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from \n Recovered Products',
-                        'Total cumulative metric tons carbon emitted from recovered products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from recovered products in use is recycled wood and paper that reenters the products in use category. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
+                        'Total cumulative metric tons carbon emitted from recovered products manufactured from total timber harvested from 1906 to 2018. Carbon emitted from recovered products in use is recycled wood and paper that reenters the products in use category. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
                         'total_recycled_carbon_emitted',
                         'Metric Tons CO2e')
 
@@ -119,16 +111,16 @@ class Results(pickler.Pickler):
         # self.generate_graph(burned_w_energy_capture_emit,
         #                 0.4,
         #                 'Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture',
-        #                 'Total cumulative metric ton carbon emitted from burning discarded products with energy capture manufactured from total timber harvested in ppd from 1906 to 2018. Discarded products are assumed to be burned in an incinerator with energy capture. Emmitted carbon is displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
+        #                 'Total cumulative metric ton carbon emitted from burning discarded products with energy capture manufactured from total timber harvested from 1906 to 2018. Discarded products are assumed to be burned in an incinerator with energy capture. Emmitted carbon is displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
         #                 'burned_w_energy_capture_emitted',
         #                 'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_wo_energy_capture_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.emitted_sum)]
+        burned_wo_energy_capture_emit = total_all_dispositions[nm.Fields.burned_wo_energy_capture]
         self.generate_graph(burned_wo_energy_capture_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture',
-                        'Total cumulative metric tons carbon emitted from burning discarded products without energy capture manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emiited from burned discarded products is assumed to be emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
+                        'Total cumulative metric tons carbon emitted from burning discarded products without energy capture manufactured from total timber harvested from 1906 to 2018. Carbon emiited from burned discarded products is assumed to be emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
                         'burned_wo_energy_capture_emit',
                         'Metric Tons CO2e')
 
@@ -137,16 +129,16 @@ class Results(pickler.Pickler):
         self.generate_graph(composted_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Compost',
-                        'Total cumulative metric tons carbon emitted from composted discarded harvested wood products manufactured from total timber harvested in ppd from 1906 to 2018. No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other greenhouse gases such as methane.',
+                        'Total cumulative metric tons carbon emitted from composted discarded harvested wood products manufactured from total timber harvested from 1906 to 2018. No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other greenhouse gases such as methane.',
                         'total_composted_carbon_emitted',
                         'Metric Tons CO2e')
 
         # CUMULATIVE DISCARD LANDFILL CARBON
-        landfills_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.landfills+"_"+nm.Fields.present)]
+        landfills_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.landfills.lower()+"_"+nm.Fields.present)]
         self.generate_graph(landfills_carbon,
                         0.35,
                         'Total Cumulative Carbon in Landfills',
-                        'Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool.',
+                        'Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested from 1906 to 2018. Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool.',
                         'total_landfills_carbon',
                         'Metric Tons C')
 
@@ -155,16 +147,16 @@ class Results(pickler.Pickler):
         self.generate_graph(landfills_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Landfills',
-                        'Total cumulative metric tons carbon emitted from discarded produts in landfills manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in landfills is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Carbon emissions are displayed in usnits of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
+                        'Total cumulative metric tons carbon emitted from discarded produts in landfills manufactured from total timber harvested from 1906 to 2018. Carbon emitted from discarded wood and paper products in landfills is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Carbon emissions are displayed in usnits of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
                         'total_landfills_carbon_emitted',
                         'Metric Tons CO2e')
         
         # CUMULATIVE DISCARD DUMPS CARBON
-        dumps_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.dumps+"_"+nm.Fields.present)]
+        dumps_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.dumps.lower()+"_"+nm.Fields.present)]
         self.generate_graph(dumps_carbon,
                         0.45,
                         'Total Cumulative Carbon in Dumps',
-                        'Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested in ppd from 1906 to 2018. Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills.',
+                        'Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested from 1906 to 2018. Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills.',
                         'total_dumps_carbon',
                         'Metric Tons C')
 
@@ -173,7 +165,7 @@ class Results(pickler.Pickler):
         self.generate_graph(dumps_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Dumps',
-                        'Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested in ppd from 1906 to 2018. Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
+                        'Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested from 1906 to 2018. Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
                         'total_dumps_carbon_emitted',
                         'Metric Tons CO2e')
         
@@ -181,7 +173,7 @@ class Results(pickler.Pickler):
         self.generate_graph(fuelwood_emit,
                         0.5,
                         'Total Cumulative Carbon Emitted from Fuelwood with Energy Capture',
-                        'Total cumulative metric tons carbon emitted from fuelwood and wood waste used for fuel with energy capture from total timber harvested in ppd from 1906 to 2018. Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
+                        'Total cumulative metric tons carbon emitted from fuelwood and wood waste used for fuel with energy capture from total timber harvested from 1906 to 2018. Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
                         'total_fuelwood_carbon_emitted',
                         'Metric Tons CO2e')
 
@@ -209,12 +201,11 @@ class Results(pickler.Pickler):
             temp.seek(0)
             self.zip.writestr('products_in_use.csv', temp.read())
 
-        swds = total_in_use[nm.Fields.swds]
+        swds = total_in_use[nm.Fields.c(nm.Fields.swds)]
         with tempfile.TemporaryFile() as temp:
             swds.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('swds.csv', temp.read())
-        
         
         plt.subplots_adjust(bottom=0.45)
         plt.title('Total Cumulative Carbon Stocks')
@@ -222,10 +213,9 @@ class Results(pickler.Pickler):
         plt.xlabel('Inventory Year')
         plt.ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-        txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
+        txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-        plt.stackplot(total_all_dispositions.index,total_all_dispositions[nm.Fields.c(nm.Fields.products_in_use)].values,total_all_dispositions[nm.Fields.c(nm.Fields.swds)].values, colors=("tab:blue","tab:red"),labels=("Products In Use", "SWDS"))
-        #plt.stackplot(swds, color=color,label="SWDS")
+        plt.stackplot(total_all_dispositions.index,final[nm.Fields.c(nm.Fields.products_in_use)].values,final[nm.Fields.c(nm.Fields.swds)].values, colors=("tab:blue","tab:red"),labels=("Products In Use", "SWDS"))
         plt.legend()
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
@@ -233,126 +223,54 @@ class Results(pickler.Pickler):
             self.zip.writestr('total_cumulative_carbon_stocks.png', temp.read())
         plt.clf()
 
-
-# GRAPH GENERATION IN DEBUGGER
-# final = pd.DataFrame(self.final)
-# print(final)
-# products_in_use = final[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
-# swds = final[nm.Fields.swds+"_"+nm.Fields.carbon]
-# fig, ax1 = plt.subplots()
-# plt.subplots_adjust(bottom=0.5)
-# plt.title('Total Cumulative Carbon Stocks')
-# color = 'tab:red'
-# ax1.set_xlabel('Inventory Year')
-# ax1.set_ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
-# ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-# txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
-# plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-# ax1.stackplot(products_in_use.index,products_in_use.values,swds.values, color=("tab:red","tab:blue"),labels=("Total Products in Use"), baseline='zero')
-# #plt.show()
-# #ax2.stackplot(x=swds.index, y=swds.values.T, color="tab:blue",labels="SWDS", baseline='zero')
-# plt.legend()
-# plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-# plt.show()
-
-# CARBON CHANGE
-# final = pd.DataFrame(self.final)
-# N = len(final.index)
-# ind = np.arange(N)
-# products_in_use_change = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon+"_change"].sum()
-# print(products_in_use_change)
-# swds = final.groupby(by='Year')[nm.Fields.present+"_"+nm.Fields.carbon+"_change"].sum()
-# fig, ax1 = plt.subplots()
-# plt.subplots_adjust(bottom=0.4)
-# plt.title('Total Cumulative Carbon Stocks')
-# color = 'tab:red'
-# ax1.set_xlabel('Inventory Year')
-# ax1.set_ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
-# ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-# ax1.axhline(0, color='grey', linewidth=0.8)
-# txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested in ppd from 1906 to 2018 using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
-# plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-# p1 = ax1.bar(ind,products_in_use, bottom = swds,label="Products In Use")
-# color = 'tab:blue'
-# p2 = ax1.bar(ind,swds, color=color)
-# plt.show
-
-#TIMBER AND HARVEST
-# timber_products = pd.DataFrame(self.timber_products)
-# annual_timber_products = pd.DataFrame(self.annual_timber_products)
-
-# timber_products_results = annual_timber_products[nm.Fields.primary_product_results+"_"+nm.Fields.carbon]
-# print(timber_products_results)
-# # with tempfile.TemporaryFile() as temp:
-# #     timber_products_results.to_csv(temp)
-# #     temp.seek(0)
-# #     self.zip.writestr('annual_timber_product_output.csv', temp.read())
-
-# harvests_results =  timber_products.groupby(by='Year')[nm.Fields.timber_product_results].sum()
-# print(harvests_results)
-
-# # with tempfile.TemporaryFile() as temp:
-# #     harvests_results.to_csv(temp)
-# #     temp.seek(0)
-# #     self.zip.writestr('annual_harvests_output.csv', temp.read())
-
-# fig, ax1 = plt.subplots()
-# color = 'tab:red'
-# plt.subplots_adjust(bottom=0.2)
-# plt.title('Annual Harvest and Timber Product Output')
-# ax1.set_xlabel('Inventory Year')
-# ax1.set_ylabel('Timber Product Output (Million Metric Tons C)', color=color)
-
-# txt = "Annual total timber harvest and product output in ppd converted to metric tons of carbon, from 1906 to 2018"
-# plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-# ax1.plot(timber_products_results, color=color,label="Timber Products")
-# #ax2 = ax1.twinx()
-# color = 'tab:blue'
-# #ax2.set_ylabel('Harvest (Million MBF)', color=color)
-# ax1.plot(harvests_results, color=color,label="Annual Harvest")
-
-# ax1.set_yticks(np.linspace(ax1.get_yticks()[1], ax1.get_yticks()[-1], len(ax2.get_yticks())-2))
-# # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-# # with tempfile.TemporaryFile(suffix=".png") as temp:
-# #     plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
-# #     temp.seek(0) # Rewind the file. (0: the beginning of the file)
-# #     self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read())
-# # results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
-# # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
-# plt.show()
+        #CARBON CHANGE
+        final = pd.DataFrame(self.final)
+        # We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
+        products_in_use_change = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon+"_change"].sum()
+        swds_change = final.groupby(by='Year')[nm.Fields.swds+"_"+nm.Fields.carbon+"_change"].sum()
+        
+        plt.subplots_adjust(bottom=0.4)
+        plt.title('Annual Net Change in Carbon Stocks')
+        color = 'tab:red'
+        plt.xlabel('Inventory Year')
+        plt.ylabel('Carbon Stocks Change')
+        plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
+        plt.axhline(0, color='grey', linewidth=0.8)
+        plt.ylim(min(swds_change), max(swds_change))
+        txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
+        plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
+        p1 = plt.bar(final.index,products_in_use_change,label="Products In Use",color=color)
+        color = 'tab:blue'
+        p2 = plt.bar(final.index,swds_change, color=color)
+        with tempfile.TemporaryFile(suffix=".png") as temp:
+            plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
+            temp.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.writestr('annual_net_change_carbon_stocks.png', temp.read())
 
         # TOTAL HARVEST AND TIMBER RESULTS
-        timber_products_results = annual_timber_products.groupby(by='Year')[nm.Fields.timber_product_results].sum()
+        timber_products_results = annual_timber_products[nm.Fields.c(nm.Fields.primary_product_results)]
         with tempfile.TemporaryFile() as temp:
             timber_products_results.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('annual_timber_product_output.csv', temp.read())
 
-        harvests_results = timber_products[[nm.Fields.harvest_year, nm.Fields.ccf]]
-        harvests_results.set_index(nm.Fields.harvest_year, inplace=True, drop=True)
-        harvests_results = harvests_results[~harvests_results.index.duplicated(keep='first')]
-
+        harvests_results = annual_timber_products[nm.Fields.ccf]
         with tempfile.TemporaryFile() as temp:
             harvests_results.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('annual_harvests_output.csv', temp.read())
         
-        fig, ax1 = plt.subplots()
         color = 'tab:red'
-        plt.subplots_adjust(bottom=0.2)
+        plt.subplots_adjust(bottom=0.4)
         plt.title('Annual Harvest and Timber Product Output')
-        ax1.set_xlabel('Inventory Year')
-        ax1.set_ylabel('Timber Product Output (Million Metric Tons C)', color=color)
-        ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-        txt = "Annual total timber harvest and product output in ppd converted to metric tons of carbon, from 1906 to 2018"
-        plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-        ax1.plot(timber_products_results, color=color,label="Timber Products")
-        ax2 = ax1.twinx()
+        plt.xlabel('Inventory Year')
+        txt = "Annual total timber harvest and product output converted to metric tons of carbon, from 1906 to 2018"
+        plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
+        plt.plot(timber_products_results, color=color,label="Timber Product Output (Metric Tons C)")
         color = 'tab:blue'
-        ax2.set_ylabel('Harvest (Million MBF)', color=color)
-        ax1.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-        ax2.plot(harvests_results, color=color,label="Annual Harvest")
-        # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+        plt.ylabel('Harvest (MBF)', color=color)
+        plt.plot(harvests_results, color=color,label="Annual Harvest (MBF)")
+        plt.legend()
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
@@ -361,7 +279,6 @@ class Results(pickler.Pickler):
         # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
         plt.clf()
 
- 
         self.zip_buffer.seek(0)
 
         print('Output Path:', nm.Output.output_path)

@@ -105,6 +105,7 @@ class Names(singleton.Singleton):
         present = 'present'
 
         burned_with_energy_capture = 'burned_captured'
+        burned_wo_energy_capture = 'burned_wo_energy_capture'
 
         carbon = 'mtc'
         co2e = 'co2e'

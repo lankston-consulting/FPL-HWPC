@@ -7,7 +7,7 @@ from hwpc import input_download
 from hwpc import names
 from hwpc import results
 
-def run(path='hpwc-user-inputs/eead2aaf-17fa-4757-8c02-ea5c8e9aa550', name='AWE'):
+def run(path='hpwc-user-inputs/3097a3de-5fc0-4f16-988f-cd739e08ac4e', name='robbdemo3'):
 
     path = path
     names.Names()
