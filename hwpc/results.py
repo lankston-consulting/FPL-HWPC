@@ -246,6 +246,7 @@ class Results(pickler.Pickler):
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('annual_net_change_carbon_stocks.png', temp.read())
+        plt.clf()
 
         # TOTAL HARVEST AND TIMBER RESULTS
         timber_products_results = annual_timber_products[nm.Fields.c(nm.Fields.primary_product_results)]
