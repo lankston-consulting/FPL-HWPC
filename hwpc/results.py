@@ -217,6 +217,7 @@ class Results(pickler.Pickler):
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
         plt.stackplot(total_all_dispositions.index,final[nm.Fields.c(nm.Fields.products_in_use)].values,final[nm.Fields.c(nm.Fields.swds)].values, colors=("tab:blue","tab:red"),labels=("Products In Use", "SWDS"))
         plt.legend()
+        plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
@@ -242,6 +243,8 @@ class Results(pickler.Pickler):
         p1 = plt.bar(final.index,products_in_use_change,label="Products In Use",color=color)
         color = 'tab:blue'
         p2 = plt.bar(final.index,swds_change, color=color)
+        plt.legend()
+        plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
@@ -249,7 +252,7 @@ class Results(pickler.Pickler):
         plt.clf()
 
         # TOTAL HARVEST AND TIMBER RESULTS
-        timber_products_results = annual_timber_products[nm.Fields.c(nm.Fields.primary_product_results)]
+        timber_products_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.c(nm.Fields.primary_product_results)]]
         with tempfile.TemporaryFile() as temp:
             timber_products_results.to_csv(temp)
             temp.seek(0)
@@ -267,18 +270,20 @@ class Results(pickler.Pickler):
         plt.xlabel('Inventory Year')
         txt = "Annual total timber harvest and product output converted to metric tons of carbon, from 1906 to 2018"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        plt.plot(timber_products_results, color=color,label="Timber Product Output (Metric Tons C)")
+        plt.plot(timber_products_results[nm.Fields.harvest_year],timber_products_results[nm.Fields.c(nm.Fields.primary_product_results)], color=color,label="Timber Product Output (Metric Tons C)")
         color = 'tab:blue'
-        plt.ylabel('Harvest (MBF)', color=color)
-        plt.plot(harvests_results, color=color,label="Annual Harvest (MBF)")
+        plt.plot(timber_products_results[nm.Fields.harvest_year],harvests_results, color=color,label="Annual Harvest (MBF)")
         plt.legend()
+        plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         # results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
         # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
+        plt.show()
         plt.clf()
+        
 
         self.zip_buffer.seek(0)
 
@@ -354,6 +359,7 @@ class Results(pickler.Pickler):
         plt.plot(data_frame)
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
+        plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1) # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
