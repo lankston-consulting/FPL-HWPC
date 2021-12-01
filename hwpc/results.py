@@ -56,7 +56,7 @@ class Results(pickler.Pickler):
     
         self.zip_buffer = BytesIO()
         
-        self.zip = zipfile.ZipFile(self.zip_buffer, mode='a',compression=zipfile.ZIP_DEFLATED,allowZip64=False)
+        self.zip = zipfile.ZipFile(self.zip_buffer, mode='w', compression=zipfile.ZIP_STORED, allowZip64=False)
 
         return
 
@@ -64,7 +64,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile() as temp:
             self.working_table.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr('results.csv', temp.read())
+            self.zip.writestr('results.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         return
         
     def save_total_dispositions(self):
@@ -181,31 +181,31 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile() as temp:
             total_all_dispositions.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr('all_dispositions.csv', temp.read())
+            self.zip.writestr('all_dispositions.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         #PRIMARY PRODUCTS
         with tempfile.TemporaryFile() as temp:
             primary_products.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr('primary_products.csv', temp.read())
+            self.zip.writestr('primary_products.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         #CARBON STOCKS
         with tempfile.TemporaryFile() as temp:
             total_in_use.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr('final.csv', temp.read())
+            self.zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         products_in_use = total_in_use[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
         with tempfile.TemporaryFile() as temp:
             products_in_use.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr('products_in_use.csv', temp.read())
+            self.zip.writestr('products_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         swds = total_in_use[nm.Fields.c(nm.Fields.swds)]
         with tempfile.TemporaryFile() as temp:
             swds.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr('swds.csv', temp.read())
+            self.zip.writestr('swds.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         
         plt.subplots_adjust(bottom=0.45)
         plt.title('Total Cumulative Carbon Stocks')
@@ -220,7 +220,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
-            self.zip.writestr('total_cumulative_carbon_stocks.png', temp.read())
+            self.zip.writestr('total_cumulative_carbon_stocks.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         plt.clf()
 
         #CARBON CHANGE
@@ -245,7 +245,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
-            self.zip.writestr('annual_net_change_carbon_stocks.png', temp.read())
+            self.zip.writestr('annual_net_change_carbon_stocks.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         plt.clf()
 
         # TOTAL HARVEST AND TIMBER RESULTS
@@ -253,13 +253,13 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile() as temp:
             timber_products_results.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr('annual_timber_product_output.csv', temp.read())
+            self.zip.writestr('annual_timber_product_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         harvests_results = annual_timber_products[nm.Fields.ccf]
         with tempfile.TemporaryFile() as temp:
             harvests_results.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr('annual_harvests_output.csv', temp.read())
+            self.zip.writestr('annual_harvests_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         
         color = 'tab:red'
         plt.subplots_adjust(bottom=0.4)
@@ -275,7 +275,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
-            self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read())
+            self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         # results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
         # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
         plt.clf()
@@ -285,7 +285,7 @@ class Results(pickler.Pickler):
         print('Output Path:', nm.Output.output_path)
         print('Run Name:', nm.Output.run_name)
 
-        gch.upload_temp('hwpcarbon-data', self.zip_buffer, nm.Output.output_path + '/results/' + nm.Output.run_name + '.zip')
+        gch.upload_temp('hwpcarbon-data', self.zip_buffer, nm.Output.output_path + '/results/' + nm.Output.run_name + '.zip', 'application/zip')
 
         self.zip.close()
         self.zip_buffer.close()
@@ -344,7 +344,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile() as temp:
             data_frame.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr(file_name+'.csv', temp.read())
+            self.zip.writestr(file_name+'.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         plt.subplots_adjust(bottom = adjust_bottom)
         plt.title(title, multialignment='center')
         plt.xlabel('Inventory Year')
@@ -357,7 +357,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1) # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
-            self.zip.writestr(file_name+'.png', temp.read())
+            self.zip.writestr(file_name+'.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         #results_json["total_dumps_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv'
         #results_json["total_dumps_carbon_emitted.png"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.png'
         plt.clf()

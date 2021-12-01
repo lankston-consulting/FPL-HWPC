@@ -81,7 +81,7 @@ class UserData(data_loader.DataLoader):
         return blob
 
     @staticmethod
-    def upload_temp(bucket_name, source_file_obj, destination_blob_name):
+    def upload_temp(bucket_name, source_file_obj, destination_blob_name, content_type):
         """
         Upload a file object from disk. Works with temp files, should also work with "real" files as long
         as they're open as a file object. TODO test real files
@@ -93,7 +93,7 @@ class UserData(data_loader.DataLoader):
         bucket = UserData._client.bucket(bucket_name)
         blob = bucket.blob(destination_blob_name)
 
-        blob.upload_from_file(source_file_obj)
+        blob.upload_from_file(source_file_obj,content_type=content_type)
         #We return the blob object in order to make the temporary file public for download in main.py
         return blob
 
