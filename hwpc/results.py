@@ -242,7 +242,7 @@ class Results(pickler.Pickler):
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         p1 = plt.bar(final.index,products_in_use_change,label="Products In Use",color=color)
         color = 'tab:blue'
-        p2 = plt.bar(final.index,swds_change, color=color)
+        p2 = plt.bar(final.index,swds_change, color=color, label="SWDS")
         plt.legend()
         plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
