@@ -193,7 +193,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile() as temp:
             total_in_use.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            self.zip.writestr('total_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         products_in_use = total_in_use[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
         with tempfile.TemporaryFile() as temp:
@@ -206,17 +206,19 @@ class Results(pickler.Pickler):
             swds.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('swds.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
-        
+
+        fig, ax = plt.subplots()
         plt.subplots_adjust(bottom=0.45)
         plt.title('Total Cumulative Carbon Stocks')
         color = 'tab:red'
         plt.xlabel('Inventory Year')
-        plt.ylabel('Total HWP Carbon Stocks (Million Metric Tons C)')
+        
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-        plt.stackplot(total_all_dispositions.index,final[nm.Fields.c(nm.Fields.products_in_use)].values,final[nm.Fields.c(nm.Fields.swds)].values, colors=("tab:blue","tab:red"),labels=("Products In Use", "SWDS"))
-        plt.legend()
+        ax.stackplot(total_all_dispositions.index,final[nm.Fields.c(nm.Fields.products_in_use)].values,final[nm.Fields.c(nm.Fields.swds)].values, colors=("tab:blue","tab:red"),labels=("Products In Use", "SWDS"))
+        lo = Labeloffset(ax, label="Total Carbon Stocks Metric Tons", axis="y")
+        ax.legend()
         plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
@@ -226,24 +228,30 @@ class Results(pickler.Pickler):
 
         #CARBON CHANGE
         final = pd.DataFrame(self.final)
+        with tempfile.TemporaryFile() as temp:
+            final.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         # We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
         products_in_use_change = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon+"_change"].sum()
         swds_change = final.groupby(by='Year')[nm.Fields.swds+"_"+nm.Fields.carbon+"_change"].sum()
         
+        fig, ax = plt.subplots()
         plt.subplots_adjust(bottom=0.4)
         plt.title('Annual Net Change in Carbon Stocks')
         color = 'tab:red'
         plt.xlabel('Inventory Year')
-        plt.ylabel('Carbon Stocks Change')
-        plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-        plt.axhline(0, color='grey', linewidth=0.8)
-        plt.ylim(min(swds_change), max(swds_change))
+        # plt.ylabel('Carbon Stocks Change')
+        plt.ticklabel_format(axis='y',style='sci',scilimits=(0,0))
+        ax.axhline(0, color='grey', linewidth=0.8)
+        ax.set_ylim([min(swds_change), max(swds_change)])
         txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        p1 = plt.bar(final.index,products_in_use_change,label="Products In Use",color=color)
+        p1 = ax.bar(final.index,products_in_use_change,label="Products In Use",color=color)
         color = 'tab:blue'
-        p2 = plt.bar(final.index,swds_change, color=color, label="SWDS")
-        plt.legend()
+        p2 = ax.bar(final.index,swds_change, color=color, label="SWDS")
+        lo = Labeloffset(ax, label="Metric Tons Carbon", axis="y")
+        ax.legend()
         plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
@@ -265,16 +273,18 @@ class Results(pickler.Pickler):
             self.zip.writestr('annual_harvests_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         
         color = 'tab:red'
+        fig, ax = plt.subplots()
         plt.subplots_adjust(bottom=0.4)
         plt.title('Annual Harvest and Timber Product Output')
         plt.xlabel('Inventory Year')
         txt = "Annual total timber harvest and product output converted to metric tons of carbon, from 1906 to 2018"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        plt.plot(timber_products_results[nm.Fields.harvest_year],timber_products_results[nm.Fields.c(nm.Fields.primary_product_results)], color=color,label="Timber Product Output (Metric Tons C)")
+        ax.plot(timber_products_results[nm.Fields.harvest_year],timber_products_results[nm.Fields.c(nm.Fields.primary_product_results)], color=color,label="Timber Product Output (Metric Tons C)")
         color = 'tab:blue'
-        plt.plot(timber_products_results[nm.Fields.harvest_year],harvests_results, color=color,label="Annual Harvest (MBF)")
-        plt.legend()
-        plt.rcParams["figure.figsize"] = (8,6)
+        ax.plot(timber_products_results[nm.Fields.harvest_year],harvests_results, color=color,label="Annual Harvest (MBF)")
+        lo = Labeloffset(ax, label="Metric Tons Carbon", axis="y")
+        ax.legend()
+        ax.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
@@ -350,15 +360,17 @@ class Results(pickler.Pickler):
             data_frame.to_csv(temp)
             temp.seek(0)
             self.zip.writestr(file_name+'.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            fig, ax = plt.subplots()
         plt.subplots_adjust(bottom = adjust_bottom)
         plt.title(title, multialignment='center')
         plt.xlabel('Inventory Year')
-        plt.ylabel(y_axis)
+        
         if(title=="Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture"):
            plt.ylim(-1,1) 
-        plt.plot(data_frame)
+        ax.plot(data_frame)
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
+        lo = Labeloffset(ax, label=y_axis, axis="y")
         plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1) # File position is at the end of the file.
@@ -370,3 +382,17 @@ class Results(pickler.Pickler):
 
 
         return
+
+
+class Labeloffset():
+    def __init__(self,  ax, label="", axis="y"):
+        self.axis = {"y":ax.yaxis, "x":ax.xaxis}[axis]
+        self.label=label
+        ax.callbacks.connect(axis+'lim_changed', self.update)
+        ax.figure.canvas.draw()
+        self.update(None)
+
+    def update(self, lim):
+        fmt = self.axis.get_major_formatter()
+        self.axis.offsetText.set_visible(False)
+        self.axis.set_label_text(self.label + " "+ fmt.get_offset() )
