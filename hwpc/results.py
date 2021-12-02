@@ -284,7 +284,7 @@ class Results(pickler.Pickler):
         ax.plot(timber_products_results[nm.Fields.harvest_year],harvests_results, color=color,label="Annual Harvest (MBF)")
         lo = Labeloffset(ax, label="Metric Tons Carbon", axis="y")
         ax.legend()
-        ax.rcParams["figure.figsize"] = (8,6)
+        plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
