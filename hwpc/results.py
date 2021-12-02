@@ -225,6 +225,7 @@ class Results(pickler.Pickler):
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('total_cumulative_carbon_stocks.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         plt.clf()
+        plt.close()
 
         #CARBON CHANGE
         final = pd.DataFrame(self.final)
@@ -258,6 +259,7 @@ class Results(pickler.Pickler):
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('annual_net_change_carbon_stocks.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         plt.clf()
+        plt.close()
 
         # TOTAL HARVEST AND TIMBER RESULTS
         timber_products_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.c(nm.Fields.primary_product_results)]]
@@ -293,6 +295,7 @@ class Results(pickler.Pickler):
         # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
         plt.show()
         plt.clf()
+        plt.close()
         
 
         self.zip_buffer.seek(0)
@@ -379,6 +382,7 @@ class Results(pickler.Pickler):
         #results_json["total_dumps_carbon_emitted.csv"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.csv'
         #results_json["total_dumps_carbon_emitted.png"] = nm.Output.output_path + '/results/total_dumps_carbon_emitted.png'
         plt.clf()
+        plt.close()
 
 
         return
