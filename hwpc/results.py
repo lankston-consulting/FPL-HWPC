@@ -70,12 +70,9 @@ class Results(pickler.Pickler):
     def save_total_dispositions(self):
         results_json = {}
 
-        df = pd.DataFrame(self.working_table)
         final = pd.DataFrame(self.final)
         primary_products = pd.DataFrame(self.primary_products)
-        harvests = pd.DataFrame(self.harvests)
         total_in_use = pd.DataFrame(self.all_in_use)
-        recycled = pd.DataFrame(self.recovered_in_use)
         total_all_dispositions = pd.DataFrame(self.total_all_dispositions)
         annual_timber_products = pd.DataFrame(self.annual_timber_products)
 
@@ -293,7 +290,6 @@ class Results(pickler.Pickler):
             self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         # results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
         # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
-        plt.show()
         plt.clf()
         plt.close()
         
