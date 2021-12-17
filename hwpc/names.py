@@ -74,6 +74,7 @@ class Names(singleton.Singleton):
 
         timber_product_results = 'timber_products'
         primary_product_results = 'primary_products'
+        primary_product_sum = 'primary_products_sum'
         end_use_results = 'end_use'
         end_use_sum = 'end_use_sum'
         products_in_use = 'products_in_use'
@@ -107,6 +108,9 @@ class Names(singleton.Singleton):
 
         burned_with_energy_capture = 'burned_captured'
         burned_wo_energy_capture = 'burned_wo_energy_capture'
+
+        accounted = 'accounted'
+        error = 'error'
 
         carbon = 'mtc'
         co2e = 'co2e'

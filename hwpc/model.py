@@ -45,7 +45,7 @@ class Model(object):
         self.calculate_fuel_burned()
         self.calculate_discarded_burned()
         self.summarize()
-        self.convert_emissions_c02_e()
+        self.convert_c02_e()
         self.final_table()
 
         self.results.save_results()
@@ -423,7 +423,7 @@ class Model(object):
 
         return
 
-    def convert_emissions_c02_e(self):
+    def convert_c02_e(self):
 
         C = nm.Fields.c
         CO2 = nm.Fields.co2
@@ -448,11 +448,28 @@ class Model(object):
         emissions['recycled_emitted'] = emissions['recycled_emitted'][CO2(nm.Fields.recycled)]
         total_all_dispositions = total_all_dispositions.merge(emissions['recycled_emitted'], on=nm.Fields.harvest_year)
         emissions['burned_emitted'] = emissions['burned_emitted'][CO2(nm.Fields.emitted)]
-        emissions['burned_emitted'] = emissions['burned_emitted'].rename(nm.Fields.burned_wo_energy_capture)
+        emissions['burned_emitted'] = emissions['burned_emitted'].rename(CO2(nm.Fields.burned_wo_energy_capture))
         total_all_dispositions = total_all_dispositions.merge(emissions['burned_emitted'], on=nm.Fields.harvest_year)
         emissions['compost_emitted'] = emissions['compost_emitted'][CO2(nm.Fields.composted)]
         total_all_dispositions = total_all_dispositions.merge(emissions['compost_emitted'], on=nm.Fields.harvest_year)
 
+        mtc_columns = [x for x in total_all_dispositions.columns if x.find('mtc') > 1]
+        co2e_columns = [x for x in total_all_dispositions.columns if x.find('co2e') > 1]
+
+        mtc_rename = [x.replace('mtc', 'co2e') for x in mtc_columns]
+        total_all_dispositions[mtc_rename] = total_all_dispositions[mtc_columns].apply(self.c_to_co2d, axis = 1)
+        total_all_dispositions[CO2(nm.Fields.emitted)] = total_all_dispositions[co2e_columns].sum(axis=1)
+
+        total_all_dispositions = total_all_dispositions.merge(self.results.annual_timber_products, on=nm.Fields.harvest_year)
+        total_all_dispositions[C(nm.Fields.primary_product_sum)] = total_all_dispositions[C(nm.Fields.primary_product_results)].cumsum()
+        total_all_dispositions[CO2(nm.Fields.primary_product_sum)] = total_all_dispositions[C(nm.Fields.primary_product_sum)].apply(self.c_to_co2d)
+
+        df_keys = [nm.Fields.harvest_year, CO2(nm.Fields.primary_product_sum), CO2(nm.Fields.products_in_use), CO2(nm.Fields.swds), CO2(nm.Fields.emitted)]
+        big_table = total_all_dispositions[df_keys]
+        big_table[nm.Fields.accounted] = big_table[df_keys[2:]].sum(axis = 1)
+        big_table[nm.Fields.error] = big_table[CO2(nm.Fields.primary_product_sum)] - big_table[nm.Fields.accounted]
+
+        self.results.big_table = big_table
         self.results.total_all_dispositions = total_all_dispositions
 
         return
