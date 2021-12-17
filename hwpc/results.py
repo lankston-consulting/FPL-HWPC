@@ -296,7 +296,6 @@ class Results(pickler.Pickler):
         if not os.path.exists('./output/'):
             os.makedirs('./output')
         
-
         self.zip.close()
         self.zip_buffer.seek(0)
 
@@ -364,7 +363,7 @@ class Results(pickler.Pickler):
             data_frame.to_csv(temp)
             temp.seek(0)
             self.zip.writestr(file_name+'.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
-            fig, ax = plt.subplots()
+        fig, ax = plt.subplots()
         plt.subplots_adjust(bottom = adjust_bottom)
         plt.title(title, multialignment='center')
         plt.xlabel('Inventory Year')

@@ -75,6 +75,7 @@ class Names(singleton.Singleton):
         timber_product_results = 'timber_products'
         primary_product_results = 'primary_products'
         end_use_results = 'end_use'
+        end_use_sum = 'end_use_sum'
         products_in_use = 'products_in_use'
         discarded_products_results = 'discarded_products'
         running_discarded_products = 'discarded_products_cumsum'
