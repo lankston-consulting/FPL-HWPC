@@ -27,6 +27,7 @@ class Results(pickler.Pickler):
         self.discarded_wood_paper = None
         self.discarded_products = None
         self.dispositions = None
+        self.big_table = None
 
         
 
@@ -60,12 +61,13 @@ class Results(pickler.Pickler):
 
         return
 
-    def save_results(self):
-        with tempfile.TemporaryFile() as temp:
-            self.working_table.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('results.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
-        return
+    # def save_results(self):
+    #     working_table = pd.DataFrame(self.working_table)
+    #     with tempfile.TemporaryFile() as temp:
+    #         working_table.to_csv(temp)
+    #         temp.seek(0)
+    #         self.zip.writestr('results.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+    #     return
         
     def save_total_dispositions(self):
         results_json = {}
@@ -75,6 +77,7 @@ class Results(pickler.Pickler):
         total_in_use = pd.DataFrame(self.all_in_use)
         total_all_dispositions = pd.DataFrame(self.total_all_dispositions)
         annual_timber_products = pd.DataFrame(self.annual_timber_products)
+        big_table = pd.DataFrame(self.big_table)
 
         # CUMULATIVE DISCARDED PRODUCTS
         cum_products = total_all_dispositions[nm.Fields.c(nm.Fields.products_in_use)]
@@ -113,7 +116,7 @@ class Results(pickler.Pickler):
         #                 'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_wo_energy_capture_emit = total_all_dispositions[nm.Fields.burned_wo_energy_capture]
+        burned_wo_energy_capture_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.burned_wo_energy_capture)]
         self.generate_graph(burned_wo_energy_capture_emit,
                         0.4,
                         'Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture',
@@ -174,36 +177,43 @@ class Results(pickler.Pickler):
                         'total_fuelwood_carbon_emitted',
                         'Metric Tons CO2e')
 
+        # self.generate_graph(big_table,
+        #                     0.5,
+        #                     'Big Table Results',
+        #                     'This table compares the collective sum of products in use, emissions, and harvest data in CO2e',
+        #                     'big_table',
+        #                     'Metric Tons CO2e')
+
         # ALL DISPOSITIONS
-        with tempfile.TemporaryFile() as temp:
-            total_all_dispositions.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('all_dispositions.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        # with tempfile.TemporaryFile() as temp:
+        #     total_all_dispositions.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('all_dispositions.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-        #PRIMARY PRODUCTS
-        with tempfile.TemporaryFile() as temp:
-            primary_products.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('primary_products.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        # #PRIMARY PRODUCTS
+        # with tempfile.TemporaryFile() as temp:
+        #     primary_products.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('primary_products.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-        #CARBON STOCKS
-        with tempfile.TemporaryFile() as temp:
-            total_in_use.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('total_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        # #CARBON STOCKS
+        # with tempfile.TemporaryFile() as temp:
+        #     total_in_use.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('total_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-        products_in_use = total_in_use[nm.Fields.products_in_use+"_"+nm.Fields.carbon]
-        with tempfile.TemporaryFile() as temp:
-            products_in_use.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('products_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        products_in_use = big_table[nm.Fields.co2(nm.Fields.products_in_use)]
+        # with tempfile.TemporaryFile() as temp:
+        #     products_in_use.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('products_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-        swds = total_in_use[nm.Fields.c(nm.Fields.swds)]
-        with tempfile.TemporaryFile() as temp:
-            swds.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('swds.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
-
+        swds = big_table[nm.Fields.co2(nm.Fields.swds)]
+        # with tempfile.TemporaryFile() as temp:
+        #     swds.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('swds.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        print(big_table)
         fig, ax = plt.subplots()
         plt.subplots_adjust(bottom=0.45)
         plt.title('Total Cumulative Carbon Stocks')
@@ -213,8 +223,8 @@ class Results(pickler.Pickler):
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
-        ax.stackplot(total_all_dispositions.index,final[nm.Fields.c(nm.Fields.products_in_use)].values,final[nm.Fields.c(nm.Fields.swds)].values, colors=("tab:blue","tab:red"),labels=("Products In Use", "SWDS"))
-        lo = Labeloffset(ax, label="Total Carbon Stocks Metric Tons", axis="y")
+        ax.stackplot(total_all_dispositions.index,big_table[nm.Fields.co2(nm.Fields.products_in_use)].values,big_table[nm.Fields.co2(nm.Fields.swds)].values, colors=("tab:blue","tab:red"),labels=("Products In Use", "SWDS"))
+        Labeloffset(ax, label="Total Carbon Stocks Metric Tons", axis="y")
         ax.legend()
         plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
@@ -226,10 +236,10 @@ class Results(pickler.Pickler):
 
         #CARBON CHANGE
         final = pd.DataFrame(self.final)
-        with tempfile.TemporaryFile() as temp:
-            final.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        # with tempfile.TemporaryFile() as temp:
+        #     final.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         # We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
         products_in_use_change = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon+"_change"].sum()
         swds_change = final.groupby(by='Year')[nm.Fields.swds+"_"+nm.Fields.carbon+"_change"].sum()
@@ -248,7 +258,7 @@ class Results(pickler.Pickler):
         p1 = ax.bar(final.index,products_in_use_change,label="Products In Use",color=color)
         color = 'tab:blue'
         p2 = ax.bar(final.index,swds_change, color=color, label="SWDS")
-        lo = Labeloffset(ax, label="Metric Tons Carbon", axis="y")
+        Labeloffset(ax, label="Metric Tons Carbon", axis="y")
         ax.legend()
         plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
@@ -260,17 +270,18 @@ class Results(pickler.Pickler):
 
         # TOTAL HARVEST AND TIMBER RESULTS
         timber_products_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.c(nm.Fields.primary_product_results)]]
-        with tempfile.TemporaryFile() as temp:
-            timber_products_results.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('annual_timber_product_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
-
-        harvests_results = annual_timber_products[nm.Fields.ccf]
-        with tempfile.TemporaryFile() as temp:
-            harvests_results.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr('annual_harvests_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        # with tempfile.TemporaryFile() as temp:
+        #     timber_products_results.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('annual_timber_product_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+    
+        harvests_results = annual_timber_products[[nm.Fields.harvest_year,nm.Fields.ccf]]
+        # with tempfile.TemporaryFile() as temp:
+        #     harvests_results.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('annual_harvests_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         
+    
         color = 'tab:red'
         fig, ax = plt.subplots()
         plt.subplots_adjust(bottom=0.4)
@@ -280,14 +291,40 @@ class Results(pickler.Pickler):
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         ax.plot(timber_products_results[nm.Fields.harvest_year],timber_products_results[nm.Fields.c(nm.Fields.primary_product_results)], color=color,label="Timber Product Output (Metric Tons C)")
         color = 'tab:blue'
-        ax.plot(timber_products_results[nm.Fields.harvest_year],harvests_results, color=color,label="Annual Harvest (MBF)")
-        lo = Labeloffset(ax, label="Metric Tons Carbon", axis="y")
+        ax.plot(timber_products_results[nm.Fields.harvest_year],harvests_results[nm.Fields.ccf], color=color,label="Annual Harvest (MBF)")
+        Labeloffset(ax, label="Metric Tons Carbon", axis="y")
         ax.legend()
         plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read(), compress_type=zipfile.ZIP_STORED)
+        # results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
+        # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
+        plt.clf()
+        plt.close()
+
+#--------------------------------------------------------
+
+        fig, ax = plt.subplots()
+        plt.subplots_adjust(bottom=0.4)
+        plt.title('Big Table Results')
+        plt.xlabel('Inventory Year')
+        txt = "This table compares the collective sum of products in use, emissions, and harvest data in CO2e"
+        plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
+        ax.plot(big_table[nm.Fields.harvest_year],big_table[nm.Fields.co2(nm.Fields.primary_product_sum)],label="Primary Products Sum")
+        ax.plot(big_table[nm.Fields.harvest_year],big_table[nm.Fields.co2(nm.Fields.products_in_use)],label="Products in Use")
+        ax.plot(big_table[nm.Fields.harvest_year],big_table[nm.Fields.co2(nm.Fields.swds)],label="SWDS")
+        ax.plot(big_table[nm.Fields.harvest_year],big_table[nm.Fields.co2(nm.Fields.emitted)],label="Emitted")
+        ax.plot(big_table[nm.Fields.harvest_year],big_table['accounted'],label="Accounted")
+        ax.plot(big_table[nm.Fields.harvest_year],big_table['error'],label="Error")
+        Labeloffset(ax, label="Metric Tons CO2E", axis="y")
+        ax.legend()
+        plt.rcParams["figure.figsize"] = (8,6)
+        with tempfile.TemporaryFile(suffix=".png") as temp:
+            plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
+            temp.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.writestr('big_table.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         # results_json["total_end_use_products.csv"] = nm.Output.output_path + '/results/total_end_use_products.csv'
         # results_json["total_end_use_products.png"] = nm.Output.output_path + '/results/total_end_use_products.png'
         plt.clf()
@@ -359,10 +396,10 @@ class Results(pickler.Pickler):
 
     def generate_graph(self,data_frame,adjust_bottom,title,txt,file_name,y_axis):
 
-        with tempfile.TemporaryFile() as temp:
-            data_frame.to_csv(temp)
-            temp.seek(0)
-            self.zip.writestr(file_name+'.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        # with tempfile.TemporaryFile() as temp:
+        #     data_frame.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr(file_name+'.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         fig, ax = plt.subplots()
         plt.subplots_adjust(bottom = adjust_bottom)
         plt.title(title, multialignment='center')
@@ -373,7 +410,7 @@ class Results(pickler.Pickler):
         ax.plot(data_frame)
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        lo = Labeloffset(ax, label=y_axis, axis="y")
+        Labeloffset(ax, label=y_axis, axis="y")
         plt.rcParams["figure.figsize"] = (8,6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1) # File position is at the end of the file.
