@@ -2,11 +2,17 @@ from datetime import timedelta
 import math
 import numpy as np
 import pandas as pd
+from pandarallel import pandarallel
+import timeit
+import sys
+# import dask.dataframe as dd
+# from dask.multiprocessing import get
 
 from hwpc import model_data
 from hwpc import results
 from hwpc.names import Names as nm
 
+pandarallel.initialize()
 
 class Model(object):
 
@@ -48,7 +54,7 @@ class Model(object):
         self.convert_c02_e()
         self.final_table()
 
-        #self.results.save_results()
+        self.results.save_results()
         self.results.save_total_dispositions()
 
         return
@@ -133,7 +139,7 @@ class Model(object):
         
         end_use[nm.Fields.end_use_sum] = end_use.groupby(by=nm.Fields.end_use_id)[nm.Fields.end_use_results].cumsum()
 
-        def halflife_func(df):
+        def halflife_func(df: pd.DataFrame) -> pd.DataFrame:
             # id = df[nm.Fields.end_use_id].iloc[0]
             halflife = df[nm.Fields.end_use_halflife].iloc[0]
             
@@ -153,7 +159,17 @@ class Model(object):
             return df
         
         end_use[nm.Fields.products_in_use] = 0
+        
+        s = timeit.default_timer()
         products_in_use = end_use.groupby(by=nm.Fields.end_use_id).apply(halflife_func)
+        print('STANDARD', timeit.default_timer() - s)
+        s = timeit.default_timer()
+        products_in_use = end_use.groupby(by=nm.Fields.end_use_id).parallel_apply(halflife_func)
+        print('PARALLEL', timeit.default_timer() - s)
+        
+        # TODO try to get dask tpo speed this up
+        # end_use = dd.from_pandas(end_use, npartitions=30)
+        # products_in_use = end_use.map_partitions(lambda df: df.groupby(by=nm.Fields.end_use_id).apply((lambda dg: halflife_func(*dg)), axis=1)).compute(get=get)
         
         self.results.products_in_use = products_in_use
         self.results.working_table = products_in_use
@@ -170,24 +186,15 @@ class Model(object):
         # then subtracting the amount discarded in previous years.
         products_in_use = self.results.working_table
         products_in_use[nm.Fields.discarded_products_results] = products_in_use[nm.Fields.end_use_sum] - products_in_use[nm.Fields.products_in_use] 
-        # products_in_use[nm.Fields.running_discarded_products] = products_in_use.groupby(by=nm.Fields.end_use_id)[nm.Fields.discarded_products_results].cumsum().shift(fill_value=0)
         
-        # products_in_use[nm.Fields.discarded_products_vintage] = products_in_use[nm.Fields.discarded_products_results] - products_in_use[nm.Fields.running_discarded_products]
-        # products_in_use[nm.Fields.discarded_products_adjusted] = products_in_use[nm.Fields.running_discarded_products] - products_in_use[nm.Fields.discarded_products_vintage]
-
+        # Tease out the NEW discarded amounts for this year to dispose of them in the correct pools
+        adjust = products_in_use.groupby(by=nm.Fields.end_use_id)[nm.Fields.discarded_products_results].shift()
+        products_in_use[nm.Fields.discarded_in_year] = products_in_use[nm.Fields.discarded_products_results] - adjust
+    
         # Zero out the stuff that was fuel.
         df_filter = products_in_use[nm.Fields.fuel] == 1
         # products_in_use.loc[df_filter, nm.Fields.discarded_products_adjusted] = 0
         products_in_use.loc[df_filter, nm.Fields.discarded_products_results] = 0
-
-        # Calculate the amount of wood and paper from year y discarded in year i by 
-        # summing all discards up, summing all paper discards up, and then subtracting
-        # the paper total from the grand total to get the amount of wood.
-        # self.results.discarded_wood_paper = products_in_use.groupby(by=[nm.Fields.harvest_year, nm.Fields.discard_type_id]).agg({nm.Fields.discarded_products_adjusted: np.sum})
-        # self.results.discarded_wood_paper = self.results.discarded_wood_paper.rename(columns={nm.Fields.discarded_products_adjusted: nm.Fields.discarded_products_type_sum})
-        self.results.discarded_wood_paper = products_in_use.groupby(by=[nm.Fields.harvest_year, nm.Fields.discard_type_id]).agg({nm.Fields.discarded_products_results: np.sum})
-        self.results.discarded_wood_paper = self.results.discarded_wood_paper.rename(columns={nm.Fields.discarded_products_results: nm.Fields.discarded_products_type_sum})
-
 
         # Multiply the amount discarded this year by the disposition ratios to get the
         # amount that goes into landfills, dumps, etc, and then add these to the 
@@ -197,11 +204,11 @@ class Model(object):
         # If the years mismatch, there will be NaN, so get rid of them
         products_in_use = products_in_use.dropna()
 
-        # products_in_use[nm.Fields.discard_dispositions] = products_in_use[nm.Fields.discarded_products_adjusted] * products_in_use[nm.Fields.discard_destination_ratio]
-        products_in_use[nm.Fields.discard_dispositions] = products_in_use[nm.Fields.discarded_products_results] * products_in_use[nm.Fields.discard_destination_ratio]
-        
+        products_in_use[nm.Fields.discard_dispositions] = products_in_use[nm.Fields.discarded_in_year] * products_in_use[nm.Fields.discard_destination_ratio]
+        products_in_use[nm.Fields.discard_dispositions] = products_in_use.groupby(by=[nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id])[nm.Fields.discard_dispositions].cumsum()
+
         # Drop the lowest year to prevent negative number creep
-        products_in_use = products_in_use[products_in_use[nm.Fields.harvest_year] != products_in_use[nm.Fields.harvest_year].min()]
+        # products_in_use = products_in_use[products_in_use[nm.Fields.harvest_year] != products_in_use[nm.Fields.harvest_year].min()]
         
         self.results.discarded_products = products_in_use
         self.results.working_table = products_in_use
