@@ -201,18 +201,18 @@ class Results(pickler.Pickler):
         #     temp.seek(0)
         #     self.zip.writestr('total_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-        products_in_use = big_table[nm.Fields.co2(nm.Fields.products_in_use)]
+        products_in_use = self.big_table[nm.Fields.co2(nm.Fields.products_in_use)]
         # with tempfile.TemporaryFile() as temp:
         #     products_in_use.to_csv(temp)
         #     temp.seek(0)
         #     self.zip.writestr('products_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-        swds = big_table[nm.Fields.co2(nm.Fields.swds)]
+        swds = self.big_table[nm.Fields.co2(nm.Fields.swds)]
         # with tempfile.TemporaryFile() as temp:
         #     swds.to_csv(temp)
         #     temp.seek(0)
         #     self.zip.writestr('swds.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
-        print(big_table)
+        print(self.big_table)
         fig, ax = plt.subplots()
         plt.subplots_adjust(bottom=0.45)
         plt.title('Total Cumulative Carbon Stocks')

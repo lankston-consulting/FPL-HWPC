@@ -2,17 +2,17 @@ from datetime import timedelta
 import math
 import numpy as np
 import pandas as pd
-from pandarallel import pandarallel
 import timeit
-import sys
 # import dask.dataframe as dd
 # from dask.multiprocessing import get
+import multiprocessing as mp
+from functools import reduce
 
 from hwpc import model_data
 from hwpc import results
 from hwpc.names import Names as nm
 
-pandarallel.initialize()
+# pandarallel.initialize()
 
 class Model(object):
 
@@ -139,6 +139,7 @@ class Model(object):
         
         end_use[nm.Fields.end_use_sum] = end_use.groupby(by=nm.Fields.end_use_id)[nm.Fields.end_use_results].cumsum()
 
+        # def halflife_func(q: mp.Queue, df: pd.DataFrame) -> pd.DataFrame:
         def halflife_func(df: pd.DataFrame) -> pd.DataFrame:
             # id = df[nm.Fields.end_use_id].iloc[0]
             halflife = df[nm.Fields.end_use_halflife].iloc[0]
@@ -161,11 +162,16 @@ class Model(object):
         end_use[nm.Fields.products_in_use] = 0
         
         s = timeit.default_timer()
+        # x = None
+        # with mp.Pool() as pool:
+        #     x = pool.map(halflife_func, end_use.groupby(by=nm.Fields.end_use_id))
+        # products_in_use = reduce(lambda x, y: pd.concat(x, y), x)
+        
         products_in_use = end_use.groupby(by=nm.Fields.end_use_id).apply(halflife_func)
-        print('STANDARD', timeit.default_timer() - s)
-        s = timeit.default_timer()
-        products_in_use = end_use.groupby(by=nm.Fields.end_use_id).parallel_apply(halflife_func)
-        print('PARALLEL', timeit.default_timer() - s)
+        print('PRODUCTS IN USE APPLY', timeit.default_timer() - s)
+        # s = timeit.default_timer()
+        # products_in_use = end_use.groupby(by=nm.Fields.end_use_id).parallel_apply(halflife_func)
+        # print('PARALLEL', timeit.default_timer() - s)
         
         # TODO try to get dask tpo speed this up
         # end_use = dd.from_pandas(end_use, npartitions=30)
@@ -205,7 +211,7 @@ class Model(object):
         products_in_use = products_in_use.dropna()
 
         products_in_use[nm.Fields.discard_dispositions] = products_in_use[nm.Fields.discarded_in_year] * products_in_use[nm.Fields.discard_destination_ratio]
-        products_in_use[nm.Fields.discard_dispositions] = products_in_use.groupby(by=[nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id])[nm.Fields.discard_dispositions].cumsum()
+        # products_in_use[nm.Fields.discard_dispositions] = products_in_use.groupby(by=[nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id])[nm.Fields.discard_dispositions_in_year].cumsum()
 
         # Drop the lowest year to prevent negative number creep
         # products_in_use = products_in_use[products_in_use[nm.Fields.harvest_year] != products_in_use[nm.Fields.harvest_year].min()]
@@ -268,26 +274,23 @@ class Model(object):
                 for h in range(len(df)):
                     v = df[nm.Fields.can_decay].iloc[h]
                     weights = weightspace[:len(df) - h]
-                    decayed = [v * w * self.end_use_loss_factor for w in weights]
+                    decayed = [v * w for w in weights]
                     df.iloc[h:, df.columns.get_loc(nm.Fields.discard_remaining)] = df.iloc[h:, df.columns.get_loc(nm.Fields.discard_remaining)] + decayed
             
             return df
         
         df_key = [nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]
         dispositions[nm.Fields.discard_remaining] = 0
+        s = timeit.default_timer()
         dispositions = dispositions.groupby(by=df_key).apply(halflife_func)
+        print('DISPOSITIONS APPLY', timeit.default_timer() - s)
         # dispositions[nm.Fields.running_can_decay] = dispositions.groupby(by=df_key)[nm.Fields.can_decay].cumsum()
         # dispositions[nm.Fields.discard_remaining_sum] = dispositions.groupby(by=df_key)[nm.Fields.discard_remaining].cumsum()
 
         # Calculate emissions from stuff discarded in year y by subracting the amount
         # remaining from the total amount that could decay.
-        # dispositions[nm.Fields.emitted] = dispositions[nm.Fields.running_can_decay] - dispositions[nm.Fields.discard_remaining]
-        dispositions[nm.Fields.emitted] = dispositions[nm.Fields.can_decay] - dispositions[nm.Fields.discard_remaining]
-        # Add this year's emissions to the total for the current inventory year.
-        # dispositions[nm.Fields.emitted_sum] = dispositions.groupby(by=df_key)[nm.Fields.emitted].cumsum()
-
-        # dispositions[nm.Fields.present] = dispositions.groupby(by=df_key).agg({nm.Fields.discard_remaining: np.cumsum})
-        # dispositions[nm.Fields.present] = dispositions[nm.Fields.discard_remaining_sum]
+        # dispositions[nm.Fields.emitted] = dispositions[nm.Fields.can_decay] - dispositions[nm.Fields.discard_remaining]
+        dispositions[nm.Fields.emitted] = dispositions[nm.Fields.discard_remaining] - dispositions[nm.Fields.can_decay]
         dispositions[nm.Fields.present] = dispositions[nm.Fields.discard_remaining]
 
         # Landfills are a bit different. Not all of it is subject to decay, so get the fixed amount and add it to present through time
@@ -472,7 +475,7 @@ class Model(object):
         total_all_dispositions[CO2(nm.Fields.primary_product_sum)] = total_all_dispositions[C(nm.Fields.primary_product_sum)].apply(self.c_to_co2d)
 
         df_keys = [nm.Fields.harvest_year, CO2(nm.Fields.primary_product_sum), CO2(nm.Fields.products_in_use), CO2(nm.Fields.swds), CO2(nm.Fields.emitted)]
-        big_table = total_all_dispositions[df_keys]
+        big_table = total_all_dispositions[df_keys].drop_duplicates()
         big_table[nm.Fields.accounted] = big_table[df_keys[2:]].sum(axis = 1)
         big_table[nm.Fields.error] = big_table[CO2(nm.Fields.primary_product_sum)] - big_table[nm.Fields.accounted]
 
@@ -497,6 +500,11 @@ class Model(object):
         final[CHANGE(C(nm.Fields.swds))] = final[C(nm.Fields.swds)].diff()
 
         self.results.final = final
+
+        self.results.big_table.to_csv('x_big_table.csv')
+        self.results.total_all_dispositions.to_csv('x_total_all.csv')
+        self.results.working_table.to_csv('x_working.csv')
+        self.results.final.to_csv('x_final.csv')
 
         return
 

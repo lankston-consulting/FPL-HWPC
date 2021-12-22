@@ -80,10 +80,11 @@ class Names(singleton.Singleton):
         products_in_use = 'products_in_use'
         discarded_products_results = 'discarded_products'
         discarded_in_year = 'discarded_in_year'
-        running_discarded_products = 'discarded_products_cumsum'
-        discarded_products_vintage = 'discarded_products_adjustment'
-        discarded_products_adjusted = 'discarded_products_adjusted'
-        discarded_products_type_sum = 'discarded_products_type_sum'
+        discard_dispositions_in_year = 'discard_dispositions_in_year'
+        # running_discarded_products = 'discarded_products_cumsum'
+        # discarded_products_vintage = 'discarded_products_adjustment'
+        # discarded_products_adjusted = 'discarded_products_adjusted'
+        # discarded_products_type_sum = 'discarded_products_type_sum'
         discard_dispositions = 'discard_dispositions'
 
 
