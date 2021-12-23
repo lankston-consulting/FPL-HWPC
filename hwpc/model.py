@@ -141,15 +141,11 @@ class Model(object):
 
         # def halflife_func(q: mp.Queue, df: pd.DataFrame) -> pd.DataFrame:
         def halflife_func(df: pd.DataFrame) -> pd.DataFrame:
-            # id = df[nm.Fields.end_use_id].iloc[0]
             halflife = df[nm.Fields.end_use_halflife].iloc[0]
             
             if halflife == 0:
                 df.loc[:, nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
             else:
-                # halflife = 1 - math.exp(-math.log(2) / halflife)
-                # df.loc[:, nm.Fields.products_in_use] = df[nm.Fields.end_use_results].ewm(halflife=halflife, adjust=False).mean() * self.end_use_loss_factor
-
                 weightspace = [math.exp(-math.log(2) * x / halflife) for x in range(len(df))]    
                 for h in range(len(df)):
                     v = df[nm.Fields.end_use_results].iloc[h]
@@ -229,7 +225,6 @@ class Model(object):
         # Calculate the amount in landfills that was discarded during this inventory year
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio. This will be used in later iterations of the i loop.
-
         destinations = self.md.data[nm.Tables.discard_destinations]
         landfill_id = destinations[destinations[nm.Fields.discard_description] == nm.Fields.landfills][nm.Fields.discard_destination_id].iloc[0]
 
@@ -267,30 +262,26 @@ class Model(object):
             if halflife == 0:
                 df.loc[:, nm.Fields.discard_remaining] = 0
             else:  
-                # halflife = 1 - math.exp(-math.log(2) / halflife)
-                # df.loc[:, nm.Fields.discard_remaining] = df[nm.Fields.can_decay].ewm(halflife=halflife, adjust=False).mean() 
-
                 weightspace = [math.exp(-math.log(2) * x / halflife) for x in range(len(df))]    
                 for h in range(len(df)):
                     v = df[nm.Fields.can_decay].iloc[h]
                     weights = weightspace[:len(df) - h]
                     decayed = [v * w for w in weights]
-                    df.iloc[h:, df.columns.get_loc(nm.Fields.discard_remaining)] = df.iloc[h:, df.columns.get_loc(nm.Fields.discard_remaining)] + decayed
-            
+                    df.iloc[h:, df.columns.get_loc(nm.Fields.discard_remaining)] = df.iloc[h:, df.columns.get_loc(nm.Fields.discard_remaining)] + decayed            
             return df
         
         df_key = [nm.Fields.end_use_id, nm.Fields.discard_type_id, nm.Fields.discard_destination_id]
         dispositions[nm.Fields.discard_remaining] = 0
+
         s = timeit.default_timer()
         dispositions = dispositions.groupby(by=df_key).apply(halflife_func)
         print('DISPOSITIONS APPLY', timeit.default_timer() - s)
-        # dispositions[nm.Fields.running_can_decay] = dispositions.groupby(by=df_key)[nm.Fields.can_decay].cumsum()
-        # dispositions[nm.Fields.discard_remaining_sum] = dispositions.groupby(by=df_key)[nm.Fields.discard_remaining].cumsum()
+
+        dispositions['could_decay'] = dispositions.groupby(by=df_key)[nm.Fields.can_decay].cumsum()
 
         # Calculate emissions from stuff discarded in year y by subracting the amount
         # remaining from the total amount that could decay.
-        # dispositions[nm.Fields.emitted] = dispositions[nm.Fields.can_decay] - dispositions[nm.Fields.discard_remaining]
-        dispositions[nm.Fields.emitted] = dispositions[nm.Fields.discard_remaining] - dispositions[nm.Fields.can_decay]
+        dispositions[nm.Fields.emitted] = dispositions['could_decay'] - dispositions[nm.Fields.discard_remaining]
         dispositions[nm.Fields.present] = dispositions[nm.Fields.discard_remaining]
 
         # Landfills are a bit different. Not all of it is subject to decay, so get the fixed amount and add it to present through time
@@ -305,11 +296,6 @@ class Model(object):
 
         self.results.dispositions = dispositions
         self.results.working_table = dispositions
-        
-        # max_year = dispositions[nm.Fields.harvest_year].max()
-        # total_dispositions = dispositions.loc[dispositions[nm.Fields.harvest_year] == max_year, df_key + [nm.Fields.harvest_year, nm.Fields.discard_remaining]]
-
-        # self.results.total_dispositions =  total_dispositions
 
         return
 
@@ -322,8 +308,6 @@ class Model(object):
         # product to the total for this year.
         df_keys = [nm.Fields.harvest_year, nm.Fields.primary_product_id, nm.Fields.primary_product_results]
         fuel_captured = dispositions.loc[dispositions[nm.Fields.fuel] == 1, df_keys].drop_duplicates()
-        # fuel_captured = fuel_captured.groupby(by=nm.Fields.harvest_year).agg({nm.Fields.primary_product_results: np.sum})
-        # fuel_captured[nm.Fields.burned_with_energy_capture] = fuel_captured.sort_values(by=nm.Fields.harvest_year).agg({nm.Fields.primary_product_results: np.cumsum})
 
         self.results.burned_captured = fuel_captured
 
@@ -348,7 +332,6 @@ class Model(object):
         # TODO finish this function
         # Burned dispositions only? Is this NOT FUEL only?
 
-
         return
 
     def summarize(self):
@@ -360,16 +343,18 @@ class Model(object):
 
         C = nm.Fields.c
 
-        # NOTE all emitted_sum were changed to just emitted 2021-12-16 now that everything is cumulative
-
         results[C(nm.Fields.products_in_use)] = results[nm.Fields.products_in_use] * results[nm.Fields.conversion_factor]
         results[C(nm.Fields.present)] = results[nm.Fields.present] * results[nm.Fields.conversion_factor]
         results[C(nm.Fields.emitted)] = results[nm.Fields.emitted] * results[nm.Fields.conversion_factor]
+
+        df_keys = [nm.Fields.harvest_year, C(nm.Fields.products_in_use)]
+        products_in_use = results.loc[:, df_keys].drop_duplicates().groupby(by=nm.Fields.harvest_year).agg({C(nm.Fields.products_in_use): np.sum})
+        self.results.products_in_use = products_in_use
         
+        # Get discard destination IDs for sorting through results
         discard_destinations = self.md.data[nm.Tables.discard_destinations]
 
         burned_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.burned][nm.Fields.discard_destination_id].iloc[0]
-        # df_keys = [nm.Fields.harvest_year, C(nm.Fields.emitted_sum)]
         df_keys = [nm.Fields.harvest_year, C(nm.Fields.emitted)]
         burned = results.loc[results[nm.Fields.discard_destination_id] == burned_id, df_keys].drop_duplicates().groupby(by=nm.Fields.harvest_year).agg({C(nm.Fields.emitted): np.sum})
         self.results.burned = burned
@@ -377,11 +362,6 @@ class Model(object):
         composted_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.composted][nm.Fields.discard_destination_id].iloc[0]
         composted = results.loc[results[nm.Fields.discard_destination_id] == composted_id, df_keys].drop_duplicates().groupby(by=nm.Fields.harvest_year).agg({C(nm.Fields.emitted): np.sum})
         self.results.composted = composted
-
-        products_in_use = self.results.products_in_use.merge(conversion, on=nm.Fields.primary_product_id)
-        products_in_use[C(nm.Fields.products_in_use)] = results[nm.Fields.products_in_use] * results[nm.Fields.conversion_factor]
-        products_in_use = products_in_use.groupby(by=[nm.Fields.harvest_year]).agg({C(nm.Fields.products_in_use): np.sum})
-        self.results.products_in_use = products_in_use
 
         df_keys = [nm.Fields.harvest_year, C(nm.Fields.present)]
         recycled_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.recycled][nm.Fields.discard_destination_id].iloc[0]
@@ -422,6 +402,8 @@ class Model(object):
         
         self.results.working_table = results
 
+        # Select the unique combination of year, timber product, primary product, and convert primary products
+        # to carbon for analysis of results
         df_keys = [nm.Fields.harvest_year, nm.Fields.timber_product_id, nm.Fields.primary_product_id]
         df_values = [nm.Fields.primary_product_results, nm.Fields.conversion_factor]
         timber_products_conversion = results[df_keys + df_values].drop_duplicates()

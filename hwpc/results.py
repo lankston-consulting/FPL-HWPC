@@ -20,13 +20,37 @@ class Results(pickler.Pickler):
     def __init__(self) -> None:
         super().__init__()
 
-        self.timber_products = None
         self.harvests = None
+        """Level 0, simply the annual harvest amount
+        """
+
+        self.timber_products = None
+        """Level 1 products. timber_products is a direct ratio-driven calculation
+        of the various timber products created from annual harvest
+        """
+
         self.primary_products = None
+        """Level 2 products. A direct ratio driven calculation from timber products
+        """
+
         self.end_use_products = None
-        self.discarded_wood_paper = None
+        """Level 3 products. For each primary product, directly calculate the end uses
+        """
+
+        self.products_in_use = None
+        """Level 4 product. Using a cumulative decay, sort end use products into "in use"
+        and "discarded in year"
+        """
+        
         self.discarded_products = None
+        """Level 5 product. From products in use in this year, distribute discards into 
+        applicable pools via discard destination ratios
+        """
+
         self.dispositions = None
+        """Level 6, final discard product. Allow discarded products to decay (then emit) and
+        add new products into the remaining pool. Repeat over subsequent years.
+        """
 
         
 
@@ -38,9 +62,11 @@ class Results(pickler.Pickler):
         
         # Final output collections
         self.annual_timber_products = None
+        """Filtered end results, giving primary products in units of carbon
+        """
         self.burned = None
         self.composted = None
-        self.products_in_use = None
+        
         self.recovered_in_use = None
         self.in_landfills = None
         self.in_dumps = None
