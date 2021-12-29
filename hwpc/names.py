@@ -118,7 +118,7 @@ class Names(singleton.Singleton):
         carbon = 'mtc'
         co2e = 'co2e'
 
-        swds = 'swds'
+        swds = 'SWDS'
 
         def c(name):
             return name + '_' + Names.Fields.carbon
@@ -128,6 +128,12 @@ class Names(singleton.Singleton):
 
         def co2(name):
             return name + '_' + Names.Fields.co2e
+
+        def ppresent(name):
+            return name + '_' + Names.Fields.present
+        
+        def eemitted(name):
+            return name + '_' + Names.Fields.emitted
 
     class Output(singleton.Singleton):
         output_path = ''

@@ -69,9 +69,25 @@ class Results(pickler.Pickler):
         self.in_landfills = None
         self.in_dumps = None
         self.fuelwood = None
+        
         self.emissions = None
+        """Deprecated. Emissions should now be retrieved from either the 
+        all_emitted table ot the total_all_dispositions
+        """
+        
         self.all_in_use = None
+        """All products in use, aggregated by destination, disposition, and year.
+        Includes products in use, recycled, and present in SWDS
+        """
+
+        self.all_emitted = None
+        """Similiar to all_in_use, but contains all values of emissions
+        """
+
         self.final = None
+        """TODO
+        """
+
         self.total_all_dispositions = None
 
         self.big_table = None
@@ -323,7 +339,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile(suffix=".png") as temp:
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
-            self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read(), compress_type=zipfile.ZIP_STORED)'
+            self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         plt.clf()
         plt.close()
 
