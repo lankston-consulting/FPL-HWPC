@@ -4,6 +4,7 @@ class Names(singleton.Singleton):
     class Tables(singleton.Singleton):
         ids = 'id_lookup'
         harvest = 'harvest_data'
+        harvest_data_type = 'harvest_data_type'
         timber_products_data = 'timber_product_data'
         primary_products_data = 'primary_product_data'
         primary_products = 'primary_products'
@@ -17,6 +18,8 @@ class Names(singleton.Singleton):
         regions = 'regions'
         energy_capture = 'x_burned_energy_capture'
         ccf_c_conversion = 'ccf_to_metric_tons_carbon'
+        loss_factor = 'loss_factor'
+        mbf_conversion = "mbf_to_ccf_conversion"
     
     class Fields(singleton.Singleton):
 
@@ -31,7 +34,9 @@ class Names(singleton.Singleton):
 
         harvest_year = 'Year'
         ccf = 'ccf'
+        mbf = 'mbf'
         ratio = 'Ratio'
+        
 
         timber_product_id = 'TimberProductID'
         timber_product_ratio = 'TimberProductRatio'
