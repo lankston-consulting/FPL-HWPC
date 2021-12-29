@@ -144,6 +144,11 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         
         ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
 
+        
+        if(ModelData.data[nm.Tables.harvest_data_type].columns.values[0] == 'mbf'):
+            ModelData._get_mbf_conversion()
+        
+
         return
 
     @staticmethod
@@ -170,6 +175,35 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         else:
             match_region = None
         return match_region
+
+    
+    def _get_mbf_conversion():
+        ''' Expands mbf_to_ccf_conversion.csv from small number of years to ratio per year
+        '''
+        year_group = {}
+        ModelData.data[nm.Tables.mbf_conversion] = pd.read_csv('data/mbf_to_ccf_conversion.csv')
+        
+        for i in range(ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].size):
+            year_set = []
+            
+            if(i < ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].size-1):
+                for j in range(ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i],ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i+1]):
+                    year_set.append(j)
+
+            else:
+                for j in range(ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i],ModelData.data[nm.Tables.harvest][nm.Fields.harvest_year].max()):
+                    year_set.append(j)
+           
+            year_set = tuple(year_set)
+            year_group[i] = year_set,ModelData.data[nm.Tables.mbf_conversion][nm.Fields.conversion_factor].values[i]
+
+        temp = pd.DataFrame.from_dict(year_group, orient='index', columns=[nm.Fields.harvest_year,nm.Fields.conversion_factor])
+        temp = temp.explode(nm.Fields.harvest_year).reset_index(drop=True)
+        
+        ModelData.data[nm.Tables.harvest] = ModelData.data[nm.Tables.harvest].merge(temp, on=nm.Fields.harvest_year, how='inner')
+        ModelData.data[nm.Tables.harvest][nm.Fields.ccf] = ModelData.data[nm.Tables.harvest][nm.Fields.mbf] * ModelData.data[nm.Tables.harvest][nm.Fields.conversion_factor]
+
+        return
 
     @staticmethod
     def _primary_product_to_timber_product():
