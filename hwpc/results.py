@@ -52,8 +52,6 @@ class Results(pickler.Pickler):
         add new products into the remaining pool. Repeat over subsequent years.
         """
 
-        
-
         self.working_table = None
 
         self.total_dispositions = None
@@ -89,10 +87,10 @@ class Results(pickler.Pickler):
         return
 
     def save_results(self):
-        # with tempfile.TemporaryFile() as temp:
-        #     self.working_table.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr('results.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            self.working_table.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('results.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         return
         
     def save_total_dispositions(self):
@@ -215,34 +213,34 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # ALL DISPOSITIONS
-        # with tempfile.TemporaryFile() as temp:
-        #     total_all_dispositions.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr('all_dispositions.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            total_all_dispositions.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('all_dispositions.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         # #PRIMARY PRODUCTS
-        # with tempfile.TemporaryFile() as temp:
-        #     primary_products.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr('primary_products.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            primary_products.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('primary_products.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         # #CARBON STOCKS
-        # with tempfile.TemporaryFile() as temp:
-        #     total_in_use.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr('total_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            total_in_use.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('total_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         products_in_use = self.big_table[nm.Fields.co2(nm.Fields.products_in_use)]
-        # with tempfile.TemporaryFile() as temp:
-        #     products_in_use.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr('products_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            products_in_use.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('products_in_use.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         swds = self.big_table[nm.Fields.co2(nm.Fields.swds)]
-        # with tempfile.TemporaryFile() as temp:
-        #     swds.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr('swds.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            swds.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('swds.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         print(self.big_table)
         fig, ax = plt.subplots()
         plt.subplots_adjust(bottom=0.45)
@@ -266,10 +264,10 @@ class Results(pickler.Pickler):
 
         #CARBON CHANGE
         final = pd.DataFrame(self.final)
-        # with tempfile.TemporaryFile() as temp:
-        #     final.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            final.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         # We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
         products_in_use_change = final.groupby(by='Year')[nm.Fields.products_in_use+"_"+nm.Fields.carbon+"_change"].sum()
         swds_change = final.groupby(by='Year')[nm.Fields.swds+"_"+nm.Fields.carbon+"_change"].sum()
@@ -300,16 +298,16 @@ class Results(pickler.Pickler):
 
         # TOTAL HARVEST AND TIMBER RESULTS
         timber_products_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.c(nm.Fields.primary_product_results)]]
-        # with tempfile.TemporaryFile() as temp:
-        #     timber_products_results.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr('annual_timber_product_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            timber_products_results.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('annual_timber_product_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
     
         harvests_results = annual_timber_products[[nm.Fields.harvest_year,nm.Fields.ccf]]
-        # with tempfile.TemporaryFile() as temp:
-        #     harvests_results.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr('annual_harvests_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            harvests_results.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('annual_harvests_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         
     
         color = 'tab:red'
@@ -426,10 +424,10 @@ class Results(pickler.Pickler):
 
     def generate_graph(self,data_frame,xaxis,adjust_bottom,title,txt,file_name,y_axis):
 
-        # with tempfile.TemporaryFile() as temp:
-        #     data_frame.to_csv(temp)
-        #     temp.seek(0)
-        #     self.zip.writestr(file_name+'.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        with tempfile.TemporaryFile() as temp:
+            data_frame.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr(file_name+'.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         fig, ax = plt.subplots()
         plt.subplots_adjust(bottom = adjust_bottom)
         plt.title(title, multialignment='center')
