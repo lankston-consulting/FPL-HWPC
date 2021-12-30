@@ -106,10 +106,10 @@ class Names(singleton.Singleton):
         discard_remaining_sum = 'discard_remaining_sum'
 
         emitted = 'emitted'
-        emitted_sum = 'emitted_sum'
+        emitted_all = 'all_emitted'
         present = 'present'
 
-        burned_with_energy_capture = 'burned_captured'
+        burned_with_energy_capture = 'Burned_Captured'
         burned_wo_energy_capture = 'burned_wo_energy_capture'
 
         accounted = 'accounted'

@@ -56,7 +56,7 @@ class Results(pickler.Pickler):
 
         self.total_dispositions = None
 
-        self.burned_captured = None
+        self.fuelwood = None
         
         # Final output collections
         self.annual_timber_products = None
