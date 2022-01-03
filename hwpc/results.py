@@ -154,10 +154,11 @@ class Results(pickler.Pickler):
         annual_timber_products = pd.DataFrame(self.annual_timber_products)
         big_table = pd.DataFrame(self.big_table)
         burned_w_energy_capture = pd.DataFrame(self.burned_w_energy_capture)
+        burned_wo_energy_capture = pd.DataFrame(self.burned_wo_energy_capture)
        
 
         # CUMULATIVE DISCARDED PRODUCTS
-        cum_products = total_all_dispositions[nm.Fields.c(nm.Fields.products_in_use)]
+        cum_products = total_all_dispositions[nm.Fields.co2(nm.Fields.products_in_use)]
         self.generate_graph(cum_products,
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.4,
@@ -167,7 +168,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE RECOVERED PRODUCTS CARBON
-        recycled_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.recovered.lower())]
+        recycled_carbon = total_all_dispositions[nm.Fields.co2(nm.Fields.recovered)]
         self.generate_graph(recycled_carbon,
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.3,
@@ -197,7 +198,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_wo_energy_capture_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.burned_wo_energy_capture)]
+        burned_wo_energy_capture_emit = burned_wo_energy_capture[nm.Fields.emitted]
         self.generate_graph(burned_wo_energy_capture_emit,
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.4,
@@ -217,7 +218,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE DISCARD LANDFILL CARBON
-        landfills_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.landfills.lower()+"_"+nm.Fields.present)]
+        landfills_carbon = total_all_dispositions[nm.Fields.co2(nm.Fields.landfills+"_"+nm.Fields.present)]
         self.generate_graph(landfills_carbon,
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.35,
@@ -237,7 +238,7 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
         
         # CUMULATIVE DISCARD DUMPS CARBON
-        dumps_carbon = total_all_dispositions[nm.Fields.c(nm.Fields.dumps.lower()+"_"+nm.Fields.present)]
+        dumps_carbon = total_all_dispositions[nm.Fields.co2(nm.Fields.dumps+"_"+nm.Fields.present)]
         self.generate_graph(dumps_carbon,
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.45,
@@ -347,7 +348,7 @@ class Results(pickler.Pickler):
         plt.close()
 
         # TOTAL HARVEST AND TIMBER RESULTS
-        timber_products_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.c(nm.Fields.primary_product_results)]]
+        timber_products_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.co2(nm.Fields.primary_product_results)]]
         with tempfile.TemporaryFile() as temp:
             timber_products_results.to_csv(temp)
             temp.seek(0)
@@ -367,7 +368,7 @@ class Results(pickler.Pickler):
         plt.xlabel('Inventory Year')
         txt = "Annual total timber harvest and product output converted to metric tons of carbon, from 1906 to 2018"
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
-        ax.plot(timber_products_results[nm.Fields.harvest_year],timber_products_results[nm.Fields.c(nm.Fields.primary_product_results)], color=color,label="Timber Product Output (Metric Tons C)")
+        ax.plot(timber_products_results[nm.Fields.harvest_year],timber_products_results[nm.Fields.co2(nm.Fields.primary_product_results)], color=color,label="Timber Product Output (Metric Tons C)")
         color = 'tab:blue'
         ax.plot(timber_products_results[nm.Fields.harvest_year],harvests_results[nm.Fields.ccf], color=color,label="Annual Harvest (CCF)")
         Labeloffset(ax, label="Metric Tons Carbon", axis="y")
@@ -460,7 +461,7 @@ class Results(pickler.Pickler):
         df = pd.DataFrame(self.primary_products)
         print(self.md.data[nm.Tables.primary_products])
         df = df.merge(self.md.data[nm.Tables.primary_products], how='outer', on=[nm.Fields.timber_product_id, nm.Fields.primary_product_id])
-        n = nm.Fields.c(nm.Fields.timber_product_results)
+        n = nm.Fields.co2(nm.Fields.timber_product_results)
         print(df)
         # df[n] = df[nm.Fields.timber_product_results] * df[nm.Fields.conversion_factor]
         # df_sum = df.groupby(by=nm.Fields.harvest_year)[n].mode()
