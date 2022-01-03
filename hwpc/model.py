@@ -33,13 +33,18 @@ class Model(object):
         self.discarded_disposition_ratios = self.md.data[nm.Tables.discard_disposition_ratios]
 
         # the amount of product that is not lost
-        self.end_use_loss_factor = 0.92
+        self.end_use_loss_factor = float(self.md.data[nm.Tables.loss_factor].columns.values[0])
 
         # default percent of product that is burned with energy capture
         self.default_burned_energy_capture = 0
 
         self.results = results.Results()
 
+        #User inputs delivered to results
+        self.results.harvest_data = self.harvests
+        self.results.timber_products_data = self.md.data["pre_"+nm.Tables.timber_products_data]
+        self.results.primary_products_data = self.md.data[nm.Tables.primary_products_data]
+        
     def run(self):
         
         self.calculate_primary_product_mcg()
@@ -53,6 +58,7 @@ class Model(object):
         self.convert_c02_e()
         self.final_table()
 
+        self.results.save_user_inputs()
         self.results.save_results()
         self.results.save_total_dispositions()
 
@@ -326,11 +332,17 @@ class Model(object):
 
         dispositions = self.results.working_table
         dispositions_not_fuel = dispositions[dispositions[nm.Fields.fuel] == 0]
+        burned_as_fuel = dispositions[dispositions[nm.Fields.fuel] == 1]
 
         discard_destinations = self.md.data[nm.Tables.discard_destinations]
         burned = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.burned][nm.Fields.discard_destination_id].iloc[0]
 
+
         burned_captured = dispositions_not_fuel[dispositions_not_fuel[nm.Fields.discard_destination_id] == burned]
+        burned_w_energy_capture = burned_as_fuel[burned_as_fuel[nm.Fields.discard_destination_id] != burned]
+        print(burned_w_energy_capture)
+        print(burned_captured)
+        print("BREAK")
         # burned_not_captured = burned_not_captured[[nm.Fields.harvest_year, ]]
 
 

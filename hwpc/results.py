@@ -20,6 +20,12 @@ class Results(pickler.Pickler):
     def __init__(self) -> None:
         super().__init__()
 
+        self.harvest_data = None
+        self.timber_products_data = None
+        self.primary_products_data = None
+        """ Pre-aggregated and melted user inputs
+        """
+
         self.harvests = None
         """Level 0, simply the annual harvest amount
         """
@@ -100,6 +106,24 @@ class Results(pickler.Pickler):
         
         self.zip = zipfile.ZipFile(self.zip_buffer, mode='w', compression=zipfile.ZIP_STORED, allowZip64=False)
 
+        return
+
+    def save_user_inputs(self):
+        with tempfile.TemporaryFile() as temp:
+            self.harvest_data.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('harvest_data.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        
+        with tempfile.TemporaryFile() as temp:
+            self.timber_products_data.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('timber_products_data.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+
+        with tempfile.TemporaryFile() as temp:
+            self.primary_products_data.to_csv(temp)
+            temp.seek(0)
+            self.zip.writestr('primary_products_data.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            
         return
 
     def save_results(self):

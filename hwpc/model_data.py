@@ -105,6 +105,8 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
         ModelData.data[nm.Tables.discard_disposition_ratios] = ModelData.data[nm.Tables.discard_disposition_ratios].rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
 
+        ModelData.data["pre_"+nm.Tables.timber_products_data] = ModelData.data[nm.Tables.timber_products_data]
+
         # Melt the timber_product_data table to make years rows
         try:
             df = ModelData.data[nm.Tables.timber_products_data].melt(id_vars=nm.Fields.timber_product_id, 
