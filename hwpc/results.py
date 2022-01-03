@@ -63,6 +63,10 @@ class Results(pickler.Pickler):
         self.total_dispositions = None
 
         self.fuelwood = None
+
+        self.burned_wo_energy_capture = None
+
+        self.burned_w_energy_capture = None
         
         # Final output collections
         self.annual_timber_products = None
@@ -130,7 +134,7 @@ class Results(pickler.Pickler):
             self.primary_products_data.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('primary_products_data.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
-            
+
         return
 
     def save_results(self):
@@ -149,6 +153,7 @@ class Results(pickler.Pickler):
         total_all_dispositions = pd.DataFrame(self.total_all_dispositions)
         annual_timber_products = pd.DataFrame(self.annual_timber_products)
         big_table = pd.DataFrame(self.big_table)
+        burned_w_energy_capture = pd.DataFrame(self.burned_w_energy_capture)
        
 
         # CUMULATIVE DISCARDED PRODUCTS
@@ -182,13 +187,14 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        # burned_w_energy_capture_emit = burned_w_energy_capture.groupby(by='Year')[nm.Fields.burned_with_energy_capture].sum()
-        # self.generate_graph(burned_w_energy_capture_emit,
-        #                 0.4,
-        #                 'Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture',
-        #                 'Total cumulative metric ton carbon emitted from burning discarded products with energy capture manufactured from total timber harvested from 1906 to 2018. Discarded products are assumed to be burned in an incinerator with energy capture. Emmitted carbon is displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
-        #                 'burned_w_energy_capture_emitted',
-        #                 'Metric Tons CO2e')
+        burned_w_energy_capture_emit = burned_w_energy_capture[nm.Fields.burned_with_energy_capture]
+        self.generate_graph(burned_w_energy_capture_emit,
+                        total_all_dispositions[nm.Fields.harvest_year],
+                        0.4,
+                        'Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture',
+                        'Total cumulative metric ton carbon emitted from burning discarded products with energy capture manufactured from total timber harvested from 1906 to 2018. Discarded products are assumed to be burned in an incinerator with energy capture. Emmitted carbon is displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.',
+                        'burned_w_energy_capture_emitted',
+                        'Metric Tons CO2e')
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
         burned_wo_energy_capture_emit = total_all_dispositions[nm.Fields.co2(nm.Fields.burned_wo_energy_capture)]

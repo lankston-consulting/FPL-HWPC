@@ -42,7 +42,7 @@ class Model(object):
 
         #User inputs delivered to results
         self.results.harvest_data = self.harvests
-        self.results.timber_products_data = self.md.data["pre_"+nm.Tables.timber_products_data]
+        self.results.timber_products_data = ["pre_"+nm.Tables.timber_products_data]
         self.results.primary_products_data = self.md.data[nm.Tables.primary_products_data]
         
     def run(self):
@@ -332,18 +332,17 @@ class Model(object):
 
         dispositions = self.results.working_table
         dispositions_not_fuel = dispositions[dispositions[nm.Fields.fuel] == 0]
-        burned_as_fuel = dispositions[dispositions[nm.Fields.fuel] == 1]
 
         discard_destinations = self.md.data[nm.Tables.discard_destinations]
         burned = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.burned][nm.Fields.discard_destination_id].iloc[0]
 
 
-        burned_captured = dispositions_not_fuel[dispositions_not_fuel[nm.Fields.discard_destination_id] == burned]
-        burned_w_energy_capture = burned_as_fuel[burned_as_fuel[nm.Fields.discard_destination_id] != burned]
-        print(burned_w_energy_capture)
-        print(burned_captured)
-        print("BREAK")
-        # burned_not_captured = burned_not_captured[[nm.Fields.harvest_year, ]]
+        burned_wo_energy_capture = dispositions_not_fuel[dispositions_not_fuel[nm.Fields.discard_destination_id] == burned]
+        self.results.burned_wo_energy_capture = burned_wo_energy_capture
+        burned_energy_capture = pd.DataFrame(self.md.data[nm.Tables.energy_capture])
+        burned_w_energy_capture = burned_wo_energy_capture.merge(burned_energy_capture, on=nm.Fields.harvest_year, how='inner')
+        burned_w_energy_capture[nm.Fields.burned_with_energy_capture] = burned_w_energy_capture[nm.Fields.emitted] * burned_w_energy_capture[nm.Fields.percent_burned]
+        self.results.burned_w_energy_capture = burned_w_energy_capture
 
 
         # TODO finish this function
@@ -372,6 +371,15 @@ class Model(object):
         burned = results.loc[results[nm.Fields.discard_destination_id] == burned_id, df_keys].drop_duplicates().groupby(by=nm.Fields.harvest_year).agg({nm.Fields.emitted: np.sum})
         burned = burned.rename(columns={nm.Fields.emitted: E(nm.Fields.burned)})
         self.results.burned = burned
+
+        # Get the aggregation of burned emissions that are multiplied by the energy capture ratio of every year, should be 0
+        burned_w_capture = self.results.burned_w_energy_capture
+        burned_w_capture = burned_w_capture.groupby(by=nm.Fields.harvest_year).agg({nm.Fields.burned_with_energy_capture: np.sum})
+        self.results.burned_w_energy_capture = burned_w_capture
+
+        burned_wo_capture = self.results.burned_wo_energy_capture
+        burned_wo_capture = burned_wo_capture.groupby(by=nm.Fields.harvest_year).agg({nm.Fields.emitted: np.sum})
+        self.results.burned_wo_energy_capture = burned_wo_capture
 
         # Now get composted. Same process as burned
         composted_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.composted][nm.Fields.discard_destination_id].iloc[0]

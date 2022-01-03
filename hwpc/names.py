@@ -40,6 +40,7 @@ class Names(singleton.Singleton):
 
         timber_product_id = 'TimberProductID'
         timber_product_ratio = 'TimberProductRatio'
+        percent_burned = 'PercentBurned'
 
         primary_product_id = 'PrimaryProductID'
         primary_product_ratio = 'PrimaryProductRatio'
@@ -109,7 +110,7 @@ class Names(singleton.Singleton):
         emitted_all = 'all_emitted'
         present = 'present'
 
-        burned_with_energy_capture = 'Burned_Captured'
+        burned_with_energy_capture = 'burned_w_energy_capture'
         burned_wo_energy_capture = 'burned_wo_energy_capture'
 
         accounted = 'accounted'
