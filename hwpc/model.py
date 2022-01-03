@@ -388,7 +388,7 @@ class Model(object):
         in_dumps = in_dumps.rename(columns={nm.Fields.present: P(nm.Fields.dumps)})
         self.results.in_dumps = in_dumps
 
-        # TODO suspicious... this reports fuelwood as burned (emitted), but then doesn't the first function above also do that? Is this our double count?
+        # TODO not so suspicious after all       
         fuelwood = self.results.fuelwood
         fuelwood = fuelwood.groupby(by=nm.Fields.harvest_year).agg({nm.Fields.emitted: np.sum})
         fuelwood = fuelwood.rename(columns={nm.Fields.emitted: E(nm.Fields.fuel)})

@@ -62,10 +62,17 @@ class Results(pickler.Pickler):
         self.annual_timber_products = None
         """Filtered end results, giving primary products in units of carbon
         """
+
         self.burned = None
+        """Aggregated burned dispositions, which are emissions by year
+        """
         self.composted = None
+        """Aggregated compost dispositions, which are emissions by year
+        """
         
         self.recovered_in_use = None
+        """Recovered products in use 
+        """
         self.in_landfills = None
         self.in_dumps = None
         self.fuelwood = None
