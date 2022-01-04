@@ -120,18 +120,21 @@ class Results(pickler.Pickler):
         return
 
     def save_user_inputs(self):
+        harvest_data = pd.DataFrame(self.harvest_data)
+        timber_products_data = pd.DataFrame(self.timber_products_data)
+        primary_products_data = pd.DataFrame(self.primary_products_data)
         with tempfile.TemporaryFile() as temp:
-            self.harvest_data.to_csv(temp)
+            harvest_data.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('harvest_data.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         
         with tempfile.TemporaryFile() as temp:
-            self.timber_products_data.to_csv(temp)
+            timber_products_data.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('timber_products_data.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
         with tempfile.TemporaryFile() as temp:
-            self.primary_products_data.to_csv(temp)
+            primary_products_data.to_csv(temp)
             temp.seek(0)
             self.zip.writestr('primary_products_data.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
@@ -414,9 +417,9 @@ class Results(pickler.Pickler):
         print('Output Path:', nm.Output.output_path)
         print('Run Name:', nm.Output.run_name)
         
-        # gch.upload_temp('hwpcarbon-data', self.zip_buffer, nm.Output.output_path + '/results/' + nm.Output.run_name + '.zip', 'application/zip')
-        with open('./output/results.zip', 'wb') as f:
-            f.write(self.zip_buffer.getvalue())
+        gch.upload_temp('hwpcarbon-data', self.zip_buffer, nm.Output.output_path + '/results/' + nm.Output.run_name + '.zip', 'application/zip')
+        # with open('./output/results.zip', 'wb') as f:
+        #     f.write(self.zip_buffer.getvalue())
 
         self.zip_buffer.close()
 
