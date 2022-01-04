@@ -102,6 +102,14 @@ class Model(object):
         # Get the sum total of primary products now that it's converted to MgC
         tmbr = primary_products[[nm.Fields.harvest_year, nm.Fields.ccf, nm.Fields.primary_product_results]].groupby(nm.Fields.harvest_year).agg({nm.Fields.primary_product_results: np.sum})
         tmbr = tmbr.merge(self.harvests, on=nm.Fields.harvest_year)
+
+        # Add a year to account for the shift
+        max_year = tmbr[nm.Fields.harvest_year].max()
+        copy_frame = tmbr[tmbr[nm.Fields.harvest_year] == max_year].copy(deep=True)
+        copy_frame[nm.Fields.harvest_year] = max_year + 1
+        copy_frame[nm.Fields.ccf] = 0
+        copy_frame[nm.Fields.primary_product_results] = 0
+        tmbr = tmbr.append(copy_frame)
         
         self.results.annual_timber_products = tmbr
         self.results.primary_products = primary_products
@@ -130,9 +138,8 @@ class Model(object):
         copy_frame[nm.Fields.harvest_year] = max_year + 1
         copy_frame[nm.Fields.ccf] = 0
         copy_frame[nm.Fields.timber_product_results] = 0
-        copy_frame[nm.Fields.primary_product_results] = 0
         copy_frame[nm.Fields.end_use_results] = 0
-
+        copy_frame[nm.Fields.primary_product_results] = 0
         end_use = end_use.append(copy_frame)
 
         self.results.end_use_products = end_use
@@ -288,22 +295,19 @@ class Model(object):
         dispositions = dispositions.groupby(by=df_key).apply(halflife_func)
         print('DISPOSITIONS APPLY', timeit.default_timer() - s)
 
-        dispositions['could_decay'] = dispositions.groupby(by=df_key)[nm.Fields.can_decay].cumsum()
+        dispositions[nm.Fields.could_decay] = dispositions.groupby(by=df_key)[nm.Fields.can_decay].cumsum()
 
         # Calculate emissions from stuff discarded in year y by subracting the amount
         # remaining from the total amount that could decay.
-        dispositions[nm.Fields.emitted] = dispositions['could_decay'] - dispositions[nm.Fields.discard_remaining]
+        dispositions[nm.Fields.emitted] = dispositions[nm.Fields.could_decay] - dispositions[nm.Fields.discard_remaining]
         dispositions[nm.Fields.present] = dispositions[nm.Fields.discard_remaining]
 
         # Landfills are a bit different. Not all of it is subject to decay, so get the fixed amount and add it to present through time
-        # Something like discard_dispositions - can_decay -> cumsum
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
-        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] - dispositions.loc[df_filter, nm.Fields.can_decay]
-        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter].groupby(by=df_key).agg({nm.Fields.present: np.cumsum})
+        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.present] + (dispositions.loc[df_filter, nm.Fields.discard_dispositions] * discard_types[nm.Fields.paper][nm.Fields.landfill_fixed_ratio])
 
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.wood_val)
-        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.discard_dispositions] - dispositions.loc[df_filter, nm.Fields.can_decay]
-        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter].groupby(by=df_key).agg({nm.Fields.present: np.cumsum})
+        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.present] + (dispositions.loc[df_filter, nm.Fields.discard_dispositions] * discard_types[nm.Fields.wood][nm.Fields.landfill_fixed_ratio])
 
         self.results.dispositions = dispositions
         self.results.working_table = dispositions
@@ -343,10 +347,6 @@ class Model(object):
         burned_w_energy_capture = burned_wo_energy_capture.merge(burned_energy_capture, on=nm.Fields.harvest_year, how='inner')
         burned_w_energy_capture[nm.Fields.burned_with_energy_capture] = burned_w_energy_capture[nm.Fields.emitted] * burned_w_energy_capture[nm.Fields.percent_burned]
         self.results.burned_w_energy_capture = burned_w_energy_capture
-
-
-        # TODO finish this function
-        # Burned dispositions only? Is this NOT FUEL only?
 
         return
 
@@ -467,10 +467,12 @@ class Model(object):
         total_all_dispositions[nm.Fields.primary_product_sum] = total_all_dispositions[nm.Fields.primary_product_results].cumsum()
         total_all_dispositions[CO2(nm.Fields.primary_product_sum)] = total_all_dispositions[nm.Fields.primary_product_sum].apply(self.c_to_co2e)
 
-        df_keys = [nm.Fields.harvest_year, CO2(nm.Fields.primary_product_sum), CO2(nm.Fields.products_in_use), CO2(P(nm.Fields.recycled)), CO2(P(nm.Fields.swds)), CO2(E(nm.Fields.fuel)), CO2(nm.Fields.emitted_all)]
+        df_keys = [nm.Fields.harvest_year, CO2(nm.Fields.primary_product_sum), CO2(nm.Fields.products_in_use), CO2(P(nm.Fields.recycled)), CO2(P(nm.Fields.swds)), CO2(nm.Fields.emitted_all)]
         big_table = total_all_dispositions[df_keys].drop_duplicates()
         big_table[nm.Fields.accounted] = big_table[df_keys[2:]].sum(axis = 1)
         big_table[nm.Fields.error] = big_table[CO2(nm.Fields.primary_product_sum)] - big_table[nm.Fields.accounted]
+
+        big_table['pct_error'] = big_table[nm.Fields.error] / big_table[nm.Fields.accounted]
 
         self.results.big_table = big_table
         self.results.total_all_dispositions = total_all_dispositions

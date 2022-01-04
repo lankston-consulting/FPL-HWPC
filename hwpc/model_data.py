@@ -101,7 +101,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
         ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[nm.Tables.end_use_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
 
-        ModelData.data[nm.Tables.end_use_products] = ModelData.data[nm.Tables.end_use_products].rename(columns={nm.Fields.id: nm.Fields.end_use_id, nm.Fields.paper_flag: nm.Fields.discard_type_id})
+        ModelData.data[nm.Tables.end_use_products] = ModelData.data[nm.Tables.end_use_products].rename(columns={nm.Fields.id: nm.Fields.end_use_id})
 
         ModelData.data[nm.Tables.discard_disposition_ratios] = ModelData.data[nm.Tables.discard_disposition_ratios].rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
 

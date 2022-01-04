@@ -100,6 +100,7 @@ class Names(singleton.Singleton):
 
         # new_decay = 'new_decay'
         can_decay = 'can_decay'
+        could_decay = 'could_decay'
         decay_ratio = 'decay_ratio'
         running_can_decay = 'can_decay_cumsum'
 
