@@ -42,7 +42,7 @@ class Model(object):
 
         #User inputs delivered to results
         self.results.harvest_data = self.harvests
-        self.results.timber_products_data = ["pre_"+nm.Tables.timber_products_data]
+        self.results.timber_products_data = self.md.data["pre_"+nm.Tables.timber_products_data]
         self.results.primary_products_data = self.md.data[nm.Tables.primary_products_data]
         
     def run(self):

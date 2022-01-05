@@ -306,13 +306,13 @@ class Results(pickler.Pickler):
             self.zip.writestr('swds.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
         
         fig, ax = plt.subplots()
-        plt.subplots_adjust(bottom=0.45)
+        plt.subplots_adjust(bottom=0.25)
         plt.title('Total Cumulative Carbon Stocks')
         color = 'tab:red'
         plt.xlabel('Inventory Year')
         plt.ticklabel_format(axis='y',style='sci',scilimits=(1,5))
-        txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS). Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
-        plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12, weight='light')
+        txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS). \n Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
+        plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         ax.stackplot(total_all_dispositions[nm.Fields.harvest_year],big_table[nm.Fields.co2(nm.Fields.products_in_use)].values,big_table[nm.Fields.co2(P(nm.Fields.swds))].values, colors=("tab:red","tab:blue"),labels=("Products In Use", "SWDS"))
         Labeloffset(ax, label="Total Carbon Stocks Metric Tons CO2e", axis="y")
         ax.legend()
@@ -335,13 +335,13 @@ class Results(pickler.Pickler):
         swds_change = final.groupby(by='Year')[nm.Fields.co2(P(nm.Fields.swds))+"_change"].sum()
         
         fig, ax = plt.subplots()
-        plt.subplots_adjust(bottom=0.4)
+        plt.subplots_adjust(bottom=0.25)
         plt.title('Annual Net Change in Carbon Stocks')
         color = 'tab:red'
         plt.xlabel('Inventory Year')
         plt.ticklabel_format(axis='y',style='sci',scilimits=(0,0))
         ax.axhline(0, color='grey', linewidth=0.8)
-        txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS). Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
+        txt = "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from 1906 to 2018 using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS).\n Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
         plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
         p1 = ax.bar(total_all_dispositions[nm.Fields.harvest_year],products_in_use_change,label="Products In Use",color=color)
         color = 'tab:blue'
