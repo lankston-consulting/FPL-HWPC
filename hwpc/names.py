@@ -4,6 +4,7 @@ class Names(singleton.Singleton):
     class Tables(singleton.Singleton):
         ids = 'id_lookup'
         harvest = 'harvest_data'
+        harvest_data_type = 'harvest_data_type'
         timber_products_data = 'timber_product_data'
         primary_products_data = 'primary_product_data'
         primary_products = 'primary_products'
@@ -17,6 +18,8 @@ class Names(singleton.Singleton):
         regions = 'regions'
         energy_capture = 'x_burned_energy_capture'
         ccf_c_conversion = 'ccf_to_metric_tons_carbon'
+        loss_factor = 'loss_factor'
+        mbf_conversion = "mbf_to_ccf_conversion"
     
     class Fields(singleton.Singleton):
 
@@ -31,10 +34,13 @@ class Names(singleton.Singleton):
 
         harvest_year = 'Year'
         ccf = 'ccf'
+        mbf = 'mbf'
         ratio = 'Ratio'
+        
 
         timber_product_id = 'TimberProductID'
         timber_product_ratio = 'TimberProductRatio'
+        percent_burned = 'PercentBurned'
 
         primary_product_id = 'PrimaryProductID'
         primary_product_ratio = 'PrimaryProductRatio'
@@ -74,13 +80,13 @@ class Names(singleton.Singleton):
 
         timber_product_results = 'timber_products'
         primary_product_results = 'primary_products'
+        primary_product_sum = 'primary_products_sum'
         end_use_results = 'end_use'
+        end_use_sum = 'end_use_sum'
         products_in_use = 'products_in_use'
         discarded_products_results = 'discarded_products'
-        running_discarded_products = 'discarded_products_cumsum'
-        discarded_products_vintage = 'discarded_products_adjustment'
-        discarded_products_adjusted = 'discarded_products_adjusted'
-        discarded_products_type_sum = 'discarded_products_type_sum'
+        discarded_in_year = 'discarded_in_year'
+        discard_dispositions_in_year = 'discard_dispositions_in_year'
         discard_dispositions = 'discard_dispositions'
 
 
@@ -94,6 +100,7 @@ class Names(singleton.Singleton):
 
         # new_decay = 'new_decay'
         can_decay = 'can_decay'
+        could_decay = 'could_decay'
         decay_ratio = 'decay_ratio'
         running_can_decay = 'can_decay_cumsum'
 
@@ -101,16 +108,19 @@ class Names(singleton.Singleton):
         discard_remaining_sum = 'discard_remaining_sum'
 
         emitted = 'emitted'
-        emitted_sum = 'emitted_sum'
+        emitted_all = 'all_emitted'
         present = 'present'
 
-        burned_with_energy_capture = 'burned_captured'
+        burned_with_energy_capture = 'burned_w_energy_capture'
         burned_wo_energy_capture = 'burned_wo_energy_capture'
+
+        accounted = 'accounted'
+        error = 'error'
 
         carbon = 'mtc'
         co2e = 'co2e'
 
-        swds = 'swds'
+        swds = 'SWDS'
 
         def c(name):
             return name + '_' + Names.Fields.carbon
@@ -120,6 +130,12 @@ class Names(singleton.Singleton):
 
         def co2(name):
             return name + '_' + Names.Fields.co2e
+
+        def ppresent(name):
+            return name + '_' + Names.Fields.present
+        
+        def eemitted(name):
+            return name + '_' + Names.Fields.emitted
 
     class Output(singleton.Singleton):
         output_path = ''
