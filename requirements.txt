@@ -3,6 +3,7 @@ flask_cors
 numpy
 pandas
 pytest
+python-dotenv
 google-cloud-storage
 gunicorn
 matplotlib

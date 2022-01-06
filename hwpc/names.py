@@ -117,7 +117,7 @@ class Names(singleton.Singleton):
         accounted = 'accounted'
         error = 'error'
 
-        carbon = 'mtc'
+        carbon = 'mgc'
         co2e = 'co2e'
 
         swds = 'SWDS'

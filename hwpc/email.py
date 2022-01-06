@@ -23,7 +23,7 @@ class Email():
     def send_email(self,user_email):
     
         message = Mail(
-            from_email='from_email@example.com',
+            from_email='contact@lankstonconsulting.com',
             to_emails= user_email,
             subject='Hwpcarbon Run Results',
             html_content='<p>Thank you user, your Hwpcarbon simulation is com[lete and is ready to be downloaded. To recieve your files, click the link below.</p><br>' + "<a>https://storage.googleapis.com/hwpcarbon-data/" +nm.Output.output_path + '/results/' + nm.Output.run_name + '.zip</a><br>'+"<p>Your link will remain active for 30 days, please make sure to save your data before then, as the download cannot be repeated once the time is up.</p>")
