@@ -56,6 +56,11 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         return ret
 
     def __setstate__(self, state):
+        """[summary]
+
+        Args:
+            state ([type]): [description]
+        """
         ModelData.data = state.pop('cls_data')
         ModelData.region = state.pop('cls_region')
 
