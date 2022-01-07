@@ -9,6 +9,14 @@ CORS(app)
 
 @app.route('/', methods=['GET'])
 def handle():
+    """[summary]
+
+    Args:
+        p (str): TODO
+        q (str): TODO
+    Returns:
+        [type]: [description]
+    """
     p = request.args.get('p')
     q = request.args.get('q')
     print(p)

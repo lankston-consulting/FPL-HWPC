@@ -1,14 +1,16 @@
 #!/usr/bin/env python
+import os
+from dotenv import load_dotenv
 from utils import user_data_helper
 """Credentials for RPMS App."""
 
-
-# The private key associated with your service account in JSON format.
-GCP_PRIVATE_KEY_FILE = 'hwpc-sa.json'
+load_dotenv()
 
 ###############################################################################
 #                               Initialization.                               #
 ###############################################################################
-# FLIP BEFORE PUSHING LIVE
-# gch = user_data_helper.UserData(use_service_account={'keyfile': GCP_PRIVATE_KEY_FILE})
-gch = user_data_helper.UserData()
+json_keyfile = os.getenv('SERVICE_ACCOUNT_FILE')
+if json_keyfile is not None and os.path.exists(json_keyfile):
+    gch = user_data_helper.UserData(use_service_account={'keyfile': json_keyfile})
+else:
+    gch = user_data_helper.UserData()
