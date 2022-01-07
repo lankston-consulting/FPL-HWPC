@@ -22,10 +22,6 @@ def run(path='hpwc-user-inputs/3097a3de-5fc0-4f16-988f-cd739e08ac4e', name='robb
     i = input_download.InputDownload()
     i.downloads()
 
-   
-
-
-
     m = model.Model()
 
     m.run()

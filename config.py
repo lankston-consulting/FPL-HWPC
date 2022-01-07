@@ -10,7 +10,7 @@ load_dotenv()
 #                               Initialization.                               #
 ###############################################################################
 json_keyfile = os.getenv('SERVICE_ACCOUNT_FILE')
-if os.path.exists(json_keyfile):
+if json_keyfile is not None and os.path.exists(json_keyfile):
     gch = user_data_helper.UserData(use_service_account={'keyfile': json_keyfile})
 else:
     gch = user_data_helper.UserData()
