@@ -58,9 +58,7 @@ class Model(object):
         self.convert_c02_e()
         self.final_table()
 
-        self.results.save_user_inputs()
-        self.results.save_results()
-        self.results.save_total_dispositions()
+        self.results.save_output()
 
         return
 
