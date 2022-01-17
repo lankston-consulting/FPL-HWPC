@@ -173,7 +173,8 @@ class Results(pickler.Pickler):
 
         # CUMULATIVE DISCARDED PRODUCTS
         cum_products = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.co2(nm.Fields.products_in_use)]]
-        self.generate_graph(cum_products[nm.Fields.co2(nm.Fields.products_in_use)],
+        self.generate_graph(cum_products,
+                        cum_products[nm.Fields.co2(nm.Fields.products_in_use)],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.4,
                         'Total Cumulative Carbon in End Use Products in Use',
@@ -183,7 +184,8 @@ class Results(pickler.Pickler):
 
         # CUMULATIVE  PRESENT RECOVERED PRODUCTS CARBON CO2E
         recycled_carbon = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.co2(P(nm.Fields.recycled))]]
-        self.generate_graph(recycled_carbon[nm.Fields.co2(P(nm.Fields.recycled))],
+        self.generate_graph(recycled_carbon,
+                        recycled_carbon[nm.Fields.co2(P(nm.Fields.recycled))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.3,
                         'Total Cumulative Carbon in Recovered Products in Use',
@@ -192,8 +194,9 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
                                                          
         # CUMULATIVE  PRESENT RECOVERED PRODUCTS CARBON MGC
-        recycled_carbon = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.mgc(P(nm.Fields.recycled))]]
-        self.generate_graph(recycled_carbon[nm.Fields.mgc(P(nm.Fields.recycled))],
+        recycled_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.mgc(P(nm.Fields.recycled))]]
+        self.generate_graph(recycled_carbon_mgc,
+                        recycled_carbon_mgc[nm.Fields.mgc(P(nm.Fields.recycled))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.3,
                         'Total Cumulative Carbon in Recovered Products in Use',
@@ -203,7 +206,8 @@ class Results(pickler.Pickler):
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
         recycled_emit = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.co2(E(nm.Fields.recycled))]]
-        self.generate_graph(recycled_emit[nm.Fields.co2(E(nm.Fields.recycled))],
+        self.generate_graph(recycled_emit,
+                        recycled_emit[nm.Fields.co2(E(nm.Fields.recycled))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.4,
                         'Total Cumulative Carbon Emitted from \n Recovered Products',
@@ -214,6 +218,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
         burned_w_energy_capture_emit = burned_w_energy_capture[nm.Fields.burned_with_energy_capture]
         self.generate_graph(burned_w_energy_capture_emit,
+                        burned_w_energy_capture_emit,
                         burned_w_energy_capture_emit.index,
                         0.4,
                         'Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture',
@@ -224,6 +229,7 @@ class Results(pickler.Pickler):
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
         burned_wo_energy_capture_emit = burned_wo_energy_capture[nm.Fields.emitted]
         self.generate_graph(burned_wo_energy_capture_emit,
+                        burned_wo_energy_capture_emit,
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.4,
                         'Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture',
@@ -233,7 +239,8 @@ class Results(pickler.Pickler):
 
         # CUMULATIVE DISCARD COMPOST CO2E
         composted_emit = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.co2(E(nm.Fields.composted))]]
-        self.generate_graph(composted_emit[nm.Fields.co2(E(nm.Fields.composted))],
+        self.generate_graph(composted_emit,
+                        composted_emit[nm.Fields.co2(E(nm.Fields.composted))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.5,
                         'Total Cumulative Carbon Emitted from Compost',
@@ -243,7 +250,8 @@ class Results(pickler.Pickler):
 
         # CUMULATIVE DISCARD LANDFILL CARBON CO2E
         landfills_carbon = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.co2(P(nm.Fields.landfills))]]
-        self.generate_graph(landfills_carbon[nm.Fields.co2(P(nm.Fields.landfills))],
+        self.generate_graph(landfills_carbon,
+                        landfills_carbon[nm.Fields.co2(P(nm.Fields.landfills))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.35,
                         'Total Cumulative Carbon in Landfills',
@@ -252,8 +260,9 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
 
         # CUMULATIVE DISCARD LANDFILL CARBON MGC
-        landfills_carbon = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.mgc(P(nm.Fields.landfills))]]
-        self.generate_graph(landfills_carbon[nm.Fields.mgc(P(nm.Fields.landfills))],
+        landfills_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.mgc(P(nm.Fields.landfills))]]
+        self.generate_graph(landfills_carbon_mgc,
+                        landfills_carbon_mgc[nm.Fields.mgc(P(nm.Fields.landfills))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.35,
                         'Total Cumulative Carbon in Landfills',
@@ -263,7 +272,8 @@ class Results(pickler.Pickler):
 
         # CUMULATIVE DISCARD LANDFILL CO2E
         landfills_emit = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.co2(E(nm.Fields.landfills))]]
-        self.generate_graph(landfills_emit[nm.Fields.co2(E(nm.Fields.landfills))],
+        self.generate_graph(landfills_emit,
+                        landfills_emit[nm.Fields.co2(E(nm.Fields.landfills))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.5,
                         'Total Cumulative Carbon Emitted from Landfills',
@@ -273,7 +283,8 @@ class Results(pickler.Pickler):
         
         # CUMULATIVE DISCARD DUMPS CARBON CO2E
         dumps_carbon = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.co2(P(nm.Fields.dumps))]]
-        self.generate_graph(dumps_carbon[nm.Fields.co2(P(nm.Fields.dumps))],
+        self.generate_graph(dumps_carbon,
+                        dumps_carbon[nm.Fields.co2(P(nm.Fields.dumps))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.45,
                         'Total Cumulative Carbon in Dumps',
@@ -282,8 +293,9 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
         
         # CUMULATIVE DISCARD DUMPS CARBON MGC
-        dumps_carbon = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.mgc(P(nm.Fields.dumps))]]
-        self.generate_graph(dumps_carbon[nm.Fields.mgc(P(nm.Fields.dumps))],
+        dumps_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.mgc(P(nm.Fields.dumps))]]
+        self.generate_graph(dumps_carbon_mgc,
+                        dumps_carbon_mgc[nm.Fields.mgc(P(nm.Fields.dumps))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.45,
                         'Total Cumulative Carbon in Dumps',
@@ -293,7 +305,8 @@ class Results(pickler.Pickler):
 
         # CUMULATIVE DISCARD DUMPS CO2E
         dumps_emit = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.co2(E(nm.Fields.dumps))]]
-        self.generate_graph(dumps_emit[nm.Fields.co2(E(nm.Fields.dumps))],
+        self.generate_graph(dumps_emit,
+                        dumps_emit[nm.Fields.co2(E(nm.Fields.dumps))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.5,
                         'Total Cumulative Carbon Emitted from Dumps',
@@ -302,7 +315,8 @@ class Results(pickler.Pickler):
                         'Metric Tons CO2e')
         
         fuelwood_emit = total_all_dispositions[[nm.Fields.harvest_year,nm.Fields.co2(E(nm.Fields.fuel))]]
-        self.generate_graph(fuelwood_emit[nm.Fields.co2(E(nm.Fields.fuel))],
+        self.generate_graph(fuelwood_emit,
+                        fuelwood_emit[nm.Fields.co2(E(nm.Fields.fuel))],
                         total_all_dispositions[nm.Fields.harvest_year],
                         0.5,
                         'Total Cumulative Carbon Emitted from Fuelwood with Energy Capture',
@@ -408,11 +422,11 @@ class Results(pickler.Pickler):
 
         return
 
-    def generate_graph(self,data_frame,xaxis,adjust_bottom,title,txt,file_name,y_axis):
+    def generate_graph(self,df_for_csv,data_frame,xaxis,adjust_bottom,title,txt,file_name,y_axis):
 
         try:
             with tempfile.TemporaryFile() as temp:
-                data_frame.to_csv(temp)
+                df_for_csv.to_csv(temp)
                 temp.seek(0)
                 self.zip.writestr(file_name+'.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
             fig, ax = plt.subplots()
@@ -444,13 +458,13 @@ class Results(pickler.Pickler):
     def generate_carbon_stocks_graph(self,big_table,units):
         P = nm.Fields.ppresent
         if(units == "co2e"):
-            products_in_use = self.big_table[nm.Fields.co2(nm.Fields.products_in_use)]
+            products_in_use = self.big_table[[nm.Fields.harvest_year,nm.Fields.co2(nm.Fields.products_in_use)]]
             with tempfile.TemporaryFile() as temp:
                 products_in_use.to_csv(temp)
                 temp.seek(0)
                 self.zip.writestr('products_in_use_co2e.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-            swds = self.big_table[nm.Fields.co2(P(nm.Fields.swds))]
+            swds = self.big_table[[nm.Fields.harvest_year,nm.Fields.co2(P(nm.Fields.swds))]]
             with tempfile.TemporaryFile() as temp:
                 swds.to_csv(temp)
                 temp.seek(0)
@@ -475,13 +489,13 @@ class Results(pickler.Pickler):
             plt.clf()
             plt.close()
         else:
-            products_in_use = self.big_table[nm.Fields.mgc(nm.Fields.products_in_use)]
+            products_in_use = self.big_table[[nm.Fields.harvest_year,nm.Fields.mgc(nm.Fields.products_in_use)]]
             with tempfile.TemporaryFile() as temp:
                 products_in_use.to_csv(temp)
                 temp.seek(0)
                 self.zip.writestr('products_in_use_mgc.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-            swds = self.big_table[nm.Fields.mgc(P(nm.Fields.swds))]
+            swds = self.big_table[[nm.Fields.harvest_year,nm.Fields.mgc(P(nm.Fields.swds))]]
             with tempfile.TemporaryFile() as temp:
                 swds.to_csv(temp)
                 temp.seek(0)
