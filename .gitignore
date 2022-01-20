@@ -140,6 +140,8 @@ dmypy.json
 
 data/*
 results/*
+x_*
+
 
 hwpc-sa.json
 

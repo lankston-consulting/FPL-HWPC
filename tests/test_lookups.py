@@ -1,30 +1,32 @@
 import pytest
 import unittest
+import sys
 
-from hwpccalc.hwpc.model_data import ModelData as md
+from hwpccalc import model_data
 
 class TestLookups(unittest.TestCase):
 
     def __init__(self, methodName: str) -> None:
         super().__init__(methodName=methodName)
-        md()
+        sys.path.append('../')
+        self.md = model_data.ModelData()
     
     def test_primary_product_to_timber_product(self):
-        x = md.primary_product_to_timber_product(1)
+        x = self.md.primary_product_to_timber_product(1)
         self.assertEqual(x, 1)
-        y = md.primary_product_to_timber_product(11)
+        y = self.md.primary_product_to_timber_product(11)
         self.assertEqual(y, 2)
 
     def test_end_use_to_timber_product(self):
-        x = md.end_use_to_timber_product(2)
+        x = self.md.end_use_to_timber_product(2)
         self.assertEqual(x, 1)
-        y = md.end_use_to_timber_product(60)
+        y = self.md.end_use_to_timber_product(60)
         self.assertEqual(y, 2)
 
     def test_end_use_to_primary_product(self):
-        x = md.end_use_to_primary_product(1)
+        x = self.md.end_use_to_primary_product(1)
         self.assertEqual(x, 1)
-        y = md.end_use_to_primary_product(2)
+        y = self.md.end_use_to_primary_product(2)
         self.assertEqual(y, 2)
 
 if __name__ == '__main__':

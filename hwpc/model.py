@@ -165,7 +165,7 @@ class Model(object):
             else:
                 weightspace = [math.exp(-math.log(2) * x / halflife) for x in range(len(df))]
                 for h in range(len(df)):
-                    v = df[nm.Fields.end_use_results].iloc[h] * self.end_use_loss_factor
+                    v = df[nm.Fields.end_use_results].iloc[h] * (1 - self.end_use_loss_factor)
                     weights = weightspace[:len(df) - h]
                     decayed = [v * w for w in weights]
                     df.iloc[h:, df.columns.get_loc(nm.Fields.products_in_use)] = df.iloc[h:, df.columns.get_loc(nm.Fields.products_in_use)] + decayed
