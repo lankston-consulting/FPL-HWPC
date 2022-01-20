@@ -8,7 +8,7 @@ from hwpc import names
 from hwpc import results
 from hwpc import email
 
-def run(path='hpwc-user-inputs/3097a3de-5fc0-4f16-988f-cd739e08ac4e', name='robbdemo3'):
+def run(path='hpwc-user-inputs/58362978-6ef7-4229-8419-3b97914ec0f9', name='california'):
 
     path = path
     names.Names()
