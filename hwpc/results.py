@@ -475,6 +475,8 @@ class Results(pickler.Pickler):
 
         self.generate_carbon_stocks_change_graph("co2e")
         self.generate_carbon_stocks_change_graph("mgc")
+        self.generate_carbon_stocks_change_graph_no_caption("co2e")
+        self.generate_carbon_stocks_change_graph_no_caption("mgc")
 
         self.generate_annual_harvest_and_timber_product_graph(annual_timber_products)
 
@@ -601,7 +603,7 @@ class Results(pickler.Pickler):
             with tempfile.TemporaryFile(suffix=".png") as temp:
                 plt.savefig(temp, format="png", pad_inches=0.1) # File position is at the end of the file.
                 temp.seek(0) # Rewind the file. (0: the beginning of the file)
-                self.zip.writestr(file_name+'no_caption.png', temp.read(), compress_type=zipfile.ZIP_STORED)
+                self.zip.writestr(file_name+'_no_caption.png', temp.read(), compress_type=zipfile.ZIP_STORED)
             plt.clf()
             plt.close()
 
@@ -694,7 +696,7 @@ class Results(pickler.Pickler):
             #     self.zip.writestr('swds_co2e.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
             
             fig, ax = plt.subplots()
-            plt.subplots_adjust(bottom=0.25)
+            #plt.subplots_adjust(bottom=0.25)
             plt.title('Total Cumulative Carbon Stocks')
             color = 'tab:red'
             plt.xlabel('Inventory Year')
@@ -725,7 +727,7 @@ class Results(pickler.Pickler):
             #     self.zip.writestr('swds_mgc.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
             
             fig, ax = plt.subplots()
-            plt.subplots_adjust(bottom=0.25)
+            #plt.subplots_adjust(bottom=0.25)
             plt.title('Total Cumulative Carbon Stocks')
             color = 'tab:red'
             plt.xlabel('Inventory Year')
@@ -805,6 +807,68 @@ class Results(pickler.Pickler):
             plt.clf()
             plt.close()
         return
+    
+    def generate_carbon_stocks_change_graph_no_caption(self,units):
+        #CARBON CHANGE
+        P = nm.Fields.ppresent
+        final = pd.DataFrame(self.final)
+        if(units == "co2e"):
+            # with tempfile.TemporaryFile() as temp:
+            #     final.to_csv(temp)
+            #     temp.seek(0)
+            #     self.zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            #We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
+            products_in_use_change = final.groupby(by='Year')[nm.Fields.co2(nm.Fields.products_in_use)+"_change"].sum()
+            swds_change = final.groupby(by='Year')[nm.Fields.co2(P(nm.Fields.swds))+"_change"].sum()
+            
+            fig, ax = plt.subplots()
+            #plt.subplots_adjust(bottom=0.25)
+            plt.title('Annual Net Change in Carbon Stocks')
+            color = 'tab:red'
+            plt.xlabel('Inventory Year')
+            plt.ticklabel_format(axis='y',style='sci',scilimits=(0,0))
+            ax.axhline(0, color='grey', linewidth=0.8)
+            #txt = 'Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from ' + str(final[nm.Fields.harvest_year].min()) + ' to ' + str(final[nm.Fields.harvest_year].max()) + ' using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS).\n Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.'
+            #plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
+            p1 = ax.bar(final[nm.Fields.harvest_year],products_in_use_change,label="Products In Use",color=color)
+            color = 'tab:blue'
+            p2 = ax.bar(final[nm.Fields.harvest_year],swds_change, color=color, label="SWDS")
+            Labeloffset(ax, label="Metric Tons CO2e", axis="y")
+            ax.legend()
+            plt.rcParams["figure.figsize"] = (8,6)
+            with tempfile.TemporaryFile(suffix=".png") as temp:
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
+                temp.seek(0) # Rewind the file. (0: the beginning of the file)
+                self.zip.writestr('annual_net_change_carbon_stocks_co2e_no_caption.png', temp.read(), compress_type=zipfile.ZIP_STORED)
+            plt.clf()
+            plt.close()
+        else:
+            #We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
+            products_in_use_change = final.groupby(by='Year')[nm.Fields.mgc(nm.Fields.products_in_use)+"_change"].sum()
+            swds_change = final.groupby(by='Year')[nm.Fields.mgc(P(nm.Fields.swds))+"_change"].sum()
+            
+            fig, ax = plt.subplots()
+            #plt.subplots_adjust(bottom=0.25)
+            plt.title('Annual Net Change in Carbon Stocks')
+            color = 'tab:red'
+            plt.xlabel('Inventory Year')
+            plt.ticklabel_format(axis='y',style='sci',scilimits=(0,0))
+            ax.axhline(0, color='grey', linewidth=0.8)
+            #txt = 'Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from ' + str(final[nm.Fields.harvest_year].min()) + ' to ' + str(final[nm.Fields.harvest_year].max()) + ' using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS).\n Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.'
+            #plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
+            p1 = ax.bar(final[nm.Fields.harvest_year],products_in_use_change,label="Products In Use",color=color)
+            color = 'tab:blue'
+            p2 = ax.bar(final[nm.Fields.harvest_year],swds_change, color=color, label="SWDS")
+            Labeloffset(ax, label="Megagrams Carbon", axis="y")
+            ax.legend()
+            plt.rcParams["figure.figsize"] = (8,6)
+            with tempfile.TemporaryFile(suffix=".png") as temp:
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
+                temp.seek(0) # Rewind the file. (0: the beginning of the file)
+                self.zip.writestr('annual_net_change_carbon_stocks_mgc_no_caption.png', temp.read(), compress_type=zipfile.ZIP_STORED)
+            plt.clf()
+            plt.close()
+        return
 
     def generate_annual_harvest_and_timber_product_graph(self,annual_timber_products):
         # TOTAL HARVEST AND TIMBER RESULTS
@@ -837,6 +901,41 @@ class Results(pickler.Pickler):
             plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
             temp.seek(0) # Rewind the file. (0: the beginning of the file)
             self.zip.writestr('annual_harvest_and_timber_product_output.png', temp.read(), compress_type=zipfile.ZIP_STORED)
+        plt.clf()
+        plt.close()
+        return
+
+    def generate_annual_harvest_and_timber_product_graph_no_caption(self,annual_timber_products):
+        # TOTAL HARVEST AND TIMBER RESULTS
+        timber_products_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.primary_product_results]]
+        # with tempfile.TemporaryFile() as temp:
+        #     timber_products_results.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('annual_timber_product_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+    
+        harvests_results = annual_timber_products[[nm.Fields.harvest_year,nm.Fields.ccf]]
+        # with tempfile.TemporaryFile() as temp:
+        #     harvests_results.to_csv(temp)
+        #     temp.seek(0)
+        #     self.zip.writestr('annual_harvests_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+        
+        color = 'tab:red'
+        fig, ax = plt.subplots()
+        # plt.subplots_adjust(bottom=0.4)
+        plt.title('Annual Harvest and Timber Product Output')
+        plt.xlabel('Inventory Year')
+        #txt = 'Annual total timber harvest and product output converted to metric tons of carbon, from ' + str(timber_products_results[nm.Fields.harvest_year].min()) + ' to ' + str(timber_products_results[nm.Fields.harvest_year].max())
+        #plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment='center', fontsize=12)
+        ax.plot(timber_products_results[nm.Fields.harvest_year],timber_products_results[nm.Fields.primary_product_results], color=color,label="Timber Product Output (Metric Tons C)")
+        color = 'tab:blue'
+        ax.plot(timber_products_results[nm.Fields.harvest_year],harvests_results[nm.Fields.ccf], color=color,label="Annual Harvest (CCF)")
+        Labeloffset(ax, label="Metric Tons Carbon", axis="y")
+        ax.legend()
+        plt.rcParams["figure.figsize"] = (8,6)
+        with tempfile.TemporaryFile(suffix=".png") as temp:
+            plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches = "tight") # File position is at the end of the file.
+            temp.seek(0) # Rewind the file. (0: the beginning of the file)
+            self.zip.writestr('annual_harvest_and_timber_product_output_no_caption.png', temp.read(), compress_type=zipfile.ZIP_STORED)
         plt.clf()
         plt.close()
         return
