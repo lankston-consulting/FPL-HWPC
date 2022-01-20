@@ -127,6 +127,9 @@ class Names(singleton.Singleton):
 
         def change(name):
             return name + '_' + 'change'
+            
+        def mgc(name):
+            return name + "_" + Names.Fields.carbon
 
         def co2(name):
             return name + '_' + Names.Fields.co2e
