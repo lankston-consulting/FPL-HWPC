@@ -15,6 +15,8 @@ class InputDownload(object):
     def __init__(self) -> None:
         super().__init__()
         self.bucket = os.getenv('GCP_BUCKET')
+        if self.bucket is None:
+            self.bucket = "hwpcarbon-data"
 
     def downloads(self):
         if not os.path.exists('data'):
