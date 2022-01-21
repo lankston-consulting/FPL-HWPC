@@ -488,7 +488,7 @@ class Results(pickler.Pickler):
 #--------------------------------------------------------
 
         with tempfile.TemporaryFile() as temp:
-            captions_json = json.dumps(self.captions)
+            captions_json = json.dumps(self.captions, indent="")
             captions_json = captions_json.encode()
             temp.write(captions_json)
             temp.seek(0)
