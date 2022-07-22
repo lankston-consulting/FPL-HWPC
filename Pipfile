@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+lcutils = {ref = "main", git = "https://${GITHUB_USER}:${GITHUB_PAT}@github.com/${GITHUB_REPO}.git"}
+numpy = "*"
+pandas = "*"
+python-dotenv = "*"
+matplotlib = "*"
+dask = {extras = ["dataframe", "delayed", "distributed"], version = "*"}
+sendgrid = "*"
+bokeh = "*"
+
+[dev-packages]
+black = "*"
+pylama = "*"
+
+[requires]
+python_version = "3.9"
