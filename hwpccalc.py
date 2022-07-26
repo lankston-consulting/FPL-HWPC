@@ -1,3 +1,4 @@
+from pydoc import doc
 import config
 
 from hwpc import model
@@ -19,10 +20,18 @@ def run(path="hpwc-user-inputs/c6f40afe-b532-49d1-96e1-c45898a50e35", name="cali
 
     # i = input_download.InputDownload()
     # i.downloads()
-    # me = model.Meta()
-    m = model.Model()
+    me = model.Meta()
 
-    m.run()
+    last_k = None
+    while True:
+        ks = list(me.model_collection)
+        if last_k == ks:
+            break
+        for k in ks:
+            me.model_collection[k].run()
+        last_k = ks
+
+    i = 1
 
     # e = email.Email()
     # e.send_email(str(m.md.data['email'].columns.values[0]))

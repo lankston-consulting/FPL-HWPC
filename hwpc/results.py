@@ -15,10 +15,10 @@ from utils import pickler
 
 
 class Results(pickler.Pickler):
-    def __init__(self) -> None:
+    def __init__(self, recycled=False) -> None:
         super().__init__()
 
-        self.recycled = False
+        self.recycled = recycled
 
         self.harvest_data = None
         self.timber_products_data = None

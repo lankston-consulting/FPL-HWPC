@@ -4,40 +4,100 @@ import numpy as np
 import pandas as pd
 import timeit
 import dask.dataframe as dd
+import dask.delayed
 from dask.distributed import Client, LocalCluster
 
 from hwpc import model_data
-from hwpc import results
+
+# from hwpc import results
 from hwpc.names import Names as nm
 
+from utils import singleton
 
-class Meta(object):
-    def __init__(self) -> None:
 
-        cluster = LocalCluster()
-        client = Client(cluster)
+class Meta(singleton.Singleton):
+    def __new__(cls, *args, **kwargs):
+        if Meta._instance is None:
+            super().__new__(cls, args, kwargs)
 
-        self.md = model_data.ModelData()
+            Meta.cluster = LocalCluster()
+            Meta.client = Client(Meta.cluster)
 
-        years = self.md.get_harvest_years()
+            md = model_data.ModelData()
+            harvest = md.data[nm.Tables.harvest]
+            # For debugging, drop all but the last couple years
+            harvest = harvest[harvest[nm.Fields.harvest_year] > 2013]
 
-        self.harvests = self.md.data[nm.Tables.harvest]
+            Meta.model_collection = dict()
 
-        self.harvests = dd.from_pandas(self.harvests, npartitions=len(years))
+            ModelFactory(harvest_init=harvest)
+        return cls._instance
 
+
+class ModelFactory(object):
+    def __init__(self, harvest_init=None, lineage=(), recycled=None):
+        years = harvest_init[nm.Fields.harvest_year].unique().astype(int)
+        first_year = years.min()
+        last_year = years.max()
+
+        # Create the dataframes needed to run each harvest year "independently"
+        # harvest_dict = {year: pd.DataFrame() for year in years}
+        # model_dict = dict()
+        for year in range(
+            first_year, last_year + 1
+        ):  # TODO temporarily drop some data for testing
+            # Get the number of years to simulate and create an empty array
+            year_count = last_year - year + 1
+            dummy_array = np.zeros((year_count, 2))
+            # Get the harvest record for this year
+            harvest = harvest_init[harvest_init[nm.Fields.harvest_year] == year]
+
+            # Set the first record of the dummy array to the actual harvest amount
+            harvest_np = harvest.to_numpy()
+            dummy_array[0] = harvest_np
+
+            # Populate the year column with real values
+            year_seq = np.arange(year, last_year + 1)
+            dummy_array[:, 0] = year_seq
+
+            # Make a dataframe of the single harvest year data to simulate and add
+            # to the harvest collection
+            harvest = pd.DataFrame(dummy_array, columns=harvest.columns)
+            # harvest = dd.from_pandas(harvest, npartitions=5)
+            # harvest_dict[year] = harvest
+
+            # Spin up a model for each harvest year
+            if recycled is not None:
+                m = Model(
+                    harvest=harvest_init, recycled=harvest, lineage=(lineage, year)
+                )
+            else:
+                m = Model(harvest=harvest, lineage=(lineage, year))
+            # model_dict[(lineage, year)] = m
+
+            Meta.model_collection[(lineage, year)] = m
         return
 
 
 class Model(object):
-    def __init__(self, harvest_init=None) -> None:
-        super().__init__()
+    def __init__(self, harvest=None, recycled=None, lineage=None) -> None:
+        """Constructor for the Model object
 
-        self.md = model_data.ModelData()
+        Args:
+            harvest_init:
+                For passing a set of harvest data to the model. Used for
+                feeding recycled products back into the model as a new
+                "harvest" to model
 
-        if harvest_init is None:
-            self.harvests = self.md.data[nm.Tables.harvest]
-        else:
-            self.harvests = harvest_init
+        """
+        self.md = (
+            model_data.ModelData()
+        )  # This is a singleton, so this is not expensive
+
+        self.harvests = harvest
+        self.recycled = recycled
+        # self.results = results.Results(recycled=recycled_link is not None)
+        self.lineage = lineage
 
         self.harvests = self.harvests.sort_values(by=nm.Fields.harvest_year)
 
@@ -59,41 +119,46 @@ class Model(object):
         # default percent of product that is burned with energy capture
         self.default_burned_energy_capture = 0
 
-        self.results = results.Results()
-
         # User inputs delivered to results
-        self.results.harvest_data = self.harvests
-        self.results.timber_products_data = self.md.data[
-            "pre_" + nm.Tables.timber_products_data
-        ]
-        self.results.primary_products_data = self.md.data[
-            nm.Tables.primary_products_data
-        ]
+        # self.results.harvest_data = self.harvests
+        # self.results.timber_products_data = self.md.data[
+        #     "pre_" + nm.Tables.timber_products_data
+        # ]
+        # self.results.primary_products_data = self.md.data[
+        #     nm.Tables.primary_products_data
+        # ]
 
+    # @dask.delayed
     def run(self):
 
-        self.calculate_primary_product_mcg()
-        self.calculate_end_use_products()
-        self.calculate_products_in_use()
-        self.calculate_discarded_dispositions()
-        self.calculate_dispositions()
-        self.calculate_fuel_burned()
-        self.calculate_discarded_burned()
-        self.summarize()
-        self.convert_c02_e()
-        self.final_table()
+        if self.recycled is None:
+            self.working_table = self.harvests
+            self.working_table = self.calculate_primary_product_mcg(self.working_table)
+            self.working_table = self.calculate_end_use_products(self.working_table)
+        else:
+            self.working_table = self.recycled
 
-        self.results.save_output()
+        self.working_table = self.calculate_products_in_use(self.working_table)
+        self.working_table = self.calculate_discarded_dispositions(self.working_table)
+        self.working_table = self.calculate_dispositions(self.working_table)
+        # self.calculate_fuel_burned()
+        # self.calculate_discarded_burned()
+        # self.summarize()
+        # self.convert_c02_e()
+        # self.final_table()
 
-        return
+        # self.results.save_output()
 
-    def calculate_primary_product_mcg(self):
+        return self.working_table
+
+    # @dask.delayed
+    def calculate_primary_product_mcg(self, working_table):
         """Calculate the amounts of primary products (MgC) harvested in each year."""
 
         # Calculate timber products (CCF) by multiplying the harvest-to-timber ratio for each
         # timber product by the amount harvested that year.
 
-        timber_products = self.harvests.merge(self.timber_product_ratios, how="outer")
+        timber_products = working_table.merge(self.timber_product_ratios, how="outer")
         timber_products[nm.Fields.timber_product_results] = (
             timber_products[nm.Fields.timber_product_ratio]
             * timber_products[nm.Fields.ccf]
@@ -104,8 +169,8 @@ class Model(object):
             by=[nm.Fields.harvest_year, nm.Fields.timber_product_id]
         )
 
-        self.results.timber_products = timber_products
-        self.results.harvests = self.harvests
+        # self.results.timber_products = timber_products
+        # self.results.harvests = self.harvests
 
         # Calculate primary products (CCF) by multiplying the timber-to-primary ratio for each
         # primary product by the amount of the corresponding timber product. Then convert to MgC
@@ -170,13 +235,14 @@ class Model(object):
         copy_frame[nm.Fields.primary_product_results] = 0
         tmbr = pd.concat([tmbr, copy_frame], ignore_index=True)
 
-        self.results.annual_timber_products = tmbr
-        self.results.primary_products = primary_products
-        self.results.working_table = primary_products
+        # self.results.annual_timber_products = tmbr
+        # self.results.primary_products = primary_products
+        # self.results.working_table = primary_products
 
-        return
+        return primary_products
 
-    def calculate_end_use_products(self):
+    # @dask.delayed
+    def calculate_end_use_products(self, working_table):
         """Calculate the amount of end use products harvested in each year."""
 
         # Multiply the primary-to-end-use ratio for each end use product by the amount of the
@@ -187,7 +253,7 @@ class Model(object):
             self.md.end_use_to_primary_product
         )
 
-        end_use = self.results.working_table.merge(
+        end_use = working_table.merge(
             end_use,
             how="outer",
             on=[nm.Fields.harvest_year, nm.Fields.primary_product_id],
@@ -209,18 +275,19 @@ class Model(object):
         copy_frame[nm.Fields.timber_product_results] = 0
         copy_frame[nm.Fields.end_use_results] = 0
         copy_frame[nm.Fields.primary_product_results] = 0
-        end_use = end_use.append(copy_frame)
+        end_use = pd.concat([end_use, copy_frame], ignore_index=True)
 
-        self.results.end_use_products = end_use
-        self.results.working_table = end_use
+        # self.results.end_use_products = end_use
+        # self.results.working_table = end_use
 
-        return
+        return end_use
 
-    def calculate_products_in_use(self):
+    # @dask.delayed
+    def calculate_products_in_use(self, working_table):
         """Calculate the amount of end use products from each vintage year that are still in use
         during each inventory year.
         """
-        end_use = self.results.working_table
+        end_use = working_table
         # Make sure the rows are ascending to do the half life. Don't do this inplace
         end_use = end_use.sort_values(by=nm.Fields.harvest_year)
         end_use = end_use.merge(
@@ -245,7 +312,10 @@ class Model(object):
                 ]
                 for h in range(len(df)):
                     # Only apply end use loss to wood products, not paper
-                    if df[nm.Fields.discard_type_id].iloc[0] == self.md.wood_val:
+                    if (
+                        df[nm.Fields.discard_type_id].iloc[0] == self.md.wood_val
+                        and self.recycled is None
+                    ):
                         v = df[nm.Fields.end_use_results].iloc[h] * (
                             1 - self.end_use_loss_factor
                         )
@@ -278,12 +348,13 @@ class Model(object):
         # end_use = dd.from_pandas(end_use, npartitions=30)
         # products_in_use = end_use.map_partitions(lambda df: df.groupby(by=nm.Fields.end_use_id).apply((lambda dg: halflife_func(*dg)), axis=1)).compute(get=get)
 
-        self.results.products_in_use = products_in_use
-        self.results.working_table = products_in_use
+        # self.results.products_in_use = products_in_use
+        # self.results.working_table = products_in_use
 
-        return
+        return products_in_use
 
-    def calculate_discarded_dispositions(self):
+    # @dask.delayed
+    def calculate_discarded_dispositions(self, working_table):
         """Calculate the amount discarded during each inventory year and divide it up between the
         different dispositions (landfills, dumps, etc).
         """
@@ -291,7 +362,7 @@ class Model(object):
         # Calculate the amount of each end use from year y that was discarded in year i
         # by subtracting the products in use from the amount of harvested product and
         # then subtracting the amount discarded in previous years.
-        products_in_use = self.results.working_table
+        products_in_use = working_table
         products_in_use[nm.Fields.discarded_products_results] = (
             products_in_use[nm.Fields.end_use_sum]
             - products_in_use[nm.Fields.products_in_use]
@@ -330,12 +401,13 @@ class Model(object):
         # Drop the lowest year to prevent negative number creep
         # products_in_use = products_in_use[products_in_use[nm.Fields.harvest_year] != products_in_use[nm.Fields.harvest_year].min()]
 
-        self.results.discarded_products = products_in_use
-        self.results.working_table = products_in_use
+        # self.results.discarded_products = products_in_use
+        # self.results.working_table = products_in_use
 
-        return
+        return products_in_use
 
-    def calculate_dispositions(self):
+    # @dask.delayed
+    def calculate_dispositions(self, working_table):
         """Calculate the amounts of discarded products that have been emitted, are still remaining,
         etc., for each inventory year.
         """
@@ -357,7 +429,7 @@ class Model(object):
         # Calculate the amount in landfills that was discarded during this inventory year
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio. This will be used in later iterations of the i loop.
-        dispositions = self.results.working_table
+        dispositions = working_table
         dispositions[nm.Fields.can_decay] = 0
         df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (
             dispositions[nm.Fields.discard_type_id] == self.md.paper_val
@@ -389,6 +461,60 @@ class Model(object):
             ~df_filter, nm.Fields.discard_dispositions
         ]
 
+        # For the new recycling, remove products assigned to be recycled and
+        # begin a new simulation using the recycled products as "harvest" amounts
+        df_filter = (dispositions[nm.Fields.discard_destination_id] == recycled_id) & (
+            dispositions[nm.Fields.harvest_year]
+            < dispositions[nm.Fields.harvest_year].max()
+        )
+        recycled = dispositions.loc[df_filter]
+
+        # Old bad method. This treats recycled as new harvest. That's incorrect.
+        # recycled_harvest = (
+        #     recycled[[nm.Fields.harvest_year, nm.Fields.can_decay]]
+        #     .groupby(by=nm.Fields.harvest_year)
+        #     .sum()
+        #     .reset_index()
+        # )
+
+        recycled.loc[:, nm.Fields.end_use_sum] = recycled.loc[:, nm.Fields.can_decay]
+        recycled.loc[:, nm.Fields.harvest_year] = recycled.loc[:, nm.Fields.harvest_year] + 1
+
+        keep_key = [
+            nm.Fields.harvest_year,
+            nm.Fields.ccf,
+            nm.Fields.timber_product_id,
+            nm.Fields.timber_product_ratio,
+            nm.Fields.timber_product_results,
+            nm.Fields.primary_product_id,
+            nm.Fields.primary_product_ratio,
+            nm.Fields.primary_product_results,
+            nm.Fields.conversion_factor,
+            nm.Fields.end_use_id,
+            nm.Fields.end_use_ratio,
+            nm.Fields.end_use_results,
+            nm.Fields.discard_description,
+            nm.Fields.end_use_halflife,
+            "RatioGroup",
+            nm.Fields.discard_type_id,
+            nm.Fields.fuel,
+            nm.Fields.end_use_sum,
+        ]
+        
+        recycled = recycled.loc[:, keep_key]
+
+        #     'Year', 'ccf', 'TimberProductID', 'TimberProductRatio',
+        #    'timber_products', 'PrimaryProductID', 'PrimaryProductRatio',
+        #    'primary_products', 'ConversionFactor', 'EndUseID', 'EndUseRatio',
+        #    'end_use', 'Description', 'HalfLife', 'RatioGroup', 'DiscardTypeID',
+        #    'Fuel', 'end_use_sum'
+
+        ModelFactory(
+            harvest_init=self.harvests, recycled=recycled, lineage=self.lineage
+        )
+
+        nonrecycled = dispositions.loc[~df_filter]
+
         # Calculate the amounts that were discarded in year y that could decay but
         # are still remaining in year i, by plugging the amount subject to decay into
         # the decay formula that uses half lives.
@@ -417,15 +543,10 @@ class Model(object):
             nm.Fields.discard_type_id,
             nm.Fields.discard_destination_id,
         ]
-        dispositions[nm.Fields.discard_remaining] = 0
-
-        # For the new recycling, remove products assigned to be recycled and
-        # begin a new simulation using the recycled products as "harvest" amounts
-        recycled = dispositions[dispositions[nm.Fields.discard_destination_id] == recycled_id]
-        recycled_harvest = recycled[[nm.Fields.harvest_year, nm.Fields.can_decay]].groupby(by=nm.Fields.harvest_year).sum()
+        nonrecycled[nm.Fields.discard_remaining] = 0
 
         s = timeit.default_timer()
-        dispositions = dispositions.groupby(by=df_key).apply(halflife_func)
+        dispositions = nonrecycled.groupby(by=df_key).apply(halflife_func)
         print("DISPOSITIONS APPLY", timeit.default_timer() - s)
 
         dispositions[nm.Fields.could_decay] = dispositions.groupby(by=df_key)[
@@ -461,406 +582,411 @@ class Model(object):
             * discard_types[nm.Fields.wood][nm.Fields.landfill_fixed_ratio]
         )
 
-        self.results.dispositions = dispositions
-        self.results.working_table = dispositions
+        # self.results.dispositions = dispositions
+        # self.results.working_table = dispositions
 
-        return
+        return dispositions
 
-    def calculate_fuel_burned(self):
-        """Calculate the amount of fuel burned during each vintage year."""
-        dispositions = self.results.working_table
+    # # @dask.delayed
+    # def calculate_fuel_burned(self):
+    #     """Calculate the amount of fuel burned during each vintage year."""
+    #     dispositions = self.results.working_table
 
-        # Loop through all of the primary products that are fuel and add the amounts of that
-        # product to the total for this year.
-        df_keys = [
-            nm.Fields.harvest_year,
-            nm.Fields.primary_product_id,
-            nm.Fields.emitted,
-        ]
-        fuel_captured = dispositions.loc[
-            dispositions[nm.Fields.fuel] == 1, df_keys
-        ].drop_duplicates()
+    #     # Loop through all of the primary products that are fuel and add the amounts of that
+    #     # product to the total for this year.
+    #     df_keys = [
+    #         nm.Fields.harvest_year,
+    #         nm.Fields.primary_product_id,
+    #         nm.Fields.emitted,
+    #     ]
+    #     fuel_captured = dispositions.loc[
+    #         dispositions[nm.Fields.fuel] == 1, df_keys
+    #     ].drop_duplicates()
 
-        self.results.fuelwood = fuel_captured
+    #     self.results.fuelwood = fuel_captured
 
-        return
+    #     return
 
-    def calculate_discarded_burned(self):
-        """Calculate the amount of discarded products that were burned."""
-        # For each year, sum up the amount of discarded paper and wood that are burned, and then
-        # multiply that by the burned-with-energy-capture ratio for that year.
+    # # @dask.delayed
+    # def calculate_discarded_burned(self):
+    #     """Calculate the amount of discarded products that were burned."""
+    #     # For each year, sum up the amount of discarded paper and wood that are burned, and then
+    #     # multiply that by the burned-with-energy-capture ratio for that year.
 
-        dispositions = self.results.working_table
-        dispositions_not_fuel = dispositions[dispositions[nm.Fields.fuel] == 0]
+    #     dispositions = self.results.working_table
+    #     dispositions_not_fuel = dispositions[dispositions[nm.Fields.fuel] == 0]
 
-        discard_destinations = self.md.data[nm.Tables.discard_destinations]
-        burned = discard_destinations[
-            discard_destinations[nm.Fields.discard_description] == nm.Fields.burned
-        ][nm.Fields.discard_destination_id].iloc[0]
+    #     discard_destinations = self.md.data[nm.Tables.discard_destinations]
+    #     burned = discard_destinations[
+    #         discard_destinations[nm.Fields.discard_description] == nm.Fields.burned
+    #     ][nm.Fields.discard_destination_id].iloc[0]
 
-        burned_wo_energy_capture = dispositions_not_fuel[
-            dispositions_not_fuel[nm.Fields.discard_destination_id] == burned
-        ]
-        self.results.burned_wo_energy_capture = burned_wo_energy_capture
-        burned_energy_capture = pd.DataFrame(self.md.data[nm.Tables.energy_capture])
-        burned_w_energy_capture = burned_wo_energy_capture.merge(
-            burned_energy_capture, on=nm.Fields.harvest_year, how="inner"
-        )
-        burned_w_energy_capture[nm.Fields.burned_with_energy_capture] = (
-            burned_w_energy_capture[nm.Fields.emitted]
-            * burned_w_energy_capture[nm.Fields.percent_burned]
-        )
-        self.results.burned_w_energy_capture = burned_w_energy_capture
+    #     burned_wo_energy_capture = dispositions_not_fuel[
+    #         dispositions_not_fuel[nm.Fields.discard_destination_id] == burned
+    #     ]
+    #     self.results.burned_wo_energy_capture = burned_wo_energy_capture
+    #     burned_energy_capture = pd.DataFrame(self.md.data[nm.Tables.energy_capture])
+    #     burned_w_energy_capture = burned_wo_energy_capture.merge(
+    #         burned_energy_capture, on=nm.Fields.harvest_year, how="inner"
+    #     )
+    #     burned_w_energy_capture[nm.Fields.burned_with_energy_capture] = (
+    #         burned_w_energy_capture[nm.Fields.emitted]
+    #         * burned_w_energy_capture[nm.Fields.percent_burned]
+    #     )
+    #     self.results.burned_w_energy_capture = burned_w_energy_capture
 
-        return
+    #     return
 
-    def summarize(self):
-        P = nm.Fields.ppresent
-        E = nm.Fields.eemitted
+    # # @dask.delayed
+    # def summarize(self):
+    #     P = nm.Fields.ppresent
+    #     E = nm.Fields.eemitted
 
-        results = self.results.working_table
+    #     results = self.results.working_table
 
-        df_keys = [nm.Fields.harvest_year, nm.Fields.products_in_use]
-        products_in_use = (
-            results.loc[:, df_keys]
-            .drop_duplicates()
-            .groupby(by=nm.Fields.harvest_year)
-            .agg({nm.Fields.products_in_use: np.sum})
-        )
-        self.results.products_in_use = products_in_use
+    #     df_keys = [nm.Fields.harvest_year, nm.Fields.products_in_use]
+    #     products_in_use = (
+    #         results.loc[:, df_keys]
+    #         .drop_duplicates()
+    #         .groupby(by=nm.Fields.harvest_year)
+    #         .agg({nm.Fields.products_in_use: np.sum})
+    #     )
+    #     self.results.products_in_use = products_in_use
 
-        # Get discard destination IDs for sorting through results
-        discard_destinations = self.md.data[nm.Tables.discard_destinations]
+    #     # Get discard destination IDs for sorting through results
+    #     discard_destinations = self.md.data[nm.Tables.discard_destinations]
 
-        # For burned and composted, we can directly get the emissions from the results table
-        df_keys = [nm.Fields.harvest_year, nm.Fields.emitted]
+    #     # For burned and composted, we can directly get the emissions from the results table
+    #     df_keys = [nm.Fields.harvest_year, nm.Fields.emitted]
 
-        # Get the burned records from results. We want to save the emitted amount, which for burned is all accounted for carbon
-        burned_id = discard_destinations[
-            discard_destinations[nm.Fields.discard_description] == nm.Fields.burned
-        ][nm.Fields.discard_destination_id].iloc[0]
-        burned = (
-            results.loc[results[nm.Fields.discard_destination_id] == burned_id, df_keys]
-            .drop_duplicates()
-            .groupby(by=nm.Fields.harvest_year)
-            .agg({nm.Fields.emitted: np.sum})
-        )
-        burned = burned.rename(columns={nm.Fields.emitted: E(nm.Fields.burned)})
-        self.results.burned = burned
+    #     # Get the burned records from results. We want to save the emitted amount, which for burned is all accounted for carbon
+    #     burned_id = discard_destinations[
+    #         discard_destinations[nm.Fields.discard_description] == nm.Fields.burned
+    #     ][nm.Fields.discard_destination_id].iloc[0]
+    #     burned = (
+    #         results.loc[results[nm.Fields.discard_destination_id] == burned_id, df_keys]
+    #         .drop_duplicates()
+    #         .groupby(by=nm.Fields.harvest_year)
+    #         .agg({nm.Fields.emitted: np.sum})
+    #     )
+    #     burned = burned.rename(columns={nm.Fields.emitted: E(nm.Fields.burned)})
+    #     self.results.burned = burned
 
-        # Get the aggregation of burned emissions that are multiplied by the energy capture ratio of every year, should be 0
-        burned_w_capture = self.results.burned_w_energy_capture
-        burned_w_capture = burned_w_capture.groupby(by=nm.Fields.harvest_year).agg(
-            {nm.Fields.burned_with_energy_capture: np.sum}
-        )
-        self.results.burned_w_energy_capture = burned_w_capture
+    #     # Get the aggregation of burned emissions that are multiplied by the energy capture ratio of every year, should be 0
+    #     burned_w_capture = self.results.burned_w_energy_capture
+    #     burned_w_capture = burned_w_capture.groupby(by=nm.Fields.harvest_year).agg(
+    #         {nm.Fields.burned_with_energy_capture: np.sum}
+    #     )
+    #     self.results.burned_w_energy_capture = burned_w_capture
 
-        burned_wo_capture = self.results.burned_wo_energy_capture
-        burned_wo_capture = burned_wo_capture.groupby(by=nm.Fields.harvest_year).agg(
-            {nm.Fields.emitted: np.sum}
-        )
-        self.results.burned_wo_energy_capture = burned_wo_capture
+    #     burned_wo_capture = self.results.burned_wo_energy_capture
+    #     burned_wo_capture = burned_wo_capture.groupby(by=nm.Fields.harvest_year).agg(
+    #         {nm.Fields.emitted: np.sum}
+    #     )
+    #     self.results.burned_wo_energy_capture = burned_wo_capture
 
-        # Now get composted. Same process as burned
-        composted_id = discard_destinations[
-            discard_destinations[nm.Fields.discard_description] == nm.Fields.composted
-        ][nm.Fields.discard_destination_id].iloc[0]
-        composted = (
-            results.loc[
-                results[nm.Fields.discard_destination_id] == composted_id, df_keys
-            ]
-            .drop_duplicates()
-            .groupby(by=nm.Fields.harvest_year)
-            .agg({nm.Fields.emitted: np.sum})
-        )
-        composted = composted.rename(
-            columns={nm.Fields.emitted: E(nm.Fields.composted)}
-        )
-        self.results.composted = composted
+    #     # Now get composted. Same process as burned
+    #     composted_id = discard_destinations[
+    #         discard_destinations[nm.Fields.discard_description] == nm.Fields.composted
+    #     ][nm.Fields.discard_destination_id].iloc[0]
+    #     composted = (
+    #         results.loc[
+    #             results[nm.Fields.discard_destination_id] == composted_id, df_keys
+    #         ]
+    #         .drop_duplicates()
+    #         .groupby(by=nm.Fields.harvest_year)
+    #         .agg({nm.Fields.emitted: np.sum})
+    #     )
+    #     composted = composted.rename(
+    #         columns={nm.Fields.emitted: E(nm.Fields.composted)}
+    #     )
+    #     self.results.composted = composted
 
-        # For the SWDS emissions, we want to get the amount present before getting the amount emitted
-        df_keys = [nm.Fields.harvest_year, nm.Fields.present]
+    #     # For the SWDS emissions, we want to get the amount present before getting the amount emitted
+    #     df_keys = [nm.Fields.harvest_year, nm.Fields.present]
 
-        # Start with recovered AKA recycled present. This might mean "in use", but recycled rather than directly used from harvest
-        recycled_id = discard_destinations[
-            discard_destinations[nm.Fields.discard_description] == nm.Fields.recycled
-        ][nm.Fields.discard_destination_id].iloc[0]
-        recovered_in_use = (
-            results.loc[
-                results[nm.Fields.discard_destination_id] == recycled_id, df_keys
-            ]
-            .drop_duplicates()
-            .groupby(by=nm.Fields.harvest_year)
-            .agg({nm.Fields.present: np.sum})
-        )
-        recovered_in_use = recovered_in_use.rename(
-            columns={nm.Fields.present: P(nm.Fields.recycled)}
-        )
-        self.results.recovered_in_use = recovered_in_use
+    #     # Start with recovered AKA recycled present. This might mean "in use", but recycled rather than directly used from harvest
+    #     recycled_id = discard_destinations[
+    #         discard_destinations[nm.Fields.discard_description] == nm.Fields.recycled
+    #     ][nm.Fields.discard_destination_id].iloc[0]
+    #     recovered_in_use = (
+    #         results.loc[
+    #             results[nm.Fields.discard_destination_id] == recycled_id, df_keys
+    #         ]
+    #         .drop_duplicates()
+    #         .groupby(by=nm.Fields.harvest_year)
+    #         .agg({nm.Fields.present: np.sum})
+    #     )
+    #     recovered_in_use = recovered_in_use.rename(
+    #         columns={nm.Fields.present: P(nm.Fields.recycled)}
+    #     )
+    #     self.results.recovered_in_use = recovered_in_use
 
-        # Get landfill present
-        landfill_id = discard_destinations[
-            discard_destinations[nm.Fields.discard_description] == nm.Fields.landfills
-        ][nm.Fields.discard_destination_id].iloc[0]
-        in_landfills = (
-            results.loc[
-                results[nm.Fields.discard_destination_id] == landfill_id, df_keys
-            ]
-            .drop_duplicates()
-            .groupby(by=nm.Fields.harvest_year)
-            .agg({nm.Fields.present: np.sum})
-        )
-        in_landfills = in_landfills.rename(
-            columns={nm.Fields.present: P(nm.Fields.landfills)}
-        )
-        self.results.in_landfills = in_landfills
+    #     # Get landfill present
+    #     landfill_id = discard_destinations[
+    #         discard_destinations[nm.Fields.discard_description] == nm.Fields.landfills
+    #     ][nm.Fields.discard_destination_id].iloc[0]
+    #     in_landfills = (
+    #         results.loc[
+    #             results[nm.Fields.discard_destination_id] == landfill_id, df_keys
+    #         ]
+    #         .drop_duplicates()
+    #         .groupby(by=nm.Fields.harvest_year)
+    #         .agg({nm.Fields.present: np.sum})
+    #     )
+    #     in_landfills = in_landfills.rename(
+    #         columns={nm.Fields.present: P(nm.Fields.landfills)}
+    #     )
+    #     self.results.in_landfills = in_landfills
 
-        # Finally get dump amount present
-        dump_id = discard_destinations[
-            discard_destinations[nm.Fields.discard_description] == nm.Fields.dumps
-        ][nm.Fields.discard_destination_id].iloc[0]
-        in_dumps = (
-            results.loc[results[nm.Fields.discard_destination_id] == dump_id, df_keys]
-            .drop_duplicates()
-            .groupby(by=nm.Fields.harvest_year)
-            .agg({nm.Fields.present: np.sum})
-        )
-        in_dumps = in_dumps.rename(columns={nm.Fields.present: P(nm.Fields.dumps)})
-        self.results.in_dumps = in_dumps
+    #     # Finally get dump amount present
+    #     dump_id = discard_destinations[
+    #         discard_destinations[nm.Fields.discard_description] == nm.Fields.dumps
+    #     ][nm.Fields.discard_destination_id].iloc[0]
+    #     in_dumps = (
+    #         results.loc[results[nm.Fields.discard_destination_id] == dump_id, df_keys]
+    #         .drop_duplicates()
+    #         .groupby(by=nm.Fields.harvest_year)
+    #         .agg({nm.Fields.present: np.sum})
+    #     )
+    #     in_dumps = in_dumps.rename(columns={nm.Fields.present: P(nm.Fields.dumps)})
+    #     self.results.in_dumps = in_dumps
 
-        # TODO not so suspicious after all
-        fuelwood = self.results.fuelwood
-        fuelwood = fuelwood.groupby(by=nm.Fields.harvest_year).agg(
-            {nm.Fields.emitted: np.sum}
-        )
-        fuelwood = fuelwood.rename(columns={nm.Fields.emitted: E(nm.Fields.fuel)})
-        self.results.fuelwood = fuelwood
+    #     # TODO not so suspicious after all
+    #     fuelwood = self.results.fuelwood
+    #     fuelwood = fuelwood.groupby(by=nm.Fields.harvest_year).agg(
+    #         {nm.Fields.emitted: np.sum}
+    #     )
+    #     fuelwood = fuelwood.rename(columns={nm.Fields.emitted: E(nm.Fields.fuel)})
+    #     self.results.fuelwood = fuelwood
 
-        # Collect all the emissions to be converted to CO2e. HISTORICALLY this was only for emissions, but not everything needs to be in CO2e...
-        df_keys = [nm.Fields.harvest_year, nm.Fields.emitted]
-        landfills_emitted = (
-            results.loc[
-                results[nm.Fields.discard_destination_id] == landfill_id, df_keys
-            ]
-            .drop_duplicates()
-            .groupby(by=nm.Fields.harvest_year)
-            .agg({nm.Fields.emitted: np.sum})
-        )
-        landfills_emitted = landfills_emitted.rename(
-            columns={nm.Fields.emitted: E(nm.Fields.landfills)}
-        )
-        dumps_emitted = (
-            results.loc[results[nm.Fields.discard_destination_id] == dump_id, df_keys]
-            .groupby(by=nm.Fields.harvest_year)
-            .agg({nm.Fields.emitted: np.sum})
-        )
-        dumps_emitted = dumps_emitted.rename(
-            columns={nm.Fields.emitted: E(nm.Fields.dumps)}
-        )
-        recycled_emitted = (
-            results.loc[
-                results[nm.Fields.discard_destination_id] == recycled_id, df_keys
-            ]
-            .drop_duplicates()
-            .groupby(by=nm.Fields.harvest_year)
-            .agg({nm.Fields.emitted: np.sum})
-        )
-        recycled_emitted = recycled_emitted.rename(
-            columns={nm.Fields.emitted: E(nm.Fields.recycled)}
-        )
-        burned_emitted = burned
-        compost_emitted = composted
+    #     # Collect all the emissions to be converted to CO2e. HISTORICALLY this was only for emissions, but not everything needs to be in CO2e...
+    #     df_keys = [nm.Fields.harvest_year, nm.Fields.emitted]
+    #     landfills_emitted = (
+    #         results.loc[
+    #             results[nm.Fields.discard_destination_id] == landfill_id, df_keys
+    #         ]
+    #         .drop_duplicates()
+    #         .groupby(by=nm.Fields.harvest_year)
+    #         .agg({nm.Fields.emitted: np.sum})
+    #     )
+    #     landfills_emitted = landfills_emitted.rename(
+    #         columns={nm.Fields.emitted: E(nm.Fields.landfills)}
+    #     )
+    #     dumps_emitted = (
+    #         results.loc[results[nm.Fields.discard_destination_id] == dump_id, df_keys]
+    #         .groupby(by=nm.Fields.harvest_year)
+    #         .agg({nm.Fields.emitted: np.sum})
+    #     )
+    #     dumps_emitted = dumps_emitted.rename(
+    #         columns={nm.Fields.emitted: E(nm.Fields.dumps)}
+    #     )
+    #     recycled_emitted = (
+    #         results.loc[
+    #             results[nm.Fields.discard_destination_id] == recycled_id, df_keys
+    #         ]
+    #         .drop_duplicates()
+    #         .groupby(by=nm.Fields.harvest_year)
+    #         .agg({nm.Fields.emitted: np.sum})
+    #     )
+    #     recycled_emitted = recycled_emitted.rename(
+    #         columns={nm.Fields.emitted: E(nm.Fields.recycled)}
+    #     )
+    #     burned_emitted = burned
+    #     compost_emitted = composted
 
-        # self.results.emissions = {'fuelwood': fuelwood, 'landfills_emitted': landfills_emitted, 'dumps_emitted': dumps_emitted, 'recycled_emitted': recycled_emitted, 'burned_emitted': burned_emitted, 'compost_emitted': compost_emitted}
+    #     # self.results.emissions = {'fuelwood': fuelwood, 'landfills_emitted': landfills_emitted, 'dumps_emitted': dumps_emitted, 'recycled_emitted': recycled_emitted, 'burned_emitted': burned_emitted, 'compost_emitted': compost_emitted}
 
-        # Merge up all the present dispositions
-        all_in_use = products_in_use.merge(
-            recovered_in_use, how="inner", on=nm.Fields.harvest_year
-        ).drop_duplicates()
-        all_in_use = all_in_use.merge(
-            in_landfills, how="inner", on=nm.Fields.harvest_year
-        ).drop_duplicates()
-        all_in_use = all_in_use.merge(
-            in_dumps, how="inner", on=nm.Fields.harvest_year
-        ).drop_duplicates()
-        # SWDS is just the sum of landfills and dumps. Compost gets emitted, recycled is kinda "in use", and burned is directly emitted
-        all_in_use[P(nm.Fields.swds)] = all_in_use[
-            [P(nm.Fields.landfills), P(nm.Fields.dumps)]
-        ].sum(axis=1)
-        self.results.all_in_use = all_in_use
+    #     # Merge up all the present dispositions
+    #     all_in_use = products_in_use.merge(
+    #         recovered_in_use, how="inner", on=nm.Fields.harvest_year
+    #     ).drop_duplicates()
+    #     all_in_use = all_in_use.merge(
+    #         in_landfills, how="inner", on=nm.Fields.harvest_year
+    #     ).drop_duplicates()
+    #     all_in_use = all_in_use.merge(
+    #         in_dumps, how="inner", on=nm.Fields.harvest_year
+    #     ).drop_duplicates()
+    #     # SWDS is just the sum of landfills and dumps. Compost gets emitted, recycled is kinda "in use", and burned is directly emitted
+    #     all_in_use[P(nm.Fields.swds)] = all_in_use[
+    #         [P(nm.Fields.landfills), P(nm.Fields.dumps)]
+    #     ].sum(axis=1)
+    #     self.results.all_in_use = all_in_use
 
-        # Merge up all the emissions
-        all_emitted = landfills_emitted.merge(
-            dumps_emitted, how="inner", on=nm.Fields.harvest_year
-        ).drop_duplicates()
-        all_emitted = all_emitted.merge(
-            recycled_emitted, how="inner", on=nm.Fields.harvest_year
-        ).drop_duplicates()
-        all_emitted = all_emitted.merge(
-            burned_emitted, how="inner", on=nm.Fields.harvest_year
-        ).drop_duplicates()
-        all_emitted = all_emitted.merge(
-            compost_emitted, how="inner", on=nm.Fields.harvest_year
-        ).drop_duplicates()
-        all_emitted[nm.Fields.emitted_all] = all_emitted.sum(axis=1)
-        self.results.all_emitted = all_emitted
+    #     # Merge up all the emissions
+    #     all_emitted = landfills_emitted.merge(
+    #         dumps_emitted, how="inner", on=nm.Fields.harvest_year
+    #     ).drop_duplicates()
+    #     all_emitted = all_emitted.merge(
+    #         recycled_emitted, how="inner", on=nm.Fields.harvest_year
+    #     ).drop_duplicates()
+    #     all_emitted = all_emitted.merge(
+    #         burned_emitted, how="inner", on=nm.Fields.harvest_year
+    #     ).drop_duplicates()
+    #     all_emitted = all_emitted.merge(
+    #         compost_emitted, how="inner", on=nm.Fields.harvest_year
+    #     ).drop_duplicates()
+    #     all_emitted[nm.Fields.emitted_all] = all_emitted.sum(axis=1)
+    #     self.results.all_emitted = all_emitted
 
-        self.results.total_all_dispositions = all_in_use.merge(
-            all_emitted, how="inner", on=nm.Fields.harvest_year
-        ).drop_duplicates()
+    #     self.results.total_all_dispositions = all_in_use.merge(
+    #         all_emitted, how="inner", on=nm.Fields.harvest_year
+    #     ).drop_duplicates()
 
-        self.results.working_table = results
+    #     self.results.working_table = results
 
-        return
+    #     return
 
-    def convert_c02_e(self):
-        C = nm.Fields.c
-        CO2 = nm.Fields.co2
-        P = nm.Fields.ppresent
-        E = nm.Fields.eemitted
+    # # @dask.delayed
+    # def convert_c02_e(self):
+    #     C = nm.Fields.c
+    #     CO2 = nm.Fields.co2
+    #     P = nm.Fields.ppresent
+    #     E = nm.Fields.eemitted
 
-        total_all_dispositions = self.results.total_all_dispositions
+    #     total_all_dispositions = self.results.total_all_dispositions
 
-        # Pull in fuel here too... I think it needs converting just like the rest
-        total_all_dispositions = total_all_dispositions.merge(
-            self.results.fuelwood, on=nm.Fields.harvest_year
-        )
-        total_all_dispositions_co2e = total_all_dispositions.apply(
-            self.c_to_co2e, axis=1
-        )
+    #     # Pull in fuel here too... I think it needs converting just like the rest
+    #     total_all_dispositions = total_all_dispositions.merge(
+    #         self.results.fuelwood, on=nm.Fields.harvest_year
+    #     )
+    #     total_all_dispositions_co2e = total_all_dispositions.apply(
+    #         self.c_to_co2e, axis=1
+    #     )
 
-        total_all_dispositions = total_all_dispositions.rename(lambda x: C(x), axis=1)
-        total_all_dispositions_co2e = total_all_dispositions_co2e.rename(
-            lambda x: CO2(x), axis=1
-        )
+    #     total_all_dispositions = total_all_dispositions.rename(lambda x: C(x), axis=1)
+    #     total_all_dispositions_co2e = total_all_dispositions_co2e.rename(
+    #         lambda x: CO2(x), axis=1
+    #     )
 
-        total_all_dispositions = total_all_dispositions.merge(
-            total_all_dispositions_co2e, on=nm.Fields.harvest_year
-        )
+    #     total_all_dispositions = total_all_dispositions.merge(
+    #         total_all_dispositions_co2e, on=nm.Fields.harvest_year
+    #     )
 
-        # Treat the self.results.annual_timber_products before merging to only get the relevant information
-        tmbr = self.results.annual_timber_products
-        tmbr[C(nm.Fields.primary_product_sum)] = tmbr[
-            nm.Fields.primary_product_results
-        ].cumsum()
-        tmbr[CO2(nm.Fields.primary_product_sum)] = tmbr[
-            C(nm.Fields.primary_product_sum)
-        ].apply(self.c_to_co2e)
+    #     # Treat the self.results.annual_timber_products before merging to only get the relevant information
+    #     tmbr = self.results.annual_timber_products
+    #     tmbr[C(nm.Fields.primary_product_sum)] = tmbr[
+    #         nm.Fields.primary_product_results
+    #     ].cumsum()
+    #     tmbr[CO2(nm.Fields.primary_product_sum)] = tmbr[
+    #         C(nm.Fields.primary_product_sum)
+    #     ].apply(self.c_to_co2e)
 
-        # Merge the harvest results into the totals table
-        df_keys = [
-            nm.Fields.harvest_year,
-            C(nm.Fields.primary_product_sum),
-            CO2(nm.Fields.primary_product_sum),
-        ]
-        total_all_dispositions = tmbr[df_keys].merge(
-            total_all_dispositions, on=nm.Fields.harvest_year
-        )
+    #     # Merge the harvest results into the totals table
+    #     df_keys = [
+    #         nm.Fields.harvest_year,
+    #         C(nm.Fields.primary_product_sum),
+    #         CO2(nm.Fields.primary_product_sum),
+    #     ]
+    #     total_all_dispositions = tmbr[df_keys].merge(
+    #         total_all_dispositions, on=nm.Fields.harvest_year
+    #     )
 
-        df_keys = [
-            nm.Fields.harvest_year,
-            C(nm.Fields.primary_product_sum),
-            CO2(nm.Fields.primary_product_sum),
-            C(nm.Fields.products_in_use),
-            CO2(nm.Fields.products_in_use),
-            C(P(nm.Fields.recycled)),
-            CO2(P(nm.Fields.recycled)),
-            C(P(nm.Fields.swds)),
-            CO2(P(nm.Fields.swds)),
-            C(nm.Fields.emitted_all),
-            CO2(nm.Fields.emitted_all),
-        ]
+    #     df_keys = [
+    #         nm.Fields.harvest_year,
+    #         C(nm.Fields.primary_product_sum),
+    #         CO2(nm.Fields.primary_product_sum),
+    #         C(nm.Fields.products_in_use),
+    #         CO2(nm.Fields.products_in_use),
+    #         C(P(nm.Fields.recycled)),
+    #         CO2(P(nm.Fields.recycled)),
+    #         C(P(nm.Fields.swds)),
+    #         CO2(P(nm.Fields.swds)),
+    #         C(nm.Fields.emitted_all),
+    #         CO2(nm.Fields.emitted_all),
+    #     ]
 
-        df_carbon = [
-            C(nm.Fields.primary_product_sum),
-            C(nm.Fields.products_in_use),
-            C(P(nm.Fields.recycled)),
-            C(P(nm.Fields.swds)),
-            C(nm.Fields.emitted_all),
-        ]
+    #     df_carbon = [
+    #         C(nm.Fields.primary_product_sum),
+    #         C(nm.Fields.products_in_use),
+    #         C(P(nm.Fields.recycled)),
+    #         C(P(nm.Fields.swds)),
+    #         C(nm.Fields.emitted_all),
+    #     ]
 
-        big_table = total_all_dispositions[df_keys].drop_duplicates()
-        big_table[nm.Fields.accounted] = big_table[df_carbon].sum(axis=1)
-        big_table[nm.Fields.error] = (
-            big_table[C(nm.Fields.primary_product_sum)] - big_table[nm.Fields.accounted]
-        )
+    #     big_table = total_all_dispositions[df_keys].drop_duplicates()
+    #     big_table[nm.Fields.accounted] = big_table[df_carbon].sum(axis=1)
+    #     big_table[nm.Fields.error] = (
+    #         big_table[C(nm.Fields.primary_product_sum)] - big_table[nm.Fields.accounted]
+    #     )
 
-        big_table["pct_error"] = (
-            big_table[nm.Fields.error] / big_table[nm.Fields.accounted]
-        )
+    #     big_table["pct_error"] = (
+    #         big_table[nm.Fields.error] / big_table[nm.Fields.accounted]
+    #     )
 
-        self.results.big_table = big_table
-        self.results.total_all_dispositions = total_all_dispositions
+    #     self.results.big_table = big_table
+    #     self.results.total_all_dispositions = total_all_dispositions
 
-        # self.results.big_table.to_csv('x_big_table.csv')
-        # self.results.total_all_dispositions.to_csv('x_total_all.csv')
-        # self.results.working_table.to_csv('x_working.csv')
+    #     # self.results.big_table.to_csv('x_big_table.csv')
+    #     # self.results.total_all_dispositions.to_csv('x_total_all.csv')
+    #     # self.results.working_table.to_csv('x_working.csv')
 
-        return
+    #     return
 
-    def final_table(self):
+    # # @dask.delayed
+    # def final_table(self):
 
-        final = self.results.fuelwood.merge(
-            self.results.total_all_dispositions, on=nm.Fields.harvest_year
-        )
+    #     final = self.results.fuelwood.merge(
+    #         self.results.total_all_dispositions, on=nm.Fields.harvest_year
+    #     )
 
-        C = nm.Fields.c
-        CO2 = nm.Fields.co2
-        CHANGE = nm.Fields.change
-        P = nm.Fields.ppresent
-        E = nm.Fields.eemitted
+    #     C = nm.Fields.c
+    #     CO2 = nm.Fields.co2
+    #     CHANGE = nm.Fields.change
+    #     P = nm.Fields.ppresent
+    #     E = nm.Fields.eemitted
 
-        final[CHANGE(C(E(nm.Fields.fuel)))] = final[C(E(nm.Fields.fuel))].diff()
-        final[CHANGE(C(nm.Fields.emitted_all))] = final[C(nm.Fields.emitted_all)].diff()
-        final[CHANGE(C(nm.Fields.products_in_use))] = final[
-            C(nm.Fields.products_in_use)
-        ].diff()
-        final[CHANGE(C(P(nm.Fields.swds)))] = final[C(P(nm.Fields.swds))].diff()
+    #     final[CHANGE(C(E(nm.Fields.fuel)))] = final[C(E(nm.Fields.fuel))].diff()
+    #     final[CHANGE(C(nm.Fields.emitted_all))] = final[C(nm.Fields.emitted_all)].diff()
+    #     final[CHANGE(C(nm.Fields.products_in_use))] = final[
+    #         C(nm.Fields.products_in_use)
+    #     ].diff()
+    #     final[CHANGE(C(P(nm.Fields.swds)))] = final[C(P(nm.Fields.swds))].diff()
 
-        final[CHANGE(CO2(E(nm.Fields.fuel)))] = final[CO2(E(nm.Fields.fuel))].diff()
-        final[CHANGE(CO2(nm.Fields.emitted_all))] = final[
-            CO2(nm.Fields.emitted_all)
-        ].diff()
-        final[CHANGE(CO2(nm.Fields.products_in_use))] = final[
-            CO2(nm.Fields.products_in_use)
-        ].diff()
-        final[CHANGE(CO2(P(nm.Fields.swds)))] = final[CO2(P(nm.Fields.swds))].diff()
+    #     final[CHANGE(CO2(E(nm.Fields.fuel)))] = final[CO2(E(nm.Fields.fuel))].diff()
+    #     final[CHANGE(CO2(nm.Fields.emitted_all))] = final[
+    #         CO2(nm.Fields.emitted_all)
+    #     ].diff()
+    #     final[CHANGE(CO2(nm.Fields.products_in_use))] = final[
+    #         CO2(nm.Fields.products_in_use)
+    #     ].diff()
+    #     final[CHANGE(CO2(P(nm.Fields.swds)))] = final[CO2(P(nm.Fields.swds))].diff()
 
-        self.results.final = final
+    #     self.results.final = final
 
-        self.results.big_table.to_csv("x_big_table.csv")
-        self.results.total_all_dispositions.to_csv("x_total_all.csv")
-        self.results.working_table.to_csv("x_working.csv")
-        self.results.final.to_csv("x_final.csv")
+    #     self.results.big_table.to_csv("x_big_table.csv")
+    #     self.results.total_all_dispositions.to_csv("x_total_all.csv")
+    #     self.results.working_table.to_csv("x_working.csv")
+    #     self.results.final.to_csv("x_final.csv")
 
-        return
+    #     return
 
-    def c_to_co2e(self, c: float) -> float:
-        """Convert C to CO2e.
+    # def c_to_co2e(self, c: float) -> float:
+    #     """Convert C to CO2e.
 
-        Args:
-            c (float): the C value to convert
+    #     Args:
+    #         c (float): the C value to convert
 
-        Returns:
-            float: Units of CO2
-        """
-        return c * 44.0 / 12.0
+    #     Returns:
+    #         float: Units of CO2
+    #     """
+    #     return c * 44.0 / 12.0
 
-    def print_debug_df(self, df):
-        """Print the head and tail of a DataFrame to console. Useful for testing
+    # def print_debug_df(self, df):
+    #     """Print the head and tail of a DataFrame to console. Useful for testing
 
-        Args:
-            df (DataFrame): A DataFrame of interest to print
-        """
-        print(df.head(10))
-        print(df.tail(10))
+    #     Args:
+    #         df (DataFrame): A DataFrame of interest to print
+    #     """
+    #     print(df.head(10))
+    #     print(df.tail(10))
 
-    def memory_usage(self, df):
-        dfm = df.memory_usage()
-        dfm = dfm / 1024 / 1024
-        print("\n", dfm, "\n")
+    # def memory_usage(self, df):
+    #     dfm = df.memory_usage()
+    #     dfm = dfm / 1024 / 1024
+    #     print("\n", dfm, "\n")
 
-    def memory_usage_total(self, df):
-        dfs = df.memory_usage().sum()
-        dfs = dfs / 1024 / 1024
-        print("{} MB used".format(dfs))
+    # def memory_usage_total(self, df):
+    #     dfs = df.memory_usage().sum()
+    #     dfs = dfs / 1024 / 1024
+    #     print("{} MB used".format(dfs))
