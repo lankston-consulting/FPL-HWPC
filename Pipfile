@@ -12,9 +12,12 @@ matplotlib = "*"
 dask = {extras = ["dataframe", "delayed", "distributed"], version = "*"}
 sendgrid = "*"
 bokeh = "*"
+xarray = "*"
 
 [dev-packages]
-black = "*"
+ipykernel = "*"
+jupyter = "*"
+black = {extras = ["jupyter"], version = "*"}
 pylama = "*"
 
 [requires]
