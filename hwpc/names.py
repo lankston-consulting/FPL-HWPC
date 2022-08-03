@@ -46,6 +46,7 @@ class Names(singleton.Singleton):
         primary_product_ratio = "PrimaryProductRatio"
 
         end_use_id = "EndUseID"
+        ratio_group = "RatioGroup"
         end_use_ratio = "EndUseRatio"
         end_use_halflife = "HalfLife"
 

@@ -13,6 +13,8 @@ dask = {extras = ["dataframe", "delayed", "distributed"], version = "*"}
 sendgrid = "*"
 bokeh = "*"
 xarray = "*"
+numba = "*"
+numbagg = "*"
 
 [dev-packages]
 ipykernel = "*"

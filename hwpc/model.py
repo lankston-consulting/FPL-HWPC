@@ -7,8 +7,9 @@ import dask.bag as db
 import dask.dataframe as dd
 import dask.delayed
 from dask.distributed import Client, LocalCluster, get_client, Lock
+import xarray as xr
 
-from hwpc import model_data
+from hwpc import model_data_xr as model_data
 
 # from hwpc import results
 from hwpc.names import Names as nm
@@ -23,10 +24,10 @@ class Meta(singleton.Singleton):
         if Meta._instance is None:
             super().__new__(cls, args, kwargs)
 
-            Meta.cluster = LocalCluster(n_workers=8, processes=False)
-            Meta.client = Client(Meta.cluster)
+            # Meta.cluster = LocalCluster(n_workers=8, processes=False)
+            # Meta.client = Client(Meta.cluster)
 
-            Meta.lock = Lock()
+            # Meta.lock = Lock()
 
             Meta.model_collection = dict()
             Meta.model_list = list()
@@ -45,8 +46,7 @@ class Meta(singleton.Singleton):
     def run_simulation():
         md = model_data.ModelData()
         harvest = md.data[nm.Tables.harvest]
-        # For debugging, drop all but the last couple years
-        harvest = harvest[harvest[nm.Fields.harvest_year] > 2010]
+
         ModelFactory(harvest_init=harvest)
 
         return
@@ -55,8 +55,6 @@ class Meta(singleton.Singleton):
     def run_simulation_dask():
         md = model_data.ModelData()
         harvest = md.data[nm.Tables.harvest]
-        # For debugging, drop all but the last couple years
-        harvest = harvest[harvest[nm.Fields.harvest_year] > 2010]
 
         ModelFactory(harvest_init=harvest)
 
@@ -85,19 +83,27 @@ class Meta(singleton.Singleton):
 class ModelFactory(object):
     def __init__(self, harvest_init=None, lineage=None, recycled=None):
 
-        years = harvest_init[nm.Fields.harvest_year].unique().astype(int)
-        first_year = years.min()
-        last_year = years.max()
+        years = harvest_init[nm.Fields.harvest_year]#.unique().astype(int)
+        first_year = years.min().item()
+        last_year = years.max().item()
 
         if recycled is not None:
-            years = recycled[nm.Fields.harvest_year].unique().astype(int)
-            first_year = years.min()
+            years = recycled[nm.Fields.harvest_year]#.unique().astype(int)
+            first_year = years.min().item()
 
         # Create the dataframes needed to run each harvest year or recycle year "independently"
-        for year in range(first_year, last_year + 1):
-            k = (lineage, year)
-            # Get the number of years to simulate and create an empty array
-            year_count = last_year - year + 1
+        for year in years:
+            y = year.item()
+            # An extra year is now added during prep_data, so we don't simulate on it
+            if y == last_year:
+                continue
+
+            if lineage is None:
+                k = (y,)
+            else:
+                lineage = list(lineage)
+                k = lineage + [y]
+                k = tuple(k)
 
             if recycled is not None:
                 year_recycled = recycled.copy(deep=True)
@@ -111,25 +117,9 @@ class ModelFactory(object):
 
                 m = Model(harvest=harvest_init, recycled=year_recycled, lineage=k)
             else:
-                dummy_array = np.zeros((year_count, 2))
                 # Get the harvest record for this year
-                harvest = harvest_init[harvest_init[nm.Fields.harvest_year] == year]
-
-                # Set the first record of the dummy array to the actual harvest amount
-                harvest_np = harvest.to_numpy()
-                dummy_array[0] = harvest_np
-
-                # Populate the year column with real values
-                year_seq = np.arange(year, last_year + 1)
-                dummy_array[:, 0] = year_seq
-
-                # Make a dataframe of the single harvest year data to simulate and add
-                # to the harvest collection
-                harvest = pd.DataFrame(dummy_array, columns=harvest.columns)
-                # harvest = dd.from_pandas(harvest, npartitions=5)
-                # harvest_dict[year] = harvest
-
-                # Spin up a model for each harvest year
+                harvest = harvest_init.where(harvest_init.coords[nm.Fields.harvest_year] >= y, drop=True)
+                harvest = harvest.where(harvest.coords[nm.Fields.harvest_year] == y, 0)
 
                 m = Model(harvest=harvest, lineage=k)
 
@@ -163,8 +153,6 @@ class Model(object):
         # self.results = results.Results(recycled=recycled_link is not None)
         self.lineage = lineage
 
-        self.harvests = self.harvests.sort_values(by=nm.Fields.harvest_year)
-
         # the amount of product that is not lost
         self.end_use_loss_factor = float(
             self.md.data[nm.Tables.loss_factor].columns.values[0]
@@ -186,7 +174,7 @@ class Model(object):
     def run(self):
 
         if self.recycled is None:
-            self.working_table = self.harvests
+            self.working_table = self.harvests.merge(self.md.ids, join="outer")
             self.working_table = self.calculate_primary_product_mcg(self.working_table)
             self.working_table = self.calculate_end_use_products(self.working_table)
             self.working_table = self.calculate_products_in_use(self.working_table)
@@ -216,17 +204,12 @@ class Model(object):
         # timber product by the amount harvested that year.
 
         timber_products = working_table.merge(
-            self.md.data[nm.Tables.timber_products_data], how="outer"
+            self.md.data[nm.Tables.timber_products_data], join="left", fill_value=0.0
         )
         timber_products[nm.Fields.timber_product_results] = (
             timber_products[nm.Fields.timber_product_ratio]
             * timber_products[nm.Fields.ccf]
         )
-
-        timber_products = timber_products.dropna()
-        # timber_products = timber_products.sort_values(
-        #     by=[nm.Fields.harvest_year, nm.Fields.timber_product_id]
-        # )
 
         # self.results.timber_products = timber_products
         # self.results.harvests = self.harvests
@@ -237,62 +220,34 @@ class Model(object):
 
         # Append the timber product id to the primary product table
         primary_products = self.md.data[nm.Tables.primary_product_ratios]
-        primary_products[nm.Fields.timber_product_id] = primary_products[
-            nm.Fields.primary_product_id
-        ].map(self.md.primary_product_to_timber_product)
-
+        
         primary_products = timber_products.merge(
             primary_products,
-            how="outer",
-            on=[nm.Fields.harvest_year, nm.Fields.timber_product_id],
+            join="left",
+            fill_value=0.0
         )
         primary_products[nm.Fields.primary_product_results] = (
             primary_products[nm.Fields.primary_product_ratio]
             * primary_products[nm.Fields.timber_product_results]
         )
 
-        conversion = self.md.data[nm.Tables.ccf_c_conversion][
-            [nm.Fields.primary_product_id, nm.Fields.conversion_factor]
-        ]
-        primary_products = primary_products.merge(
-            conversion, on=nm.Fields.primary_product_id
-        )
+        conversion = self.md.data[nm.Tables.ccf_c_conversion]
+        primary_products = primary_products.merge(conversion)
 
         primary_products[nm.Fields.primary_product_results] = (
             primary_products[nm.Fields.primary_product_results]
             * primary_products[nm.Fields.conversion_factor]
         )
 
-        primary_products = primary_products.dropna()
-        primary_products = primary_products.sort_values(
-            by=[
-                nm.Fields.harvest_year,
-                nm.Fields.timber_product_id,
-                nm.Fields.primary_product_id,
-            ]
-        )
-
         # Get the sum total of primary products now that it's converted to MgC
-        tmbr = (
-            primary_products[
+        tmbr = primary_products[
                 [
                     nm.Fields.harvest_year,
                     nm.Fields.ccf,
                     nm.Fields.primary_product_results,
                 ]
-            ]
-            .groupby(nm.Fields.harvest_year)
-            .agg({nm.Fields.primary_product_results: np.sum})
-        )
-        tmbr = tmbr.merge(self.harvests, on=nm.Fields.harvest_year)
-
-        # Add a year to account for the shift
-        max_year = tmbr[nm.Fields.harvest_year].max()
-        copy_frame = tmbr[tmbr[nm.Fields.harvest_year] == max_year].copy(deep=True)
-        copy_frame[nm.Fields.harvest_year] = max_year + 1
-        copy_frame[nm.Fields.ccf] = 0
-        copy_frame[nm.Fields.primary_product_results] = 0
-        tmbr = pd.concat([tmbr, copy_frame], ignore_index=True)
+            ].groupby(nm.Fields.harvest_year).sum(dim=nm.Fields.primary_product_id)
+        tmbr = tmbr.merge(self.harvests)
 
         # self.results.annual_timber_products = tmbr
         # self.results.primary_products = primary_products
@@ -306,37 +261,15 @@ class Model(object):
 
         # Multiply the primary-to-end-use ratio for each end use product by the amount of the
         # corresponding primary product.
-
-        end_use = self.md.data[nm.Tables.end_use_ratios]
-        end_use[nm.Fields.primary_product_id] = end_use[nm.Fields.end_use_id].map(
-            self.md.end_use_to_primary_product
-        )
-
         end_use = working_table.merge(
-            end_use,
-            how="outer",
-            on=[nm.Fields.harvest_year, nm.Fields.primary_product_id],
+            self.md.data[nm.Tables.end_use_ratios],
+            join="left",
+            fill_value=0.0
         )
         end_use[nm.Fields.end_use_results] = (
             end_use[nm.Fields.end_use_ratio]
             * end_use[nm.Fields.primary_product_results]
         )
-
-        end_use = end_use.dropna()
-
-        # Add a year to account for the shift
-        max_year = end_use[nm.Fields.harvest_year].max()
-        copy_frame = end_use[end_use[nm.Fields.harvest_year] == max_year].copy(
-            deep=True
-        )
-
-        # TODO why is this done twice? once in the previous function, now in this one?
-        copy_frame[nm.Fields.harvest_year] = max_year + 1
-        copy_frame[nm.Fields.ccf] = 0
-        copy_frame[nm.Fields.timber_product_results] = 0
-        copy_frame[nm.Fields.end_use_results] = 0
-        copy_frame[nm.Fields.primary_product_results] = 0
-        end_use = pd.concat([end_use, copy_frame], ignore_index=True)
 
         # self.results.end_use_products = end_use
         # self.results.working_table = end_use
@@ -348,18 +281,15 @@ class Model(object):
         """Calculate the amount of end use products from each vintage year that are still in use
         during each inventory year.
         """
-        end_use = working_table
         # Make sure the rows are ascending to do the half life. Don't do this inplace
-        end_use = end_use.sort_values(by=nm.Fields.harvest_year)
-        end_use = end_use.merge(
+        # end_use = end_use.sort_values(by=nm.Fields.harvest_year)
+        end_use = working_table.merge(
             self.md.data[nm.Tables.end_use_products],
-            how="outer",
-            on=[nm.Fields.primary_product_id, nm.Fields.end_use_id],
+            join="left",
+            fill_value=0.0,
         )
 
-        end_use[nm.Fields.end_use_sum] = end_use.groupby(by=nm.Fields.end_use_id)[
-            nm.Fields.end_use_results
-        ].cumsum()
+        end_use[nm.Fields.end_use_sum] = end_use.groupby(dim=nm.Fields.end_use_id).cumsum(axis=end_use.coords[nm.Fields.end_use_results])
 
         # def halflife_func(q: mp.Queue, df: pd.DataFrame) -> pd.DataFrame:
         def halflife_func(df: pd.DataFrame) -> pd.DataFrame:
@@ -433,12 +363,9 @@ class Model(object):
         # discarded disposition totals for stuff discarded in year i.
         products_in_use = products_in_use.merge(
             self.md.data[nm.Tables.discard_disposition_ratios],
-            how="outer",
-            on=[nm.Fields.harvest_year, nm.Fields.discard_type_id],
+            join="left",
+            fill_value=0.0,
         )
-
-        # If the years mismatch, there will be NaN, so get rid of them
-        products_in_use = products_in_use.dropna()
 
         products_in_use[nm.Fields.discard_dispositions] = (
             products_in_use[nm.Fields.discarded_in_year]
