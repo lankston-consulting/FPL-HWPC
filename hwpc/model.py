@@ -83,12 +83,12 @@ class Meta(singleton.Singleton):
 class ModelFactory(object):
     def __init__(self, harvest_init=None, lineage=None, recycled=None):
 
-        years = harvest_init[nm.Fields.harvest_year]#.unique().astype(int)
+        years = harvest_init[nm.Fields.harvest_year]  # .unique().astype(int)
         first_year = years.min().item()
         last_year = years.max().item()
 
         if recycled is not None:
-            years = recycled[nm.Fields.harvest_year]#.unique().astype(int)
+            years = recycled[nm.Fields.harvest_year]  # .unique().astype(int)
             first_year = years.min().item()
 
         # Create the dataframes needed to run each harvest year or recycle year "independently"
@@ -118,7 +118,9 @@ class ModelFactory(object):
                 m = Model(harvest=harvest_init, recycled=year_recycled, lineage=k)
             else:
                 # Get the harvest record for this year
-                harvest = harvest_init.where(harvest_init.coords[nm.Fields.harvest_year] >= y, drop=True)
+                harvest = harvest_init.where(
+                    harvest_init.coords[nm.Fields.harvest_year] >= y, drop=True
+                )
                 harvest = harvest.where(harvest.coords[nm.Fields.harvest_year] == y, 0)
 
                 m = Model(harvest=harvest, lineage=k)
@@ -220,11 +222,9 @@ class Model(object):
 
         # Append the timber product id to the primary product table
         primary_products = self.md.data[nm.Tables.primary_product_ratios]
-        
+
         primary_products = timber_products.merge(
-            primary_products,
-            join="left",
-            fill_value=0.0
+            primary_products, join="left", fill_value=0.0
         )
         primary_products[nm.Fields.primary_product_results] = (
             primary_products[nm.Fields.primary_product_ratio]
@@ -240,13 +240,17 @@ class Model(object):
         )
 
         # Get the sum total of primary products now that it's converted to MgC
-        tmbr = primary_products[
+        tmbr = (
+            primary_products[
                 [
                     nm.Fields.harvest_year,
                     nm.Fields.ccf,
                     nm.Fields.primary_product_results,
                 ]
-            ].groupby(nm.Fields.harvest_year).sum(dim=nm.Fields.primary_product_id)
+            ]
+            .groupby(nm.Fields.harvest_year)
+            .sum(dim=nm.Fields.primary_product_id)
+        )
         tmbr = tmbr.merge(self.harvests)
 
         # self.results.annual_timber_products = tmbr
@@ -262,9 +266,7 @@ class Model(object):
         # Multiply the primary-to-end-use ratio for each end use product by the amount of the
         # corresponding primary product.
         end_use = working_table.merge(
-            self.md.data[nm.Tables.end_use_ratios],
-            join="left",
-            fill_value=0.0
+            self.md.data[nm.Tables.end_use_ratios], join="left", fill_value=0.0
         )
         end_use[nm.Fields.end_use_results] = (
             end_use[nm.Fields.end_use_ratio]
@@ -289,10 +291,11 @@ class Model(object):
             fill_value=0.0,
         )
 
-        end_use[nm.Fields.end_use_sum] = end_use.groupby(dim=nm.Fields.end_use_id).cumsum(axis=end_use.coords[nm.Fields.end_use_results])
+        end_use[nm.Fields.end_use_sum] = end_use.groupby(nm.Fields.end_use_id).cumsum(
+            dim=nm.Fields.harvest_year
+        )[nm.Fields.end_use_results]
 
-        # def halflife_func(q: mp.Queue, df: pd.DataFrame) -> pd.DataFrame:
-        def halflife_func(df: pd.DataFrame) -> pd.DataFrame:
+        def cumulative_halflife_func(df: pd.DataFrame) -> pd.DataFrame:
             halflife = df[nm.Fields.end_use_halflife].iloc[0]
 
             if halflife == 0:
@@ -321,9 +324,23 @@ class Model(object):
 
             return df
 
-        end_use[nm.Fields.products_in_use] = 0
+        def halflife_func(df):
+            idx = df[nm.Fields.end_use_id].item() - 1
+            hl = df[nm.Fields.end_use_halflife].values[idx]
 
-        products_in_use = end_use.groupby(by=nm.Fields.end_use_id).apply(halflife_func)
+            if hl == 0:
+                df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
+            else:
+
+                df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results].rolling_exp(window_type="halflife", halflife=hl)
+            return df
+
+        piu = xr.zeros_like(end_use[nm.Fields.end_use_results], dtype="float32")
+        end_use[nm.Fields.products_in_use] = piu
+
+        # products_in_use = end_use.groupby(by=nm.Fields.end_use_id).apply(cumulative_halflife_func)
+        
+        products_in_use = end_use.groupby([nm.Fields.timber_product_id, nm.Fields.primary_product_id, nm.Fields.end_use_id]).map(halflife_func)
 
         # self.results.products_in_use = products_in_use
         # self.results.working_table = products_in_use
@@ -473,7 +490,7 @@ class Model(object):
             nm.Fields.end_use_results,
             nm.Fields.discard_description,
             nm.Fields.end_use_halflife,
-            "RatioGroup",
+            nm.Fields.ratio_group,
             nm.Fields.discard_type_id,
             nm.Fields.fuel,
             nm.Fields.end_use_sum,

@@ -15,6 +15,7 @@ bokeh = "*"
 xarray = "*"
 numba = "*"
 numbagg = "*"
+scipy = "*"
 
 [dev-packages]
 ipykernel = "*"

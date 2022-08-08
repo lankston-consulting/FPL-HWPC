@@ -257,10 +257,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         conversion[nm.Fields.conversion_factor] = conversion[nm.Fields.conversion_factor].astype("float32")
         xoversion = conversion.to_xarray()
         ModelData.data[nm.Tables.ccf_c_conversion] = xoversion
-
-
         
-
         return
 
     @staticmethod
@@ -365,7 +362,8 @@ class ModelData(pickler.Pickler, singleton.Singleton):
     @staticmethod
     def _make_id_lookup():
         df = ModelData.data[nm.Tables.ids]
-        df = df.set_index([nm.Fields.timber_product_id, nm.Fields.primary_product_id, nm.Fields.end_use_id])
+        # df = df.set_index([nm.Fields.timber_product_id, nm.Fields.primary_product_id, nm.Fields.end_use_id])
+        df = df.set_index([nm.Fields.end_use_id])
         dx = df.to_xarray()
         ModelData.ids = dx
 
