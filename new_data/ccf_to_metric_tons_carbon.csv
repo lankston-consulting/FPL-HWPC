@@ -1,0 +1,65 @@
+﻿PrimaryProductID,Timber Product,Primary Product,ConversionFactor
+1,"hardwood, sawtimber",fuelwood and other,0.91
+2,"hardwood, sawtimber",lumber,0.91
+3,"hardwood, sawtimber",non-structural panels,0.87
+4,"hardwood, sawtimber",oriented strandboard (OSB),0.87
+5,"hardwood, sawtimber",other industrial products,0.91
+6,"hardwood, sawtimber",plywood,0.91
+7,"hardwood, sawtimber",wood pulp,0.91
+8,"softwood, sawtimber",fuelwood and other,0.74
+9,"softwood, sawtimber",lumber,0.74
+10,"softwood, sawtimber",non-structural panels,0.71
+11,"softwood, sawtimber",oriented strandboard (OSB),0.87
+12,"softwood, sawtimber",other industrial products,0.74
+13,"softwood, sawtimber",plywood,0.75
+14,"softwood, sawtimber",wood pulp,0.74
+15,"hardwood, pulpwood",fuelwood and other,0.91
+16,"hardwood, pulpwood",lumber,0.91
+17,"hardwood, pulpwood",non-structural panels,0.91
+18,"hardwood, pulpwood",oriented strandboard (OSB),0.87
+19,"hardwood, pulpwood",other industrial products,0.91
+20,"hardwood, pulpwood",plywood,0.91
+21,"hardwood, pulpwood",wood pulp,0.74
+22,"softwood, pulpwood",fuelwood and other,0.74
+23,"softwood, pulpwood",lumber,0.74
+24,"softwood, pulpwood",non-structural panels,0.71
+25,"softwood, pulpwood",oriented strandboard (OSB),0.87
+26,"softwood, pulpwood",other industrial products,0.74
+27,"softwood, pulpwood",plywood,0.74
+28,"softwood, pulpwood",wood pulp,0.74
+29,"hardwood, poles","hardwood, poles",0.91
+30,"softwood, poles","softwood, poles",0.74
+31,"hardwood, pilings","hardwood, pilings",0.91
+32,"softwood, pilings","softwood, pilings",0.74
+33,"hardwood, mine props","hardwood, mine props",0.91
+34,"softwood, mine props","softwood, mine props",0.74
+35,"hardwood, posts","hardwood, posts",0.91
+36,"softwood, posts","softwood, posts",0.74
+37,"hardwood, fuelwood","hardwood, fuelwood",0.91
+38,"softwood, fuelwood","softwood, fuelwood",0.74
+39,"hardwood, non-sawtimber","hardwood, non-sawtimber",0.91
+40,"softwood, non-sawtimber","softwood, non-sawtimber",0.74
+41,"hardwood, ties","hardwood, ties",0.91
+42,"softwood, ties","softwood, ties",0.74
+43,"hardwood, coop bolts","hardwood, coop bolts",0.91
+44,"softwood, coop bolts","softwood, coop bolts",0.74
+45,"hardwood, acid/dist.","hardwood, acid/dist.",0.91
+46,"softwood, acid/dist.","softwood, acid/dist.",0.74
+47,"hardwood, float logs","hardwood, float logs",0.91
+48,"softwood, float logs","softwood, float logs",0.74
+49,"hardwood, trap float","hardwood, trap float",0.91
+50,"softwood, trap float","softwood, trap float",0.74
+51,"hardwood, misc-conv.","hardwood, misc-conv.",0.91
+52,"softwood, misc-conv.","softwood, misc-conv.",0.74
+53,"hardwood, nav stores","hardwood, nav stores",0.91
+54,"softwood, nav stores","softwood, nav stores",0.74
+55,"hardwood, cull logs","hardwood, cull logs",0.91
+56,"softwood, cull logs","softwood, cull logs",0.74
+57,"hardwood, sm rnd wd","hardwood, sm rnd wd",0.91
+58,"softwood, sm rnd wd","softwood, sm rnd wd",0.74
+59,"hardwood, grn bio cv","hardwood, grn bio cv",0.91
+60,"softwood, grn bio cv","softwood, grn bio cv",0.74
+61,"hardwood, dry bio cv","hardwood, dry bio cv",0.91
+62,"softwood, dry bio cv","softwood, dry bio cv",0.74
+63,"hardwood, sp wood pr","hardwood, sp wood pr",0.91
+64,"softwood, sp wood pr","softwood, sp wood pr",0.74

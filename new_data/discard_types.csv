@@ -1,0 +1,9 @@
+﻿DiscardTypeID,Description,DiscardDestinationID,HalfLife,Ratio
+0,paper,3,LandfillFixedRatio,0.44
+1,wood,3,LandfillFixedRatio,0.77
+0,paper,3,LandfillHalfLife,14.5
+1,wood,3,LandfillHalfLife,29
+0,paper,0,DumpHalfLife,8.25
+1,wood,0,DumpHalfLife,16.5
+0,paper,1,RecycledHalfLife,2.6
+1,wood,1,RecycledHalfLife,2.6

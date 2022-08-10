@@ -1,4 +1,4 @@
-﻿EndUseID,PrimaryProductID,Description,EndUseHalfLife,RatioGroup,DiscardTypeID,Fuel
+﻿ID,PrimaryProductID,Description,HalfLife,RatioGroup,DiscardTypeID,Fuel
 1,1,fuelwood and other,0,0,1,1
 2,2,"manufacturing, other manufacturing",12,1,1,0
 3,2,"rail and railcar, n/a",12,1,1,0

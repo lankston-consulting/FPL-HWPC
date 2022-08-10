@@ -3,24 +3,23 @@ from utils import singleton
 
 class Names(singleton.Singleton):
     class Tables(singleton.Singleton):
-        ids = "id_lookup"
-        harvest = "harvest_data"
-        harvest_data_type = "harvest_data_type"
-        timber_products_data = "timber_product_data"
-        primary_products_data = "primary_product_data"
-        primary_products = "primary_products"
-        primary_product_ratios = "primary_product_ratios"
-        end_use_ratios = "end_use_ratios"
-        end_use_products = "end_use_products"
+        ccf_c_conversion = "ccf_to_metric_tons_carbon"
+        energy_capture = "discard_burned_with_energy_capture"
+        discard_destination_ratios = "discard_destination_ratios"
         discard_destinations = "discard_destinations"
         discard_types = "discard_types"
-        discard_disposition_ratios = "discarded_disposition_ratios"
-        region = "region"
-        regions = "regions"
-        energy_capture = "x_burned_energy_capture"
-        ccf_c_conversion = "ccf_to_metric_tons_carbon"
+        end_use_products = "end_use_products"
+        end_use_product_ratios = "end_use_product_ratios"
+        harvest = "harvest_data"
+        harvest_data_type = "harvest_data_type"
+        ids = "id_lookup"
         loss_factor = "loss_factor"
         mbf_conversion = "mbf_to_ccf_conversion"
+        primary_product_ratios = "primary_product_ratios"
+        primary_products = "primary_products"
+        region = "region"
+        regions = "regions"
+        timber_products_ratios = "timber_product_ratios"
 
     class Fields(singleton.Singleton):
 
@@ -48,7 +47,7 @@ class Names(singleton.Singleton):
         end_use_id = "EndUseID"
         ratio_group = "RatioGroup"
         end_use_ratio = "EndUseRatio"
-        end_use_halflife = "HalfLife"
+        end_use_halflife = "EndUseHalfLife"
 
         timber_product = "TimberProduct"
         primary_product = "PrimaryProduct"

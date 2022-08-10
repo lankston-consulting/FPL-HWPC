@@ -115,7 +115,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         to zero, etc.
         TODO lots of repeated code here... could probably improve this
         """
-        df = ModelData.data[nm.Tables.harvest] 
+        df = ModelData.data[nm.Tables.harvest]
         df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
         df[nm.Fields.ccf] = df[nm.Fields.ccf].astype("float32")
         # Add a year to account for the model shift
@@ -138,42 +138,41 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         # TODO does this work?
         if ModelData.data[nm.Tables.harvest_data_type].columns.values[0] == "mbf":
             ModelData._get_mbf_conversion()
+
+        df = ModelData.data[nm.Tables.timber_products_ratios]
         
-        df = ModelData.data[nm.Tables.primary_products] 
-        df = df.rename(columns={nm.Fields.id: nm.Fields.primary_product_id})
+
+        df = ModelData.data[nm.Tables.primary_products]
         df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("uint8")
         df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype("uint8")
         df[nm.Fields.conversion_factor] = df[nm.Fields.conversion_factor].astype("float16")
         df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype("uint8")
         df[nm.Fields.fuel] = df[nm.Fields.fuel].astype("uint8")
-        df = df.set_index([nm.Fields.primary_product_id, nm.Fields.timber_product_id])
+        df = df.set_index([nm.Fields.primary_product_id])
         dx = df.to_xarray()
         ModelData.data[nm.Tables.primary_products] = dx
 
-        df = ModelData.data[nm.Tables.end_use_ratios] 
-        df = df.rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
+        df = ModelData.data[nm.Tables.end_use_product_ratios]
         df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype("uint8")
         df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
         df[nm.Fields.end_use_ratio] = df[nm.Fields.end_use_ratio].astype("float16")
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.end_use_id])
         # df = df.loc[filtr, :]
         dx = df.to_xarray()
-        ModelData.data[nm.Tables.end_use_ratios] = dx
+        ModelData.data[nm.Tables.end_use_product_ratios] = dx
 
         df = ModelData.data[nm.Tables.end_use_products]
-        df = df.rename(columns={nm.Fields.id: nm.Fields.end_use_id})
         df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype("uint8")
         df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("uint8")
         df[nm.Fields.end_use_halflife] = df[nm.Fields.end_use_halflife].astype("float32")
         df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype("uint8")
         df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("uint8")
         df[nm.Fields.fuel] = df[nm.Fields.fuel].astype("uint8")
-        df = df.set_index([nm.Fields.end_use_id, nm.Fields.primary_product_id])
+        df = df.set_index([nm.Fields.end_use_id])
         dx = df.to_xarray()
         ModelData.data[nm.Tables.end_use_products] = dx
 
-        df = ModelData.data[nm.Tables.discard_disposition_ratios] 
-        df = df.rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
+        df = ModelData.data[nm.Tables.discard_destination_ratios]
         df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("uint8")
         df[nm.Fields.discard_destination_id] = df[nm.Fields.discard_destination_id].astype("uint8")
         df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
@@ -181,23 +180,22 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.discard_type_id, nm.Fields.discard_destination_id])
         # df = df.loc[filtr, :]
         dx = df.to_xarray()
-        ModelData.data[nm.Tables.discard_disposition_ratios] = dx
+        ModelData.data[nm.Tables.discard_destination_ratios] = dx
 
-
-        ModelData.data["pre_" + nm.Tables.timber_products_data] = ModelData.data[nm.Tables.timber_products_data]
+        ModelData.data["pre_" + nm.Tables.timber_products_ratios] = ModelData.data[nm.Tables.timber_products_ratios]
 
         # Melt the timber_product_data table to make years rows
         try:
-            df = ModelData.data[nm.Tables.timber_products_data].melt(
+            df = ModelData.data[nm.Tables.timber_products_ratios].melt(
                 id_vars=nm.Fields.timber_product_id,
                 var_name=nm.Fields.harvest_year,
                 value_name=nm.Fields.timber_product_ratio,
             )
         except:
-            ModelData.data[nm.Tables.timber_products_data] = ModelData.data[
-                nm.Tables.timber_products_data
-            ].rename(columns={"Timber Product ID": nm.Fields.timber_product_id})
-            df = ModelData.data[nm.Tables.timber_products_data].melt(
+            ModelData.data[nm.Tables.timber_products_ratios] = ModelData.data[nm.Tables.timber_products_ratios].rename(
+                columns={"Timber Product ID": nm.Fields.timber_product_id}
+            )
+            df = ModelData.data[nm.Tables.timber_products_ratios].melt(
                 id_vars=nm.Fields.timber_product_id,
                 var_name=nm.Fields.harvest_year,
                 value_name=nm.Fields.timber_product_ratio,
@@ -211,7 +209,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.timber_product_id])
         # df = df.loc[filtr, :]
         dx = df.to_xarray()
-        ModelData.data[nm.Tables.timber_products_data] = dx
+        ModelData.data[nm.Tables.timber_products_ratios] = dx
 
         # Parse the region and attempt to pull in default data
         region = ModelData.data[nm.Tables.region].columns[0]
@@ -219,29 +217,26 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
         if region_match:
             df = ModelData.data[nm.Tables.primary_product_ratios]
-            ModelData.data[nm.Tables.primary_product_ratios] = df[
-                df[nm.Fields.region_id] == region_match
-            ]
+            ModelData.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.region_id] == region_match]
         else:
             # Melt the primary_product_data table to make years rows
             try:
-                df = ModelData.data[nm.Tables.primary_products_data].melt(
+                df = ModelData.data[nm.Tables.primary_product_data].melt(
                     id_vars=nm.Fields.primary_product_id,
                     var_name=nm.Fields.harvest_year,
                     value_name=nm.Fields.ratio,
                 )
             except:
-                ModelData.data[nm.Tables.primary_products_data] = ModelData.data[
-                    nm.Tables.primary_products_data
+                ModelData.data[nm.Tables.primary_product_data] = ModelData.data[
+                    nm.Tables.primary_product_data
                 ].rename(columns={"Primary Product ID": nm.Fields.primary_product_id})
-                df = ModelData.data[nm.Tables.primary_products_data].melt(
+                df = ModelData.data[nm.Tables.primary_product_data].melt(
                     id_vars=nm.Fields.primary_product_id,
                     var_name=nm.Fields.harvest_year,
                     value_name=nm.Fields.ratio,
                 )
 
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
-        df = df.rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
         df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("uint8")
         df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
         df[nm.Fields.primary_product_ratio] = df[nm.Fields.primary_product_ratio].astype("float16")
@@ -250,14 +245,16 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         dx = df.to_xarray()
         ModelData.data[nm.Tables.primary_product_ratios] = dx
 
-        conversion = ModelData.data[nm.Tables.ccf_c_conversion][[nm.Fields.primary_product_id, nm.Fields.conversion_factor]]
+        conversion = ModelData.data[nm.Tables.ccf_c_conversion][
+            [nm.Fields.primary_product_id, nm.Fields.conversion_factor]
+        ]
 
         conversion = conversion.set_index([nm.Fields.primary_product_id])
         conversion.index = pd.to_numeric(conversion.index, downcast="integer")
         conversion[nm.Fields.conversion_factor] = conversion[nm.Fields.conversion_factor].astype("float32")
         xoversion = conversion.to_xarray()
         ModelData.data[nm.Tables.ccf_c_conversion] = xoversion
-        
+
         return
 
     @staticmethod
@@ -295,12 +292,16 @@ class ModelData(pickler.Pickler, singleton.Singleton):
             year_set = []
 
             if i < ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].size - 1:
-                for j in range(ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i],
-                    ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i + 1]):
+                for j in range(
+                    ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i],
+                    ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i + 1],
+                ):
                     year_set.append(j)
             else:
-                for j in range(ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i],
-                    ModelData.data[nm.Tables.harvest][nm.Fields.harvest_year].max()):
+                for j in range(
+                    ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i],
+                    ModelData.data[nm.Tables.harvest][nm.Fields.harvest_year].max(),
+                ):
                     year_set.append(j)
 
             year_set = tuple(year_set)
@@ -325,9 +326,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     @staticmethod
     def _primary_product_to_timber_product():
-        ids = ModelData.data[nm.Tables.ids][
-            [nm.Fields.primary_product_id, nm.Fields.timber_product_id]
-        ]
+        ids = ModelData.data[nm.Tables.ids][[nm.Fields.primary_product_id, nm.Fields.timber_product_id]]
         ids_dict = ids.to_dict(orient="list")
         keys = ids_dict[nm.Fields.primary_product_id]
         values = ids_dict[nm.Fields.timber_product_id]
@@ -337,9 +336,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     @staticmethod
     def _end_use_to_timber_product():
-        ids = ModelData.data[nm.Tables.ids][
-            [nm.Fields.end_use_id, nm.Fields.timber_product_id]
-        ]
+        ids = ModelData.data[nm.Tables.ids][[nm.Fields.end_use_id, nm.Fields.timber_product_id]]
         ids_dict = ids.to_dict(orient="list")
         keys = ids_dict[nm.Fields.end_use_id]
         values = ids_dict[nm.Fields.timber_product_id]
@@ -349,9 +346,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     @staticmethod
     def _end_use_to_primary_product():
-        ids = ModelData.data[nm.Tables.ids][
-            [nm.Fields.end_use_id, nm.Fields.primary_product_id]
-        ]
+        ids = ModelData.data[nm.Tables.ids][[nm.Fields.end_use_id, nm.Fields.primary_product_id]]
         ids_dict = ids.to_dict(orient="list")
         keys = ids_dict[nm.Fields.end_use_id]
         values = ids_dict[nm.Fields.primary_product_id]
@@ -362,8 +357,8 @@ class ModelData(pickler.Pickler, singleton.Singleton):
     @staticmethod
     def _make_id_lookup():
         df = ModelData.data[nm.Tables.ids]
-        # df = df.set_index([nm.Fields.timber_product_id, nm.Fields.primary_product_id, nm.Fields.end_use_id])
-        df = df.set_index([nm.Fields.end_use_id])
+        df = df.set_index([nm.Fields.timber_product_id, nm.Fields.primary_product_id, nm.Fields.end_use_id])
+        # df = df.set_index([nm.Fields.end_use_id])
         dx = df.to_xarray()
         ModelData.ids = dx
 
@@ -396,9 +391,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
             zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.paper_halflife])
         )
 
-        df = ModelData.data[nm.Tables.discard_destinations][
-            [nm.Fields.discard_destination_id, nm.Fields.wood_halflife]
-        ]
+        df = ModelData.data[nm.Tables.discard_destinations][[nm.Fields.discard_destination_id, nm.Fields.wood_halflife]]
         dat = df.to_dict(orient="list")
         ModelData.disposition_to_halflife[nm.Fields.wood] = dict(
             zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.wood_halflife])

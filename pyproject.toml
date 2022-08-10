@@ -1,0 +1,6 @@
+[tool.black]
+line-length = 150
+target-version = ['py39']
+include = '\.pyi?$'
+# 'extend-exclude' excludes files or directories in addition to the defaults
+extend-exclude = "hwpc\\/model_data_xr\\.py"

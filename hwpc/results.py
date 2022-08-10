@@ -115,9 +115,7 @@ class Results(pickler.Pickler):
 
         self.zip_buffer = BytesIO()
 
-        self.zip = zipfile.ZipFile(
-            self.zip_buffer, mode="w", compression=zipfile.ZIP_STORED, allowZip64=False
-        )
+        self.zip = zipfile.ZipFile(self.zip_buffer, mode="w", compression=zipfile.ZIP_STORED, allowZip64=False)
 
         self.captions = {}
 
@@ -135,9 +133,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile() as temp:
             harvest_data.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr(
-                "harvest_data.csv", temp.read(), compress_type=zipfile.ZIP_STORED
-            )
+            self.zip.writestr("harvest_data.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
         with tempfile.TemporaryFile() as temp:
             timber_products_data.to_csv(temp)
@@ -163,9 +159,7 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile() as temp:
             self.working_table.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr(
-                "results.csv", temp.read(), compress_type=zipfile.ZIP_STORED
-            )
+            self.zip.writestr("results.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
         return
 
     def save_total_dispositions(self):
@@ -184,9 +178,7 @@ class Results(pickler.Pickler):
         E = nm.Fields.eemitted
 
         # CUMULATIVE DISCARDED PRODUCTS
-        cum_products = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.co2(nm.Fields.products_in_use)]
-        ]
+        cum_products = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(nm.Fields.products_in_use)]]
         self.generate_graph(
             cum_products,
             cum_products[nm.Fields.co2(nm.Fields.products_in_use)],
@@ -218,9 +210,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE  PRESENT RECOVERED PRODUCTS CARBON CO2E
-        recycled_carbon = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.recycled))]
-        ]
+        recycled_carbon = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.recycled))]]
         self.generate_graph(
             recycled_carbon,
             recycled_carbon[nm.Fields.co2(P(nm.Fields.recycled))],
@@ -252,9 +242,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE  PRESENT RECOVERED PRODUCTS CARBON MGC
-        recycled_carbon_mgc = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.recycled))]
-        ]
+        recycled_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.recycled))]]
         self.generate_graph(
             recycled_carbon_mgc,
             recycled_carbon_mgc[nm.Fields.mgc(P(nm.Fields.recycled))],
@@ -286,9 +274,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE RECOVERED PRODUCTS CO2E
-        recycled_emit = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.recycled))]
-        ]
+        recycled_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.recycled))]]
         self.generate_graph(
             recycled_emit,
             recycled_emit[nm.Fields.co2(E(nm.Fields.recycled))],
@@ -320,9 +306,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_w_energy_capture_emit = burned_w_energy_capture[
-            nm.Fields.burned_with_energy_capture
-        ]
+        burned_w_energy_capture_emit = burned_w_energy_capture[nm.Fields.burned_with_energy_capture]
         self.generate_graph(
             burned_w_energy_capture_emit,
             burned_w_energy_capture_emit,
@@ -386,9 +370,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE DISCARD COMPOST CO2E
-        composted_emit = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.composted))]
-        ]
+        composted_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.composted))]]
         self.generate_graph(
             composted_emit,
             composted_emit[nm.Fields.co2(E(nm.Fields.composted))],
@@ -420,9 +402,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE DISCARD LANDFILL CARBON CO2E
-        landfills_carbon = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.landfills))]
-        ]
+        landfills_carbon = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.landfills))]]
         self.generate_graph(
             landfills_carbon,
             landfills_carbon[nm.Fields.co2(P(nm.Fields.landfills))],
@@ -454,9 +434,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE DISCARD LANDFILL CARBON MGC
-        landfills_carbon_mgc = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.landfills))]
-        ]
+        landfills_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.landfills))]]
         self.generate_graph(
             landfills_carbon_mgc,
             landfills_carbon_mgc[nm.Fields.mgc(P(nm.Fields.landfills))],
@@ -488,9 +466,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE DISCARD LANDFILL CO2E
-        landfills_emit = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.landfills))]
-        ]
+        landfills_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.landfills))]]
         self.generate_graph(
             landfills_emit,
             landfills_emit[nm.Fields.co2(E(nm.Fields.landfills))],
@@ -522,9 +498,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE DISCARD DUMPS CARBON CO2E
-        dumps_carbon = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.dumps))]
-        ]
+        dumps_carbon = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.dumps))]]
         self.generate_graph(
             dumps_carbon,
             dumps_carbon[nm.Fields.co2(P(nm.Fields.dumps))],
@@ -556,9 +530,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE DISCARD DUMPS CARBON MGC
-        dumps_carbon_mgc = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.dumps))]
-        ]
+        dumps_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.dumps))]]
         self.generate_graph(
             dumps_carbon_mgc,
             dumps_carbon_mgc[nm.Fields.mgc(P(nm.Fields.dumps))],
@@ -590,9 +562,7 @@ class Results(pickler.Pickler):
         )
 
         # CUMULATIVE DISCARD DUMPS CO2E
-        dumps_emit = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.dumps))]
-        ]
+        dumps_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.dumps))]]
         self.generate_graph(
             dumps_emit,
             dumps_emit[nm.Fields.co2(E(nm.Fields.dumps))],
@@ -623,9 +593,7 @@ class Results(pickler.Pickler):
             "Metric Tons CO2e",
         )
 
-        fuelwood_emit = total_all_dispositions[
-            [nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.fuel))]
-        ]
+        fuelwood_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.fuel))]]
         self.generate_graph(
             fuelwood_emit,
             fuelwood_emit[nm.Fields.co2(E(nm.Fields.fuel))],
@@ -660,25 +628,19 @@ class Results(pickler.Pickler):
         with tempfile.TemporaryFile() as temp:
             total_all_dispositions.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr(
-                "all_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED
-            )
+            self.zip.writestr("all_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
         # PRIMARY PRODUCTS
         with tempfile.TemporaryFile() as temp:
             primary_products.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr(
-                "primary_products.csv", temp.read(), compress_type=zipfile.ZIP_STORED
-            )
+            self.zip.writestr("primary_products.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
         # CARBON STOCKS
         with tempfile.TemporaryFile() as temp:
             total_in_use.to_csv(temp)
             temp.seek(0)
-            self.zip.writestr(
-                "total_in_use.csv", temp.read(), compress_type=zipfile.ZIP_STORED
-            )
+            self.zip.writestr("total_in_use.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
         self.generate_carbon_stocks_graph(big_table, "co2e")
         self.generate_carbon_stocks_graph(big_table, "mgc")
@@ -702,9 +664,7 @@ class Results(pickler.Pickler):
             captions_json = captions_json.encode()
             temp.write(captions_json)
             temp.seek(0)
-            self.zip.writestr(
-                "captions.json", temp.read(), compress_type=zipfile.ZIP_STORED
-            )
+            self.zip.writestr("captions.json", temp.read(), compress_type=zipfile.ZIP_STORED)
 
         if not os.path.exists("./output/"):
             os.makedirs("./output")
@@ -794,34 +754,23 @@ class Results(pickler.Pickler):
             with tempfile.TemporaryFile() as temp:
                 df_for_csv.to_csv(temp)
                 temp.seek(0)
-                self.zip.writestr(
-                    file_name + ".csv", temp.read(), compress_type=zipfile.ZIP_STORED
-                )
+                self.zip.writestr(file_name + ".csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             fig, ax = plt.subplots()
             plt.subplots_adjust(bottom=adjust_bottom)
             plt.title(title, multialignment="center")
             plt.xlabel("Inventory Year")
 
-            if (
-                title
-                == "Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture"
-            ):
+            if title == "Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture":
                 plt.ylim(-1, 1)
             ax.plot(xaxis, data_frame)
             plt.ticklabel_format(axis="y", style="sci", scilimits=(1, 5))
-            plt.figtext(
-                0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12
-            )
+            plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12)
             Labeloffset(ax, label=y_axis, axis="y")
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1)  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
-                self.zip.writestr(
-                    file_name + ".png", temp.read(), compress_type=zipfile.ZIP_STORED
-                )
+                self.zip.writestr(file_name + ".png", temp.read(), compress_type=zipfile.ZIP_STORED)
             plt.clf()
             plt.close()
 
@@ -847,19 +796,14 @@ class Results(pickler.Pickler):
             fig, ax = plt.subplots()
             plt.title(title, multialignment="center")
             plt.xlabel("Inventory Year")
-            if (
-                title
-                == "Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture"
-            ):
+            if title == "Total Cumulative Carbon Emitted from Burning Discard Products \n with Energy Capture":
                 plt.ylim(-1, 1)
             ax.plot(xaxis, data_frame)
             plt.ticklabel_format(axis="y", style="sci", scilimits=(1, 5))
             Labeloffset(ax, label=y_axis, axis="y")
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1)  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
                 self.zip.writestr(
                     file_name + "_no_caption.png",
@@ -877,9 +821,7 @@ class Results(pickler.Pickler):
     def generate_carbon_stocks_graph(self, big_table, units):
         P = nm.Fields.ppresent
         if units == "co2e":
-            products_in_use = self.big_table[
-                [nm.Fields.harvest_year, nm.Fields.co2(nm.Fields.products_in_use)]
-            ]
+            products_in_use = self.big_table[[nm.Fields.harvest_year, nm.Fields.co2(nm.Fields.products_in_use)]]
             with tempfile.TemporaryFile() as temp:
                 products_in_use.to_csv(temp)
                 temp.seek(0)
@@ -889,15 +831,11 @@ class Results(pickler.Pickler):
                     compress_type=zipfile.ZIP_STORED,
                 )
 
-            swds = self.big_table[
-                [nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.swds))]
-            ]
+            swds = self.big_table[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.swds))]]
             with tempfile.TemporaryFile() as temp:
                 swds.to_csv(temp)
                 temp.seek(0)
-                self.zip.writestr(
-                    "swds_co2e.csv", temp.read(), compress_type=zipfile.ZIP_STORED
-                )
+                self.zip.writestr("swds_co2e.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
             fig, ax = plt.subplots()
             plt.subplots_adjust(bottom=0.25)
@@ -912,9 +850,7 @@ class Results(pickler.Pickler):
                 + str(big_table[nm.Fields.harvest_year].max())
                 + " using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS). \n Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
             )
-            plt.figtext(
-                0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12
-            )
+            plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12)
             ax.stackplot(
                 big_table[nm.Fields.harvest_year],
                 big_table[nm.Fields.co2(nm.Fields.products_in_use)].values,
@@ -926,9 +862,7 @@ class Results(pickler.Pickler):
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
                 self.zip.writestr(
                     "total_cumulative_carbon_stocks_co2e.png",
@@ -938,9 +872,7 @@ class Results(pickler.Pickler):
             plt.clf()
             plt.close()
         else:
-            products_in_use = self.big_table[
-                [nm.Fields.harvest_year, nm.Fields.mgc(nm.Fields.products_in_use)]
-            ]
+            products_in_use = self.big_table[[nm.Fields.harvest_year, nm.Fields.mgc(nm.Fields.products_in_use)]]
             with tempfile.TemporaryFile() as temp:
                 products_in_use.to_csv(temp)
                 temp.seek(0)
@@ -950,15 +882,11 @@ class Results(pickler.Pickler):
                     compress_type=zipfile.ZIP_STORED,
                 )
 
-            swds = self.big_table[
-                [nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.swds))]
-            ]
+            swds = self.big_table[[nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.swds))]]
             with tempfile.TemporaryFile() as temp:
                 swds.to_csv(temp)
                 temp.seek(0)
-                self.zip.writestr(
-                    "swds_mgc.csv", temp.read(), compress_type=zipfile.ZIP_STORED
-                )
+                self.zip.writestr("swds_mgc.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
             fig, ax = plt.subplots()
             plt.subplots_adjust(bottom=0.25)
@@ -973,9 +901,7 @@ class Results(pickler.Pickler):
                 + str(big_table[nm.Fields.harvest_year].max())
                 + " using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS)."
             )
-            plt.figtext(
-                0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12
-            )
+            plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12)
             ax.stackplot(
                 big_table[nm.Fields.harvest_year],
                 big_table[nm.Fields.mgc(nm.Fields.products_in_use)].values,
@@ -987,9 +913,7 @@ class Results(pickler.Pickler):
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
                 self.zip.writestr(
                     "total_cumulative_carbon_stocks_mgc.png",
@@ -1003,17 +927,13 @@ class Results(pickler.Pickler):
     def generate_carbon_stocks_graph_no_caption(self, big_table, units):
         P = nm.Fields.ppresent
         if units == "co2e":
-            products_in_use = self.big_table[
-                [nm.Fields.harvest_year, nm.Fields.co2(nm.Fields.products_in_use)]
-            ]
+            products_in_use = self.big_table[[nm.Fields.harvest_year, nm.Fields.co2(nm.Fields.products_in_use)]]
             # with tempfile.TemporaryFile() as temp:
             #     products_in_use.to_csv(temp)
             #     temp.seek(0)
             #     self.zip.writestr('products_in_use_co2e.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-            swds = self.big_table[
-                [nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.swds))]
-            ]
+            swds = self.big_table[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.swds))]]
             # with tempfile.TemporaryFile() as temp:
             #     swds.to_csv(temp)
             #     temp.seek(0)
@@ -1045,9 +965,7 @@ class Results(pickler.Pickler):
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
                 self.zip.writestr(
                     "total_cumulative_carbon_stocks_co2e_no_caption.png",
@@ -1057,17 +975,13 @@ class Results(pickler.Pickler):
             plt.clf()
             plt.close()
         else:
-            products_in_use = self.big_table[
-                [nm.Fields.harvest_year, nm.Fields.mgc(nm.Fields.products_in_use)]
-            ]
+            products_in_use = self.big_table[[nm.Fields.harvest_year, nm.Fields.mgc(nm.Fields.products_in_use)]]
             # with tempfile.TemporaryFile() as temp:
             #     products_in_use.to_csv(temp)
             #     temp.seek(0)
             #     self.zip.writestr('products_in_use_mgc.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-            swds = self.big_table[
-                [nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.swds))]
-            ]
+            swds = self.big_table[[nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.swds))]]
             # with tempfile.TemporaryFile() as temp:
             #     swds.to_csv(temp)
             #     temp.seek(0)
@@ -1099,9 +1013,7 @@ class Results(pickler.Pickler):
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
                 self.zip.writestr(
                     "total_cumulative_carbon_stocks_mgc_no_caption.png",
@@ -1120,16 +1032,10 @@ class Results(pickler.Pickler):
             with tempfile.TemporaryFile() as temp:
                 final.to_csv(temp)
                 temp.seek(0)
-                self.zip.writestr(
-                    "final.csv", temp.read(), compress_type=zipfile.ZIP_STORED
-                )
+                self.zip.writestr("final.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             # We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
-            products_in_use_change = final.groupby(by="Year")[
-                nm.Fields.co2(nm.Fields.products_in_use) + "_change"
-            ].sum()
-            swds_change = final.groupby(by="Year")[
-                nm.Fields.co2(P(nm.Fields.swds)) + "_change"
-            ].sum()
+            products_in_use_change = final.groupby(by="Year")[nm.Fields.co2(nm.Fields.products_in_use) + "_change"].sum()
+            swds_change = final.groupby(by="Year")[nm.Fields.co2(P(nm.Fields.swds)) + "_change"].sum()
 
             fig, ax = plt.subplots()
             plt.subplots_adjust(bottom=0.25)
@@ -1145,9 +1051,7 @@ class Results(pickler.Pickler):
                 + str(final[nm.Fields.harvest_year].max())
                 + " using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS).\n Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
             )
-            plt.figtext(
-                0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12
-            )
+            plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12)
             p1 = ax.bar(
                 final[nm.Fields.harvest_year],
                 products_in_use_change,
@@ -1155,16 +1059,12 @@ class Results(pickler.Pickler):
                 color=color,
             )
             color = "tab:blue"
-            p2 = ax.bar(
-                final[nm.Fields.harvest_year], swds_change, color=color, label="SWDS"
-            )
+            p2 = ax.bar(final[nm.Fields.harvest_year], swds_change, color=color, label="SWDS")
             Labeloffset(ax, label="Metric Tons CO2e", axis="y")
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
                 self.zip.writestr(
                     "annual_net_change_carbon_stocks_co2e.png",
@@ -1175,12 +1075,8 @@ class Results(pickler.Pickler):
             plt.close()
         else:
             # We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
-            products_in_use_change = final.groupby(by="Year")[
-                nm.Fields.mgc(nm.Fields.products_in_use) + "_change"
-            ].sum()
-            swds_change = final.groupby(by="Year")[
-                nm.Fields.mgc(P(nm.Fields.swds)) + "_change"
-            ].sum()
+            products_in_use_change = final.groupby(by="Year")[nm.Fields.mgc(nm.Fields.products_in_use) + "_change"].sum()
+            swds_change = final.groupby(by="Year")[nm.Fields.mgc(P(nm.Fields.swds)) + "_change"].sum()
 
             fig, ax = plt.subplots()
             plt.subplots_adjust(bottom=0.25)
@@ -1196,9 +1092,7 @@ class Results(pickler.Pickler):
                 + str(final[nm.Fields.harvest_year].max())
                 + " using the IPCC Tier 3 Production Approach. \n Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS).\n Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane."
             )
-            plt.figtext(
-                0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12
-            )
+            plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12)
             p1 = ax.bar(
                 final[nm.Fields.harvest_year],
                 products_in_use_change,
@@ -1206,16 +1100,12 @@ class Results(pickler.Pickler):
                 color=color,
             )
             color = "tab:blue"
-            p2 = ax.bar(
-                final[nm.Fields.harvest_year], swds_change, color=color, label="SWDS"
-            )
+            p2 = ax.bar(final[nm.Fields.harvest_year], swds_change, color=color, label="SWDS")
             Labeloffset(ax, label="Megagrams Carbon", axis="y")
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
                 self.zip.writestr(
                     "annual_net_change_carbon_stocks_mgc.png",
@@ -1236,12 +1126,8 @@ class Results(pickler.Pickler):
             #     temp.seek(0)
             #     self.zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
             # We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
-            products_in_use_change = final.groupby(by="Year")[
-                nm.Fields.co2(nm.Fields.products_in_use) + "_change"
-            ].sum()
-            swds_change = final.groupby(by="Year")[
-                nm.Fields.co2(P(nm.Fields.swds)) + "_change"
-            ].sum()
+            products_in_use_change = final.groupby(by="Year")[nm.Fields.co2(nm.Fields.products_in_use) + "_change"].sum()
+            swds_change = final.groupby(by="Year")[nm.Fields.co2(P(nm.Fields.swds)) + "_change"].sum()
 
             fig, ax = plt.subplots()
             # plt.subplots_adjust(bottom=0.25)
@@ -1266,16 +1152,12 @@ class Results(pickler.Pickler):
                 color=color,
             )
             color = "tab:blue"
-            p2 = ax.bar(
-                final[nm.Fields.harvest_year], swds_change, color=color, label="SWDS"
-            )
+            p2 = ax.bar(final[nm.Fields.harvest_year], swds_change, color=color, label="SWDS")
             Labeloffset(ax, label="Metric Tons CO2e", axis="y")
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
                 self.zip.writestr(
                     "annual_net_change_carbon_stocks_co2e_no_caption.png",
@@ -1286,12 +1168,8 @@ class Results(pickler.Pickler):
             plt.close()
         else:
             # We sum products_in_use and swds_change to convert NaN values to 0, even if there is only one per year.
-            products_in_use_change = final.groupby(by="Year")[
-                nm.Fields.mgc(nm.Fields.products_in_use) + "_change"
-            ].sum()
-            swds_change = final.groupby(by="Year")[
-                nm.Fields.mgc(P(nm.Fields.swds)) + "_change"
-            ].sum()
+            products_in_use_change = final.groupby(by="Year")[nm.Fields.mgc(nm.Fields.products_in_use) + "_change"].sum()
+            swds_change = final.groupby(by="Year")[nm.Fields.mgc(P(nm.Fields.swds)) + "_change"].sum()
 
             fig, ax = plt.subplots()
             # plt.subplots_adjust(bottom=0.25)
@@ -1316,16 +1194,12 @@ class Results(pickler.Pickler):
                 color=color,
             )
             color = "tab:blue"
-            p2 = ax.bar(
-                final[nm.Fields.harvest_year], swds_change, color=color, label="SWDS"
-            )
+            p2 = ax.bar(final[nm.Fields.harvest_year], swds_change, color=color, label="SWDS")
             Labeloffset(ax, label="Megagrams Carbon", axis="y")
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
                 self.zip.writestr(
                     "annual_net_change_carbon_stocks_mgc_no_caption.png",
@@ -1338,9 +1212,7 @@ class Results(pickler.Pickler):
 
     def generate_annual_harvest_and_timber_product_graph(self, annual_timber_products):
         # TOTAL HARVEST AND TIMBER RESULTS
-        timber_products_results = annual_timber_products[
-            [nm.Fields.harvest_year, nm.Fields.primary_product_results]
-        ]
+        timber_products_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.primary_product_results]]
         with tempfile.TemporaryFile() as temp:
             timber_products_results.to_csv(temp)
             temp.seek(0)
@@ -1350,9 +1222,7 @@ class Results(pickler.Pickler):
                 compress_type=zipfile.ZIP_STORED,
             )
 
-        harvests_results = annual_timber_products[
-            [nm.Fields.harvest_year, nm.Fields.ccf]
-        ]
+        harvests_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.ccf]]
         with tempfile.TemporaryFile() as temp:
             harvests_results.to_csv(temp)
             temp.seek(0)
@@ -1373,9 +1243,7 @@ class Results(pickler.Pickler):
             + " to "
             + str(timber_products_results[nm.Fields.harvest_year].max())
         )
-        plt.figtext(
-            0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12
-        )
+        plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12)
         ax.plot(
             timber_products_results[nm.Fields.harvest_year],
             timber_products_results[nm.Fields.primary_product_results],
@@ -1393,9 +1261,7 @@ class Results(pickler.Pickler):
         ax.legend()
         plt.rcParams["figure.figsize"] = (8, 6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
-            plt.savefig(
-                temp, format="png", pad_inches=0.1, bbox_inches="tight"
-            )  # File position is at the end of the file.
+            plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
             temp.seek(0)  # Rewind the file. (0: the beginning of the file)
             self.zip.writestr(
                 "annual_harvest_and_timber_product_output.png",
@@ -1406,21 +1272,15 @@ class Results(pickler.Pickler):
         plt.close()
         return
 
-    def generate_annual_harvest_and_timber_product_graph_no_caption(
-        self, annual_timber_products
-    ):
+    def generate_annual_harvest_and_timber_product_graph_no_caption(self, annual_timber_products):
         # TOTAL HARVEST AND TIMBER RESULTS
-        timber_products_results = annual_timber_products[
-            [nm.Fields.harvest_year, nm.Fields.primary_product_results]
-        ]
+        timber_products_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.primary_product_results]]
         # with tempfile.TemporaryFile() as temp:
         #     timber_products_results.to_csv(temp)
         #     temp.seek(0)
         #     self.zip.writestr('annual_timber_product_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
 
-        harvests_results = annual_timber_products[
-            [nm.Fields.harvest_year, nm.Fields.ccf]
-        ]
+        harvests_results = annual_timber_products[[nm.Fields.harvest_year, nm.Fields.ccf]]
         # with tempfile.TemporaryFile() as temp:
         #     harvests_results.to_csv(temp)
         #     temp.seek(0)
@@ -1456,9 +1316,7 @@ class Results(pickler.Pickler):
         ax.legend()
         plt.rcParams["figure.figsize"] = (8, 6)
         with tempfile.TemporaryFile(suffix=".png") as temp:
-            plt.savefig(
-                temp, format="png", pad_inches=0.1, bbox_inches="tight"
-            )  # File position is at the end of the file.
+            plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
             temp.seek(0)  # Rewind the file. (0: the beginning of the file)
             self.zip.writestr(
                 "annual_harvest_and_timber_product_output_no_caption.png",
@@ -1477,9 +1335,7 @@ class Results(pickler.Pickler):
             plt.title("Big Table Results")
             plt.xlabel("Inventory Year")
             txt = "This table compares the collective sum of products in use, emissions, and harvest data in CO2e"
-            plt.figtext(
-                0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12
-            )
+            plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12)
             ax.plot(
                 big_table[nm.Fields.harvest_year],
                 big_table[nm.Fields.co2(nm.Fields.primary_product_sum)],
@@ -1505,20 +1361,14 @@ class Results(pickler.Pickler):
                 big_table["accounted"],
                 label="Accounted",
             )
-            ax.plot(
-                big_table[nm.Fields.harvest_year], big_table["error"], label="Error"
-            )
+            ax.plot(big_table[nm.Fields.harvest_year], big_table["error"], label="Error")
             Labeloffset(ax, label="Metric Tons CO2E", axis="y")
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
-                self.zip.writestr(
-                    "big_table_co2e.png", temp.read(), compress_type=zipfile.ZIP_STORED
-                )
+                self.zip.writestr("big_table_co2e.png", temp.read(), compress_type=zipfile.ZIP_STORED)
             plt.clf()
             plt.close()
         else:
@@ -1527,9 +1377,7 @@ class Results(pickler.Pickler):
             plt.title("Big Table Results")
             plt.xlabel("Inventory Year")
             txt = "This table compares the collective sum of products in use, emissions, and harvest data in Megagrams Carbon"
-            plt.figtext(
-                0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12
-            )
+            plt.figtext(0.5, 0.05, txt, wrap=True, horizontalalignment="center", fontsize=12)
             ax.plot(
                 big_table[nm.Fields.harvest_year],
                 big_table[nm.Fields.mgc(nm.Fields.primary_product_sum)],
@@ -1555,20 +1403,14 @@ class Results(pickler.Pickler):
                 big_table["accounted"],
                 label="Accounted",
             )
-            ax.plot(
-                big_table[nm.Fields.harvest_year], big_table["error"], label="Error"
-            )
+            ax.plot(big_table[nm.Fields.harvest_year], big_table["error"], label="Error")
             Labeloffset(ax, label="Megagrams Carbon", axis="y")
             ax.legend()
             plt.rcParams["figure.figsize"] = (8, 6)
             with tempfile.TemporaryFile(suffix=".png") as temp:
-                plt.savefig(
-                    temp, format="png", pad_inches=0.1, bbox_inches="tight"
-                )  # File position is at the end of the file.
+                plt.savefig(temp, format="png", pad_inches=0.1, bbox_inches="tight")  # File position is at the end of the file.
                 temp.seek(0)  # Rewind the file. (0: the beginning of the file)
-                self.zip.writestr(
-                    "big_table_mgc.png", temp.read(), compress_type=zipfile.ZIP_STORED
-                )
+                self.zip.writestr("big_table_mgc.png", temp.read(), compress_type=zipfile.ZIP_STORED)
             plt.clf()
             plt.close()
 

@@ -22,9 +22,7 @@ class InputDownload(object):
         if not os.path.exists("data"):
             os.makedirs("data")
 
-        with (
-            gch.download_temp(self.bucket, nm.Output.output_path + "/user_input.json")
-        ) as online_data:
+        with (gch.download_temp(self.bucket, nm.Output.output_path + "/user_input.json")) as online_data:
 
             with open("utils/default_paths.json", "r") as readjson:
                 default_json = json.load(readjson)

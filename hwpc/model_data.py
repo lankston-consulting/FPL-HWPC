@@ -51,9 +51,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         ret["cls_data"] = ModelData.data
         ret["cls_region"] = ModelData.region
 
-        ret[
-            "cls_primary_product_to_timber_product"
-        ] = ModelData.primary_product_to_timber_product
+        ret["cls_primary_product_to_timber_product"] = ModelData.primary_product_to_timber_product
         ret["cls_end_use_to_timber_product"] = ModelData.end_use_to_timber_product
         ret["cls_end_use_to_primary_product"] = ModelData.end_use_to_primary_product
 
@@ -75,13 +73,9 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         ModelData.data = state.pop("cls_data")
         ModelData.region = state.pop("cls_region")
 
-        ModelData.primary_product_to_timber_product = state.pop(
-            "cls_primary_product_to_timber_product"
-        )
+        ModelData.primary_product_to_timber_product = state.pop("cls_primary_product_to_timber_product")
         ModelData.end_use_to_timber_product = state.pop("cls_end_use_to_timber_product")
-        ModelData.end_use_to_primary_product = state.pop(
-            "cls_end_use_to_primary_product"
-        )
+        ModelData.end_use_to_primary_product = state.pop("cls_end_use_to_primary_product")
 
         ModelData.disposition_to_halflife = state.pop("cls_disposition_to_halflife")
 
@@ -112,42 +106,36 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         Examples could be sorting years, checking for matching yearly data, ratios summing
         to zero, etc.
         """
-        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[
-            nm.Tables.primary_product_ratios
-        ].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
+        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(
+            columns={nm.Fields.ratio: nm.Fields.primary_product_ratio}
+        )
 
-        ModelData.data[nm.Tables.primary_products] = ModelData.data[
-            nm.Tables.primary_products
-        ].rename(columns={nm.Fields.id: nm.Fields.primary_product_id})
+        ModelData.data[nm.Tables.primary_products] = ModelData.data[nm.Tables.primary_products].rename(
+            columns={nm.Fields.id: nm.Fields.primary_product_id}
+        )
 
-        ModelData.data[nm.Tables.end_use_ratios] = ModelData.data[
-            nm.Tables.end_use_ratios
-        ].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
+        ModelData.data[nm.Tables.end_use_product_ratios] = ModelData.data[nm.Tables.end_use_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
 
-        ModelData.data[nm.Tables.end_use_products] = ModelData.data[
-            nm.Tables.end_use_products
-        ].rename(columns={nm.Fields.id: nm.Fields.end_use_id})
+        ModelData.data[nm.Tables.end_use_products] = ModelData.data[nm.Tables.end_use_products].rename(columns={nm.Fields.id: nm.Fields.end_use_id})
 
-        ModelData.data[nm.Tables.discard_disposition_ratios] = ModelData.data[
-            nm.Tables.discard_disposition_ratios
-        ].rename(columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio})
+        ModelData.data[nm.Tables.discard_destination_ratios] = ModelData.data[nm.Tables.discard_destination_ratios].rename(
+            columns={nm.Fields.ratio: nm.Fields.discard_destination_ratio}
+        )
 
-        ModelData.data["pre_" + nm.Tables.timber_products_data] = ModelData.data[
-            nm.Tables.timber_products_data
-        ]
+        ModelData.data["pre_" + nm.Tables.timber_products_ratios] = ModelData.data[nm.Tables.timber_products_ratios]
 
         # Melt the timber_product_data table to make years rows
         try:
-            df = ModelData.data[nm.Tables.timber_products_data].melt(
+            df = ModelData.data[nm.Tables.timber_products_ratios].melt(
                 id_vars=nm.Fields.timber_product_id,
                 var_name=nm.Fields.harvest_year,
                 value_name=nm.Fields.timber_product_ratio,
             )
         except:
-            ModelData.data[nm.Tables.timber_products_data] = ModelData.data[
-                nm.Tables.timber_products_data
-            ].rename(columns={"Timber Product ID": nm.Fields.timber_product_id})
-            df = ModelData.data[nm.Tables.timber_products_data].melt(
+            ModelData.data[nm.Tables.timber_products_ratios] = ModelData.data[nm.Tables.timber_products_ratios].rename(
+                columns={"Timber Product ID": nm.Fields.timber_product_id}
+            )
+            df = ModelData.data[nm.Tables.timber_products_ratios].melt(
                 id_vars=nm.Fields.timber_product_id,
                 var_name=nm.Fields.harvest_year,
                 value_name=nm.Fields.timber_product_ratio,
@@ -155,7 +143,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
         # Just in case the year was read as a string, parse to numeric
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
-        ModelData.data[nm.Tables.timber_products_data] = df
+        ModelData.data[nm.Tables.timber_products_ratios] = df
 
         # Parse the region and attempt to pull in default data
         region = ModelData.data[nm.Tables.region].columns[0]
@@ -163,22 +151,20 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
         if region_match:
             df = ModelData.data[nm.Tables.primary_product_ratios]
-            ModelData.data[nm.Tables.primary_product_ratios] = df[
-                df[nm.Fields.region_id] == region_match
-            ]
+            ModelData.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.region_id] == region_match]
         else:
             # Melt the primary_product_data table to make years rows
             try:
-                df = ModelData.data[nm.Tables.primary_products_data].melt(
+                df = ModelData.data[nm.Tables.primary_product_data].melt(
                     id_vars=nm.Fields.primary_product_id,
                     var_name=nm.Fields.harvest_year,
                     value_name=nm.Fields.ratio,
                 )
             except:
-                ModelData.data[nm.Tables.primary_products_data] = ModelData.data[
-                    nm.Tables.primary_products_data
-                ].rename(columns={"Primary Product ID": nm.Fields.primary_product_id})
-                df = ModelData.data[nm.Tables.primary_products_data].melt(
+                ModelData.data[nm.Tables.primary_product_data] = ModelData.data[nm.Tables.primary_product_data].rename(
+                    columns={"Primary Product ID": nm.Fields.primary_product_id}
+                )
+                df = ModelData.data[nm.Tables.primary_product_data].melt(
                     id_vars=nm.Fields.primary_product_id,
                     var_name=nm.Fields.harvest_year,
                     value_name=nm.Fields.ratio,
@@ -187,9 +173,9 @@ class ModelData(pickler.Pickler, singleton.Singleton):
             df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
             ModelData.data[nm.Tables.primary_product_ratios] = df
 
-        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[
-            nm.Tables.primary_product_ratios
-        ].rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
+        ModelData.data[nm.Tables.primary_product_ratios] = ModelData.data[nm.Tables.primary_product_ratios].rename(
+            columns={nm.Fields.ratio: nm.Fields.primary_product_ratio}
+        )
 
         if ModelData.data[nm.Tables.harvest_data_type].columns.values[0] == "mbf":
             ModelData._get_mbf_conversion()
@@ -216,9 +202,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         """
         regions = ModelData.data[nm.Tables.regions]
         if region in regions[nm.Fields.region_name].unique():
-            match_region = regions.loc[regions[nm.Fields.region_name] == region][
-                nm.Fields.id
-            ].iloc[0]
+            match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.id].iloc[0]
         else:
             match_region = None
         return match_region
@@ -226,35 +210,21 @@ class ModelData(pickler.Pickler, singleton.Singleton):
     def _get_mbf_conversion():
         """Expands mbf_to_ccf_conversion.csv from small number of years to ratio per year"""
         year_group = {}
-        ModelData.data[nm.Tables.mbf_conversion] = pd.read_csv(
-            "data/mbf_to_ccf_conversion.csv"
-        )
+        ModelData.data[nm.Tables.mbf_conversion] = pd.read_csv("data/mbf_to_ccf_conversion.csv")
 
-        for i in range(
-            ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].size
-        ):
+        for i in range(ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].size):
             year_set = []
 
-            if (
-                i
-                < ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].size
-                - 1
-            ):
+            if i < ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].size - 1:
                 for j in range(
-                    ModelData.data[nm.Tables.mbf_conversion][
-                        nm.Fields.harvest_year
-                    ].values[i],
-                    ModelData.data[nm.Tables.mbf_conversion][
-                        nm.Fields.harvest_year
-                    ].values[i + 1],
+                    ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i],
+                    ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i + 1],
                 ):
                     year_set.append(j)
 
             else:
                 for j in range(
-                    ModelData.data[nm.Tables.mbf_conversion][
-                        nm.Fields.harvest_year
-                    ].values[i],
+                    ModelData.data[nm.Tables.mbf_conversion][nm.Fields.harvest_year].values[i],
                     ModelData.data[nm.Tables.harvest][nm.Fields.harvest_year].max(),
                 ):
                     year_set.append(j)
@@ -262,9 +232,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
             year_set = tuple(year_set)
             year_group[i] = (
                 year_set,
-                ModelData.data[nm.Tables.mbf_conversion][
-                    nm.Fields.conversion_factor
-                ].values[i],
+                ModelData.data[nm.Tables.mbf_conversion][nm.Fields.conversion_factor].values[i],
             )
 
         temp = pd.DataFrame.from_dict(
@@ -274,21 +242,16 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         )
         temp = temp.explode(nm.Fields.harvest_year).reset_index(drop=True)
 
-        ModelData.data[nm.Tables.harvest] = ModelData.data[nm.Tables.harvest].merge(
-            temp, on=nm.Fields.harvest_year, how="inner"
-        )
+        ModelData.data[nm.Tables.harvest] = ModelData.data[nm.Tables.harvest].merge(temp, on=nm.Fields.harvest_year, how="inner")
         ModelData.data[nm.Tables.harvest][nm.Fields.ccf] = (
-            ModelData.data[nm.Tables.harvest][nm.Fields.mbf]
-            * ModelData.data[nm.Tables.harvest][nm.Fields.conversion_factor]
+            ModelData.data[nm.Tables.harvest][nm.Fields.mbf] * ModelData.data[nm.Tables.harvest][nm.Fields.conversion_factor]
         )
 
         return
 
     @staticmethod
     def _primary_product_to_timber_product():
-        ids = ModelData.data[nm.Tables.ids][
-            [nm.Fields.primary_product_id, nm.Fields.timber_product_id]
-        ]
+        ids = ModelData.data[nm.Tables.ids][[nm.Fields.primary_product_id, nm.Fields.timber_product_id]]
         ids_dict = ids.to_dict(orient="list")
         keys = ids_dict[nm.Fields.primary_product_id]
         values = ids_dict[nm.Fields.timber_product_id]
@@ -297,9 +260,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     @staticmethod
     def _end_use_to_timber_product():
-        ids = ModelData.data[nm.Tables.ids][
-            [nm.Fields.end_use_id, nm.Fields.timber_product_id]
-        ]
+        ids = ModelData.data[nm.Tables.ids][[nm.Fields.end_use_id, nm.Fields.timber_product_id]]
         ids_dict = ids.to_dict(orient="list")
         keys = ids_dict[nm.Fields.end_use_id]
         values = ids_dict[nm.Fields.timber_product_id]
@@ -308,9 +269,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     @staticmethod
     def _end_use_to_primary_product():
-        ids = ModelData.data[nm.Tables.ids][
-            [nm.Fields.end_use_id, nm.Fields.primary_product_id]
-        ]
+        ids = ModelData.data[nm.Tables.ids][[nm.Fields.end_use_id, nm.Fields.primary_product_id]]
         ids_dict = ids.to_dict(orient="list")
         keys = ids_dict[nm.Fields.end_use_id]
         values = ids_dict[nm.Fields.primary_product_id]
@@ -336,18 +295,10 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     @staticmethod
     def _set_disposition_halflifes_map():
-        df = ModelData.data[nm.Tables.discard_destinations][
-            [nm.Fields.discard_destination_id, nm.Fields.paper_halflife]
-        ]
+        df = ModelData.data[nm.Tables.discard_destinations][[nm.Fields.discard_destination_id, nm.Fields.paper_halflife]]
         dat = df.to_dict(orient="list")
-        ModelData.disposition_to_halflife[nm.Fields.paper] = dict(
-            zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.paper_halflife])
-        )
+        ModelData.disposition_to_halflife[nm.Fields.paper] = dict(zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.paper_halflife]))
 
-        df = ModelData.data[nm.Tables.discard_destinations][
-            [nm.Fields.discard_destination_id, nm.Fields.wood_halflife]
-        ]
+        df = ModelData.data[nm.Tables.discard_destinations][[nm.Fields.discard_destination_id, nm.Fields.wood_halflife]]
         dat = df.to_dict(orient="list")
-        ModelData.disposition_to_halflife[nm.Fields.wood] = dict(
-            zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.wood_halflife])
-        )
+        ModelData.disposition_to_halflife[nm.Fields.wood] = dict(zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.wood_halflife]))

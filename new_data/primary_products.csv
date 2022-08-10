@@ -1,0 +1,65 @@
+﻿ID,TimberProductID,Description,ConversionFactor,RatioGroup,Fuel
+1,1,fuelwood and other,0.910000,1,1
+2,1,lumber,0.910000,1,0
+3,1,non-structural panels,0.870000,1,0
+4,1,oriented strandboard (OSB),0.870000,1,0
+5,1,other industrial products,0.910000,1,0
+6,1,plywood,0.910000,1,0
+7,1,wood pulp,0.910000,1,0
+8,2,fuelwood and other,0.740000,2,1
+9,2,lumber,0.740000,2,0
+10,2,non-structural panels,0.710000,2,0
+11,2,oriented strandboard (OSB),0.870000,2,0
+12,2,other industrial products,0.740000,2,0
+13,2,plywood,0.750000,2,0
+14,2,wood pulp,0.740000,2,0
+15,3,fuelwood and other,0.910000,3,1
+16,3,lumber,0.910000,3,0
+17,3,non-structural panels,0.910000,3,0
+18,3,oriented strandboard (OSB),0.870000,3,0
+19,3,other industrial products,0.910000,3,0
+20,3,plywood,0.910000,3,0
+21,3,wood pulp,0.740000,3,0
+22,4,fuelwood and other,0.740000,4,1
+23,4,lumber,0.740000,4,0
+24,4,non-structural panels,0.710000,4,0
+25,4,oriented strandboard (OSB),0.870000,4,0
+26,4,other industrial products,0.740000,4,0
+27,4,plywood,0.740000,4,0
+28,4,wood pulp,0.740000,4,0
+29,5,"hardwood, poles",0.910000,0,0
+30,6,"softwood, poles",0.740000,0,0
+31,7,"hardwood, pilings",0.910000,0,0
+32,8,"softwood, pilings",0.740000,0,0
+33,9,"hardwood, mine props",0.910000,0,0
+34,10,"softwood, mine props",0.740000,0,0
+35,11,"hardwood, posts",0.910000,0,0
+36,12,"softwood, posts",0.740000,0,0
+37,13,"hardwood, fuelwood",0.910000,0,1
+38,14,"softwood, fuelwood",0.740000,0,1
+39,15,"hardwood, non-sawtimber",0.910000,0,0
+40,16,"softwood, non-sawtimber",0.740000,0,0
+41,17,"hardwood, ties",0.910000,0,0
+42,18,"softwood, ties",0.740000,0,0
+43,19,"hardwood, coop bolts",0.910000,0,0
+44,20,"softwood, coop bolts",0.740000,0,0
+45,21,"hardwood, acid/dist.",0.910000,0,0
+46,22,"softwood, acid/dist.",0.740000,0,0
+47,23,"hardwood, float logs",0.910000,0,0
+48,24,"softwood, float logs",0.740000,0,0
+49,25,"hardwood, trap float",0.910000,0,0
+50,26,"softwood, trap float",0.740000,0,0
+51,27,"hardwood, misc-conv.",0.910000,0,0
+52,28,"softwood, misc-conv.",0.740000,0,0
+53,29,"hardwood, nav stores",0.910000,0,0
+54,30,"softwood, nav stores",0.740000,0,0
+55,31,"hardwood, cull logs",0.910000,0,0
+56,32,"softwood, cull logs",0.740000,0,0
+57,33,"hardwood, sm rnd wd",0.910000,0,0
+58,34,"softwood, sm rnd wd",0.740000,0,0
+59,35,"hardwood, grn bio cv",0.910000,0,0
+60,36,"softwood, grn bio cv",0.740000,0,0
+61,37,"hardwood, dry bio cv",0.910000,0,0
+62,38,"softwood, dry bio cv",0.740000,0,0
+63,39,"hardwood, sp wood pr",0.910000,0,0
+64,40,"softwood, sp wood pr",0.740000,0,0
