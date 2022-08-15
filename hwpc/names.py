@@ -3,7 +3,6 @@ from utils import singleton
 
 class Names(singleton.Singleton):
     class Tables(singleton.Singleton):
-        ccf_c_conversion = "ccf_to_metric_tons_carbon"
         energy_capture = "discard_burned_with_energy_capture"
         discard_destination_ratios = "discard_destination_ratios"
         discard_destinations = "discard_destinations"
@@ -20,6 +19,7 @@ class Names(singleton.Singleton):
         region = "region"
         regions = "regions"
         timber_products_ratios = "timber_product_ratios"
+        timber_products = "timber_products"
 
     class Fields(singleton.Singleton):
 
@@ -49,6 +49,9 @@ class Names(singleton.Singleton):
         end_use_ratio = "EndUseRatio"
         end_use_halflife = "EndUseHalfLife"
 
+        primary_product_ratio_direct = "PrimaryProductDirectRatio"
+        end_use_ratio_direct = "EndUseDirectRatio"
+
         timber_product = "TimberProduct"
         primary_product = "PrimaryProduct"
         end_use_product = "EndUseProduct"
@@ -58,10 +61,8 @@ class Names(singleton.Singleton):
         discard_description = "Description"
         discard_destination_ratio = "DiscardDestinationRatio"
 
-        landfill_fixed_ratio = "LandfillFixedRatio"
-        landfill_halflife = "LandfillHalfLife"
-        dump_halflife = "DumpHalfLife"
-        recycled_halflife = "RecycledHalfLife"
+        fixed_ratio = "FixedRatio"
+        halflife = "HalfLife"
         recovered = "recovered"
 
         paper = "paper"
@@ -99,7 +100,7 @@ class Names(singleton.Singleton):
         # new_decay = 'new_decay'
         can_decay = "can_decay"
         could_decay = "could_decay"
-        decay_ratio = "decay_ratio"
+        decay_rate = "decay_rate"
         running_can_decay = "can_decay_cumsum"
 
         discard_remaining = "discard_remaining"

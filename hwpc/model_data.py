@@ -114,7 +114,9 @@ class ModelData(pickler.Pickler, singleton.Singleton):
             columns={nm.Fields.id: nm.Fields.primary_product_id}
         )
 
-        ModelData.data[nm.Tables.end_use_product_ratios] = ModelData.data[nm.Tables.end_use_product_ratios].rename(columns={nm.Fields.ratio: nm.Fields.end_use_ratio})
+        ModelData.data[nm.Tables.end_use_product_ratios] = ModelData.data[nm.Tables.end_use_product_ratios].rename(
+            columns={nm.Fields.ratio: nm.Fields.end_use_ratio}
+        )
 
         ModelData.data[nm.Tables.end_use_products] = ModelData.data[nm.Tables.end_use_products].rename(columns={nm.Fields.id: nm.Fields.end_use_id})
 

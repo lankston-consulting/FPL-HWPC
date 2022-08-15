@@ -1,5 +1,5 @@
 import json
-from typing import overload
+from re import X
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -42,10 +42,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
             self._primary_product_to_timber_product()
             self._end_use_to_timber_product()
             self._end_use_to_primary_product()
-            self._set_disposition_halflifes()
-            self._set_disposition_halflifes_map()
-            self._make_id_lookup()
-
+            
         return cls._instance
 
     def __init__(self, *args, **kwargs) -> None:
@@ -134,126 +131,115 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         filtr = dx.coords[nm.Fields.harvest_year].values
 
         ModelData.data[nm.Tables.harvest] = dx
-
+        
         # TODO does this work?
         if ModelData.data[nm.Tables.harvest_data_type].columns.values[0] == "mbf":
             ModelData._get_mbf_conversion()
 
         df = ModelData.data[nm.Tables.timber_products_ratios]
-        
-
-        df = ModelData.data[nm.Tables.primary_products]
-        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("uint8")
-        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype("uint8")
-        df[nm.Fields.conversion_factor] = df[nm.Fields.conversion_factor].astype("float16")
-        df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype("uint8")
-        df[nm.Fields.fuel] = df[nm.Fields.fuel].astype("uint8")
-        df = df.set_index([nm.Fields.primary_product_id])
-        dx = df.to_xarray()
-        ModelData.data[nm.Tables.primary_products] = dx
-
-        df = ModelData.data[nm.Tables.end_use_product_ratios]
-        df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype("uint8")
-        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
-        df[nm.Fields.end_use_ratio] = df[nm.Fields.end_use_ratio].astype("float16")
-        df = df.set_index([nm.Fields.harvest_year, nm.Fields.end_use_id])
-        # df = df.loc[filtr, :]
-        dx = df.to_xarray()
-        ModelData.data[nm.Tables.end_use_product_ratios] = dx
-
-        df = ModelData.data[nm.Tables.end_use_products]
-        df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype("uint8")
-        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("uint8")
-        df[nm.Fields.end_use_halflife] = df[nm.Fields.end_use_halflife].astype("float32")
-        df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype("uint8")
-        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("uint8")
-        df[nm.Fields.fuel] = df[nm.Fields.fuel].astype("uint8")
-        df = df.set_index([nm.Fields.end_use_id])
-        dx = df.to_xarray()
-        ModelData.data[nm.Tables.end_use_products] = dx
-
-        df = ModelData.data[nm.Tables.discard_destination_ratios]
-        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("uint8")
-        df[nm.Fields.discard_destination_id] = df[nm.Fields.discard_destination_id].astype("uint8")
-        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
-        df[nm.Fields.discard_destination_ratio] = df[nm.Fields.discard_destination_ratio].astype("float16")
-        df = df.set_index([nm.Fields.harvest_year, nm.Fields.discard_type_id, nm.Fields.discard_destination_id])
-        # df = df.loc[filtr, :]
-        dx = df.to_xarray()
-        ModelData.data[nm.Tables.discard_destination_ratios] = dx
-
-        ModelData.data["pre_" + nm.Tables.timber_products_ratios] = ModelData.data[nm.Tables.timber_products_ratios]
-
-        # Melt the timber_product_data table to make years rows
-        try:
-            df = ModelData.data[nm.Tables.timber_products_ratios].melt(
-                id_vars=nm.Fields.timber_product_id,
-                var_name=nm.Fields.harvest_year,
-                value_name=nm.Fields.timber_product_ratio,
-            )
-        except:
-            ModelData.data[nm.Tables.timber_products_ratios] = ModelData.data[nm.Tables.timber_products_ratios].rename(
-                columns={"Timber Product ID": nm.Fields.timber_product_id}
-            )
-            df = ModelData.data[nm.Tables.timber_products_ratios].melt(
-                id_vars=nm.Fields.timber_product_id,
-                var_name=nm.Fields.harvest_year,
-                value_name=nm.Fields.timber_product_ratio,
-            )
-
         # Just in case the year was read as a string, parse to numeric
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year], downcast="integer")
         df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
-        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype("uint8")
-        df[nm.Fields.timber_product_ratio] = df[nm.Fields.timber_product_ratio].astype("float16")
+        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype("int16")
+        df[nm.Fields.timber_product_ratio] = df[nm.Fields.timber_product_ratio].astype("float32")
+        tr = df
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.timber_product_id])
         # df = df.loc[filtr, :]
         dx = df.to_xarray()
         ModelData.data[nm.Tables.timber_products_ratios] = dx
 
+        df = ModelData.data[nm.Tables.timber_products]
+        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype("int16")
+        df = df.set_index([nm.Fields.timber_product_id])
+        dx = df.to_xarray()
+        ModelData.data[nm.Tables.timber_products] = dx
+
         # Parse the region and attempt to pull in default data
         region = ModelData.data[nm.Tables.region].columns[0]
         region_match = ModelData.get_region_id(region)
 
+        df = ModelData.data[nm.Tables.primary_product_ratios]
+
+        # TODO after data revisions, check that region matching still works
         if region_match:
-            df = ModelData.data[nm.Tables.primary_product_ratios]
             ModelData.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.region_id] == region_match]
-        else:
-            # Melt the primary_product_data table to make years rows
-            try:
-                df = ModelData.data[nm.Tables.primary_product_data].melt(
-                    id_vars=nm.Fields.primary_product_id,
-                    var_name=nm.Fields.harvest_year,
-                    value_name=nm.Fields.ratio,
-                )
-            except:
-                ModelData.data[nm.Tables.primary_product_data] = ModelData.data[
-                    nm.Tables.primary_product_data
-                ].rename(columns={"Primary Product ID": nm.Fields.primary_product_id})
-                df = ModelData.data[nm.Tables.primary_product_data].melt(
-                    id_vars=nm.Fields.primary_product_id,
-                    var_name=nm.Fields.harvest_year,
-                    value_name=nm.Fields.ratio,
-                )
 
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
-        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("uint8")
+        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("int16")
         df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
-        df[nm.Fields.primary_product_ratio] = df[nm.Fields.primary_product_ratio].astype("float16")
+        df[nm.Fields.primary_product_ratio] = df[nm.Fields.primary_product_ratio].astype("float32")
+        pr = df
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.primary_product_id])
         # df = df.loc[filtr, :]
         dx = df.to_xarray()
         ModelData.data[nm.Tables.primary_product_ratios] = dx
 
-        conversion = ModelData.data[nm.Tables.ccf_c_conversion][
-            [nm.Fields.primary_product_id, nm.Fields.conversion_factor]
-        ]
+        df = ModelData.data[nm.Tables.primary_products]
+        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("int16")
+        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype("int16")
+        df[nm.Fields.conversion_factor] = df[nm.Fields.conversion_factor].astype("float32")
+        df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype("int16")
+        df[nm.Fields.fuel] = df[nm.Fields.fuel].astype("int16")
+        pp = df
+        df = df.set_index([nm.Fields.primary_product_id])
+        dx = df.to_xarray()
+        ModelData.data[nm.Tables.primary_products] = dx
 
-        conversion = conversion.set_index([nm.Fields.primary_product_id])
-        conversion.index = pd.to_numeric(conversion.index, downcast="integer")
-        conversion[nm.Fields.conversion_factor] = conversion[nm.Fields.conversion_factor].astype("float32")
-        xoversion = conversion.to_xarray()
-        ModelData.data[nm.Tables.ccf_c_conversion] = xoversion
+        df = ModelData.data[nm.Tables.end_use_product_ratios]
+        df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype("int16")
+        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
+        df[nm.Fields.end_use_ratio] = df[nm.Fields.end_use_ratio].astype("float32")
+        er = df
+        df = df.set_index([nm.Fields.harvest_year, nm.Fields.end_use_id])
+    
+        # df = df.loc[filtr, :]
+        dx = df.to_xarray()
+        ModelData.data[nm.Tables.end_use_product_ratios] = dx
+
+        # Make the big lookup table which multiplies out the harvest-to-product ratios and 
+        # adds the primary product MTC conversion
+        ids = ModelData.data[nm.Tables.ids]
+        ppcf = pp[[nm.Fields.primary_product_id, nm.Fields.conversion_factor]]
+        final = ids.merge(tr, on=nm.Fields.timber_product_id).merge(pr, on=[nm.Fields.harvest_year, nm.Fields.primary_product_id]).merge(ppcf, on=[nm.Fields.primary_product_id]).merge(er, on=[nm.Fields.harvest_year, nm.Fields.end_use_id])
+        final[nm.Fields.primary_product_ratio_direct] = final[nm.Fields.timber_product_ratio] * final[nm.Fields.primary_product_ratio]
+        final[nm.Fields.end_use_ratio_direct] = final[nm.Fields.timber_product_ratio] * final[nm.Fields.primary_product_ratio] * final[nm.Fields.end_use_ratio]
+        final[nm.Fields.timber_product_id] = final[nm.Fields.timber_product_id].astype("int16")
+        final[nm.Fields.primary_product_id] = final[nm.Fields.primary_product_id].astype("int16")
+        final[nm.Fields.end_use_id] = final[nm.Fields.end_use_id].astype("int16")
+        final = final.set_index([nm.Fields.harvest_year, nm.Fields.end_use_id]) 
+        final_x = final.to_xarray()
+
+        ModelData.ids = final_x
+
+        df = ModelData.data[nm.Tables.end_use_products]
+        df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype("int16")
+        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("int16")
+        df[nm.Fields.end_use_halflife] = df[nm.Fields.end_use_halflife].astype("float32")
+        df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype("int16")
+        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("int16")
+        df[nm.Fields.fuel] = df[nm.Fields.fuel].astype("int16")
+        df = df.set_index([nm.Fields.end_use_id])
+        dx = df.to_xarray()
+        ModelData.data[nm.Tables.end_use_products] = dx
+
+        df = ModelData.data[nm.Tables.discard_destination_ratios]
+        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("int16")
+        df[nm.Fields.discard_destination_id] = df[nm.Fields.discard_destination_id].astype("int16")
+        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
+        df[nm.Fields.discard_destination_ratio] = df[nm.Fields.discard_destination_ratio].astype("float32")
+        df = df.set_index([nm.Fields.harvest_year, nm.Fields.discard_type_id, nm.Fields.discard_destination_id])
+        # df = df.loc[filtr, :]
+        dx = df.to_xarray()
+        ModelData.data[nm.Tables.discard_destination_ratios] = dx
+
+        df = ModelData.data[nm.Tables.discard_destinations]
+        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("int16")
+        df[nm.Fields.discard_destination_id] = df[nm.Fields.discard_destination_id].astype("int16")
+        df[nm.Fields.fixed_ratio] = df[nm.Fields.fixed_ratio].astype("float32")
+        df[nm.Fields.halflife] = df[nm.Fields.halflife].astype("float32")
+        df = df.set_index([nm.Fields.discard_type_id, nm.Fields.discard_destination_id])
+        dx = df.to_xarray()
+        ModelData.data[nm.Tables.discard_destinations] = dx
 
         return
 
@@ -354,45 +340,3 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         ModelData.end_use_to_primary_product = ids_dict
         return
 
-    @staticmethod
-    def _make_id_lookup():
-        df = ModelData.data[nm.Tables.ids]
-        df = df.set_index([nm.Fields.timber_product_id, nm.Fields.primary_product_id, nm.Fields.end_use_id])
-        # df = df.set_index([nm.Fields.end_use_id])
-        dx = df.to_xarray()
-        ModelData.ids = dx
-
-        return
-
-    @staticmethod
-    def _set_disposition_halflifes():
-        halflifes = ModelData.data[nm.Tables.discard_types]
-        vals = halflifes.to_dict(orient="list")
-
-        paper_i = vals[nm.Fields.discard_description].index(nm.Fields.paper)
-        wood_i = vals[nm.Fields.discard_description].index(nm.Fields.wood)
-
-        ModelData.paper_val = paper_i
-        ModelData.wood_val = wood_i
-
-        ModelData.discard_types_dict = {nm.Fields.paper: dict(), nm.Fields.wood: dict()}
-
-        for k in vals:
-            ModelData.discard_types_dict[nm.Fields.paper][k] = vals[k][paper_i]
-            ModelData.discard_types_dict[nm.Fields.wood][k] = vals[k][wood_i]
-
-    @staticmethod
-    def _set_disposition_halflifes_map():
-        df = ModelData.data[nm.Tables.discard_destinations][
-            [nm.Fields.discard_destination_id, nm.Fields.paper_halflife]
-        ]
-        dat = df.to_dict(orient="list")
-        ModelData.disposition_to_halflife[nm.Fields.paper] = dict(
-            zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.paper_halflife])
-        )
-
-        df = ModelData.data[nm.Tables.discard_destinations][[nm.Fields.discard_destination_id, nm.Fields.wood_halflife]]
-        dat = df.to_dict(orient="list")
-        ModelData.disposition_to_halflife[nm.Fields.wood] = dict(
-            zip(dat[nm.Fields.discard_destination_id], dat[nm.Fields.wood_halflife])
-        )
