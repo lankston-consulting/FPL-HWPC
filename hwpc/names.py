@@ -64,6 +64,7 @@ class Names(singleton.Singleton):
         fixed_ratio = "FixedRatio"
         halflife = "HalfLife"
         recovered = "recovered"
+        fixed = "fixed"
 
         paper = "paper"
         wood = "wood"

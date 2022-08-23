@@ -1,6 +1,7 @@
 from datetime import timedelta
 import math
 import numpy as np
+import numba as nb
 import pandas as pd
 import timeit
 import dask.bag as db
@@ -15,6 +16,9 @@ from hwpc import model_data_xr as model_data
 from hwpc.names import Names as nm
 
 from utils import singleton
+
+piu_hl = 0
+piu_no_hl = 0
 
 
 class Meta(singleton.Singleton):
@@ -250,7 +254,6 @@ class Model(object):
 
     @staticmethod
     def halflife_func(df):
-        md = model_data.ModelData()
         hl = df[nm.Fields.end_use_halflife].item()
         if hl == 0:
             df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
@@ -293,6 +296,34 @@ class Model(object):
 
         return products_in_use
 
+    def _accounting_piu_range(self, df):
+        for y in range(2006, 2019):
+            self._accounting_piu(df, y)
+        return
+
+    def _accounting_piu(self, df, year):
+        eu = df["end_use"].loc[dict(Year=year)].sum()
+        piu = df["products_in_use"].loc[dict(Year=year)].sum()
+        print(f"EU: {eu} | PIU: {piu}")
+        return 
+
+    def _accounting_dis_range(self, df):
+        for y in range(2006, 2019):
+            self._accounting_dis(df, y)
+        return
+
+    def _accounting_dis(self, df, year):
+        eu = df["end_use"].loc[dict(Year=year)].sum()
+        piu = df["products_in_use"].loc[dict(Year=year)].sum()
+        dis = df["discarded_products"].loc[dict(Year=year)].sum()
+        print(f"EU: {eu} | PIU: {piu} | DP: {dis}")
+        return 
+
+    def _accounting_single(self, df, field, year):
+        dis = df[field].loc[dict(Year=year)].sum()
+        print(f"{field}: {dis}")
+        return
+
     # @dask.delayed
     def calculate_discarded_dispositions(self, working_table):
         """Calculate the amount discarded during each inventory year and divide it up between the
@@ -303,45 +334,64 @@ class Model(object):
         # by subtracting the products in use from the amount of harvested product and
         # then subtracting the amount discarded in previous years.
         products_in_use = working_table
-        products_in_use[nm.Fields.discarded_products_results] = products_in_use[nm.Fields.end_use_sum] - products_in_use[nm.Fields.products_in_use]
 
-        # Tease out the NEW discarded amounts for this year to dispose of them in the correct pools
-        adjust = products_in_use[nm.Fields.discarded_products_results].shift({nm.Fields.harvest_year: 1}, fill_value=0.0)
-        products_in_use[nm.Fields.discarded_in_year] = products_in_use[nm.Fields.discarded_products_results] - adjust
+        piu_shift = products_in_use[nm.Fields.products_in_use].shift({nm.Fields.harvest_year: 1})
+        end_use = products_in_use["end_use"].loc[dict(Year=products_in_use.coords["Year"].min())]
+        piu_shift.loc[dict(Year=products_in_use.coords["Year"].min())] = end_use
+
+        products_in_use[nm.Fields.discarded_products_results] = piu_shift - products_in_use[nm.Fields.products_in_use]
 
         # Zero out the stuff that was fuel.
-        # TODO need to rigorously test this that it's doing what we think
         products_in_use[nm.Fields.discarded_products_results] = products_in_use[nm.Fields.discarded_products_results].where(
-            products_in_use.data_vars[nm.Fields.fuel] == 1, 0
+            products_in_use.data_vars[nm.Fields.fuel] == 0, 0
         )
 
         # Multiply the amount discarded this year by the disposition ratios to get the
         # amount that goes into landfills, dumps, etc, and then add these to the
         # discarded disposition totals for stuff discarded in year i.
-        paper_in_use = products_in_use.where(products_in_use[nm.Fields.discard_type_id] == 0, drop=True)  # .drop_vars(nm.Fields.discard_type_id)
-        wood_in_use = products_in_use.where(products_in_use[nm.Fields.discard_type_id] == 1, drop=True)  # .drop_vars(nm.Fields.discard_type_id)
-
         discard_ratios = self.md.data[nm.Tables.discard_destination_ratios]
-        paper_discard_ratios = (
-            discard_ratios.where(discard_ratios[nm.Fields.discard_type_id] == 0, drop=True).squeeze().drop_vars(nm.Fields.discard_type_id)
-        )
-        wood_discard_ratios = (
-            discard_ratios.where(discard_ratios[nm.Fields.discard_type_id] == 1, drop=True).squeeze().drop_vars(nm.Fields.discard_type_id)
-        )
-
-        paper_in_use[nm.Fields.discard_dispositions] = (
-            paper_in_use[nm.Fields.discarded_in_year] * paper_discard_ratios[nm.Fields.discard_destination_ratio]
-        )
-        wood_in_use[nm.Fields.discard_dispositions] = (
-            wood_in_use[nm.Fields.discarded_in_year] * wood_discard_ratios[nm.Fields.discard_destination_ratio]
-        )
-
-        products_in_use = xr.merge([paper_in_use, wood_in_use])
+ 
+        products_in_use[nm.Fields.discard_dispositions] = xr.where(products_in_use[nm.Fields.discard_type_id] == 0, products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=0)][nm.Fields.discard_destination_ratio], products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=1)][nm.Fields.discard_destination_ratio])
 
         # self.results.discarded_products = products_in_use
         # self.results.working_table = products_in_use
 
         return products_in_use
+
+
+    @staticmethod
+    @nb.jit(nopython=True, nogil=True)
+    def halflife_nb(hl, cd, dr):
+        # Calculate the amounts that were discarded in year y that could decay but
+        # are still remaining in year i, by plugging the amount subject to decay into
+        # the decay formula that uses half lives.
+        l = len(cd)
+        ox = np.zeros((l, l), dtype=np.float32)
+        weightspace = np.array([math.exp(-math.log(2) * x / hl) for x in range(l)])
+        for h in range(l):
+            v = cd[h]
+            if v > 0:
+                b = 3
+            weights = weightspace[:l - h]
+            o = np.zeros_like(cd)
+            decayed = [v * w for w in weights]
+            o[h:] = decayed
+            ox[h] = o
+        x = np.sum(ox, axis=0)
+        return x
+
+    @staticmethod
+    def halflife_setup(df):
+        halflife = df[nm.Fields.halflife].item()
+        if halflife == 0:
+            df[nm.Fields.discard_remaining] = 0
+        else:
+            cd = df[nm.Fields.can_decay].to_numpy()
+            dr = df[nm.Fields.discard_remaining].to_numpy()
+            drnp = Model.halflife_nb(halflife, cd, dr)
+            dd = xr.DataArray(drnp, dims=df.dims, coords=df.coords).astype("float32")
+            df[nm.Fields.discard_remaining] = dd
+        return df
 
     # @dask.delayed
     def calculate_dispositions(self, working_table):
@@ -354,76 +404,44 @@ class Model(object):
         # landfill-fixed-ratio. This will be used in later iterations of the i loop.
         destinations = self.md.data[nm.Tables.discard_destinations]
         # TODO make the ID lookup dynamic. For now we just need this done so hard code it
-        # landfill_id = destinations.where(destinations == nm.Fields.landfills, drop=True)[nm.Fields.discard_destination_id].item()
         # recycled_id = destinations.where(destinations == nm.Fields.recycled, drop=True)[nm.Fields.discard_destination_id].item()
-        landfill_id = 3
         recycled_id = 1
 
         # Calculate the amount in landfills that was discarded during this inventory year
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio.
-        paper_dispositions = working_table.where(working_table[nm.Fields.discard_type_id] == 0, drop=True)
-        wood_dispositions = working_table.where(working_table[nm.Fields.discard_type_id] == 1, drop=True)
-
-        paper_destinations = (
-            destinations.where(destinations[nm.Fields.discard_type_id] == 0, drop=True).squeeze().drop_vars(nm.Fields.discard_type_id)
-        )
-        wood_destinations = destinations.where(destinations[nm.Fields.discard_type_id] == 1, drop=True).squeeze().drop_vars(nm.Fields.discard_type_id)
-
-        paper_dispositions[nm.Fields.can_decay] = paper_dispositions[nm.Fields.discard_dispositions] * (1 - paper_destinations[nm.Fields.fixed_ratio])
-        paper_dispositions[nm.Fields.halflife] = paper_destinations[nm.Fields.halflife]
-        wood_dispositions[nm.Fields.can_decay] = wood_dispositions[nm.Fields.discard_dispositions] * (1 - wood_destinations[nm.Fields.fixed_ratio])
-        wood_dispositions[nm.Fields.halflife] = wood_destinations[nm.Fields.halflife]
-
-        dispositions = xr.merge([paper_dispositions, wood_dispositions])
+        dispositions = working_table
+        dispositions[nm.Fields.fixed_ratio] = xr.where(working_table[nm.Fields.discard_type_id] == 0, destinations.loc[dict(DiscardTypeID=0)][nm.Fields.fixed_ratio], destinations.loc[dict(DiscardTypeID=1)][nm.Fields.fixed_ratio])
+        dispositions[nm.Fields.halflife] = xr.where(working_table[nm.Fields.discard_type_id] == 0, destinations.loc[dict(DiscardTypeID=0)][nm.Fields.halflife], destinations.loc[dict(DiscardTypeID=1)][nm.Fields.halflife])
+        dispositions[nm.Fields.can_decay] = dispositions[nm.Fields.discard_dispositions] * (1 - dispositions[nm.Fields.fixed_ratio])
+        dispositions[nm.Fields.fixed] = dispositions[nm.Fields.discard_dispositions] * dispositions[nm.Fields.fixed_ratio]
 
         # For the new recycling, remove products assigned to be recycled and
         # begin a new simulation using the recycled products as "harvest" amounts
-        # TODO the below line doesn't work, it resets coords in a bad way. Hard coding selection.
+        # NOTE the below line doesn't work, it resets coords in a bad way. Hard coding selection.
         # recycled = dispositions.where(dispositions.coords[nm.Fields.discard_destination_id] == recycled_id, drop=True)
         recycled = dispositions.loc[dict(DiscardDestinationID=recycled_id)]
+        recycled = recycled.drop_vars(nm.Fields.discard_destination_id)
 
         # Set the recycled material to be "in use" in the next year
+        # TODO Check that recycling actually works after this, because this adds DiscardTypeID as a coordinate to products_in_use
         recycled[nm.Fields.products_in_use] = recycled[nm.Fields.can_decay]
         recycled[nm.Fields.harvest_year] = recycled[nm.Fields.harvest_year] + 1
 
-        # keep_key = [
-        #     nm.Fields.harvest_year,
-        #     nm.Fields.ccf,
-        #     nm.Fields.timber_product_id,
-        #     nm.Fields.timber_product_ratio,
-        #     nm.Fields.timber_product_results,
-        #     nm.Fields.primary_product_id,
-        #     nm.Fields.primary_product_ratio,
-        #     nm.Fields.primary_product_results,
-        #     nm.Fields.conversion_factor,
-        #     nm.Fields.end_use_id,
-        #     nm.Fields.end_use_ratio,
-        #     nm.Fields.end_use_results,
-        #     nm.Fields.discard_description,
-        #     nm.Fields.end_use_halflife,
-        #     nm.Fields.ratio_group,
-        #     nm.Fields.discard_type_id,
-        #     nm.Fields.fuel,
-        #     nm.Fields.end_use_sum,
-        #     nm.Fields.products_in_use,
-        # ]
-
-        drop_key = [nm.Fields.discarded_products_results, nm.Fields.discarded_in_year, nm.Fields.discard_dispositions, nm.Fields.can_decay]
-
+        drop_key = [nm.Fields.discarded_products_results]
         recycled = recycled.drop_vars(drop_key)
 
         zero_key = [
             nm.Fields.ccf,
             nm.Fields.end_use_results,
             nm.Fields.end_use_sum,
-            nm.Fields.products_in_use,
         ]
 
         # Zero out harvest info because recycled material isn't harvested
-        recycled = xr.zeros_like(recycled[zero_key]).drop_vars(nm.Fields.discard_destination_id)
+        recycled[zero_key] = xr.zeros_like(recycled[zero_key])
 
-        nonrecycled = dispositions.where(dispositions.coords[nm.Fields.discard_destination_id] != recycled_id, drop=True)
+
+        nonrecycled = dispositions.sel(DiscardDestinationID=[0, 2, 3, 4], drop=True)
 
         # with Meta.lock:
         #     print("==================================")
@@ -433,58 +451,37 @@ class Model(object):
         #     print("==================================")
         print("Lineage:", self.lineage)
 
-        ModelFactory(harvest_init=self.harvests, recycled=recycled, lineage=self.lineage)
-
-        # Calculate the amounts that were discarded in year y that could decay but
-        # are still remaining in year i, by plugging the amount subject to decay into
-        # the decay formula that uses half lives.
-
-        def halflife_func(df):
-            hl = df[nm.Fields.halflife].item()
-
-            if hl == 0:
-                df[nm.Fields.discard_remaining] = 0
-            else:
-                v = df[nm.Fields.can_decay][0].item()
-                decayed = [v * math.exp(-math.log(2) * x / hl) for x in range(len(df.coords[nm.Fields.harvest_year]))]
-                dd = xr.DataArray(decayed, dims=nm.Fields.harvest_year, coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]}).astype(
-                    "float32"
-                )
-                df[nm.Fields.discard_remaining] = dd
-            return df
+        ModelFactory(harvest_init=self.harvests, recycled=recycled, lineage=self.lineage)        
 
         df_key = [
             nm.Fields.end_use_id,
             nm.Fields.discard_destination_id,
         ]
 
-        s = timeit.default_timer()
-        nonrecycled = nonrecycled.stack(k=df_key)
-        dispositions = nonrecycled.groupby("k").apply(halflife_func)
+        nonrecycled[nm.Fields.discard_remaining] = xr.zeros_like(nonrecycled[nm.Fields.can_decay])
+
+        # s = timeit.default_timer()
+        # nonrecycled = nonrecycled.stack(skey=df_key)
+        dispositions = nonrecycled[[nm.Fields.halflife, nm.Fields.can_decay, nm.Fields.fixed, nm.Fields.discard_remaining]]
+        dispositions = dispositions.stack(skey=df_key)
+        dispositions = dispositions.groupby("skey").apply(Model.halflife_setup)
         # print("DISPOSITIONS APPLY", timeit.default_timer() - s)
 
-        dispositions[nm.Fields.could_decay] = dispositions.groupby("k")[nm.Fields.can_decay].cumsum()
+        dispositions[nm.Fields.could_decay] = dispositions[nm.Fields.can_decay].groupby("skey").cumsum(dim=nm.Fields.harvest_year)
+        nonrecycled[nm.Fields.could_decay] = dispositions.unstack()[nm.Fields.could_decay]
 
         # Calculate emissions from stuff discarded in year y by subracting the amount
         # remaining from the total amount that could decay.
-        dispositions[nm.Fields.emitted] = dispositions[nm.Fields.could_decay] - dispositions[nm.Fields.discard_remaining]
-        dispositions[nm.Fields.present] = dispositions[nm.Fields.discard_remaining]
+        nonrecycled[nm.Fields.emitted] = nonrecycled[nm.Fields.could_decay] - nonrecycled[nm.Fields.discard_remaining]
+        nonrecycled[nm.Fields.present] = nonrecycled[nm.Fields.discard_remaining]
 
         # Landfills are a bit different. Not all of it is subject to decay, so get the fixed amount and add it to present through time
-        df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.paper_val)
-        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.present] + (
-            dispositions.loc[df_filter, nm.Fields.discard_dispositions] * discard_types[nm.Fields.paper][nm.Fields.landfill_fixed_ratio]
-        )
-
-        df_filter = (dispositions[nm.Fields.discard_destination_id] == landfill_id) & (dispositions[nm.Fields.discard_type_id] == self.md.wood_val)
-        dispositions.loc[df_filter, nm.Fields.present] = dispositions.loc[df_filter, nm.Fields.present] + (
-            dispositions.loc[df_filter, nm.Fields.discard_dispositions] * discard_types[nm.Fields.wood][nm.Fields.landfill_fixed_ratio]
-        )
+        nonrecycled[nm.Fields.present] = nonrecycled[nm.Fields.present] + nonrecycled[nm.Fields.fixed]
 
         # self.results.dispositions = dispositions
         # self.results.working_table = dispositions
 
-        return dispositions
+        return nonrecycled
 
     # # @dask.delayed
     # def calculate_fuel_burned(self):

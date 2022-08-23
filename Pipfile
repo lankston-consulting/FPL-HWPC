@@ -16,6 +16,7 @@ xarray = "*"
 numba = "*"
 numbagg = "*"
 scipy = "*"
+boto3 = {extras = ["crt"], version = "*"}
 
 [dev-packages]
 ipykernel = "*"
