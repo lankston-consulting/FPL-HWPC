@@ -1,4 +1,5 @@
 from datetime import timedelta
+from itertools import combinations
 import math
 import numpy as np
 import numba as nb
@@ -7,7 +8,7 @@ import timeit
 import dask.bag as db
 import dask.dataframe as dd
 import dask.delayed
-from dask.distributed import Client, LocalCluster, get_client, Lock
+from dask.distributed import Client, LocalCluster, get_client, Lock, as_completed
 import xarray as xr
 
 from hwpc import model_data_xr as model_data
@@ -17,22 +18,20 @@ from hwpc.names import Names as nm
 
 from utils import singleton
 
-piu_hl = 0
-piu_no_hl = 0
-
+recurse_limit = 3
 
 class Meta(singleton.Singleton):
     def __new__(cls, *args, **kwargs):
         if Meta._instance is None:
             super().__new__(cls, args, kwargs)
 
-            # Meta.cluster = LocalCluster(n_workers=8, processes=False)
-            # Meta.client = Client(Meta.cluster)
+            Meta.cluster = LocalCluster(n_workers=8, processes=False)
+            Meta.client = Client(Meta.cluster)
 
             # Meta.lock = Lock()
 
-            Meta.model_collection = dict()
-            Meta.model_list = list()
+            Meta.model_collection = dict()    
+            Meta.futures = list()        
 
         return cls._instance
 
@@ -55,36 +54,56 @@ class Meta(singleton.Singleton):
 
     @staticmethod
     def run_simulation_dask():
+        s = timeit.default_timer()
         md = model_data.ModelData()
         harvest = md.data[nm.Tables.harvest]
 
+        years = harvest[nm.Fields.harvest_year]
+        first_year = years.min().item()
+        last_year = years.max().item()
+
         ModelFactory(harvest_init=harvest)
 
-        run_k = dict()
+        combs = dict()
+        for x in range(first_year, last_year + 1):
+            n = last_year - x
+            combs[(x, )] = False
 
-        all_results = dict()
+            years = list(range(x + 1, last_year + 1))
+            
+            if n > recurse_limit:
+                for y in range(1, recurse_limit + 1):
+                    c = combinations(years, y)
+                    for comb in c:
+                        lomb = [x] + list(comb)
+                        tomb = tuple(lomb)
+                        combs[tomb] = False
+            else:
+                for y in range(1, n + 1):
+                    c = combinations(years, y)
+                    for comb in c:
+                        lomb = [x] + list(comb)
+                        tomb = tuple(lomb)
+                        combs[tomb] = False
 
-        last_k = None
-        while True:
-            ks = list(Meta.model_collection)
-            if last_k == ks:
-                all_results = results
-                break
-            for k in ks:
-                if last_k is None or k not in last_k:
-                    run_k[k] = Meta.model_collection[k]
-                    # Meta.client.submit(run_k[k])
-            results = Meta.client.gather(run_k.values())
-            last_k = ks
+        
+        count = 0
+        results = as_completed(Meta.futures)
+        for f in results:
+            y = f.result()
+            print(count)
 
-        # bag = db.from_sequence(run_k)
+        print("Model run time", timeit.default_timer() - s)
 
-        return all_results
+        return 
 
 
 class ModelFactory(object):
     def __init__(self, harvest_init=None, lineage=None, recycled=None):
 
+        if lineage and len(lineage) >= recurse_limit:
+            return
+        
         years = harvest_init[nm.Fields.harvest_year]  # .unique().astype(int)
         first_year = years.min().item()
         last_year = years.max().item()
@@ -94,12 +113,7 @@ class ModelFactory(object):
             first_year = years.min().item()
 
         # Create the dataframes needed to run each harvest year or recycle year "independently"
-        for year in years:
-            y = year.item()
-            # An extra year is now added during prep_data, so we don't simulate on it
-            if y == last_year:
-                continue
-
+        for y in range(first_year, last_year + 1):
             if lineage is None:
                 k = (y,)
             else:
@@ -109,25 +123,27 @@ class ModelFactory(object):
 
             if recycled is not None:
                 year_recycled = recycled.copy(deep=True)
-                year_recycled = year_recycled.where(year_recycled.coords[nm.Fields.harvest_year] >= year, drop=True)
-                year_recycled[nm.Fields.products_in_use] = xr.where(
-                    year_recycled[nm.Fields.harvest_year] == year, year_recycled[nm.Fields.products_in_use], 0
-                )
+                year_recycled = year_recycled.assign_attrs({"lineage": k})
+                year_recycled = year_recycled.sel(Year = list(range(y, last_year + 1)))
+                year_recycled[nm.Fields.products_in_use] = xr.where(year_recycled[nm.Fields.harvest_year] == y, year_recycled[nm.Fields.products_in_use], 0)
 
                 m = Model(harvest=harvest_init, recycled=year_recycled, lineage=k)
             else:
                 # Get the harvest record for this year
                 harvest = harvest_init.where(harvest_init.coords[nm.Fields.harvest_year] >= y, drop=True)
                 harvest = harvest.where(harvest.coords[nm.Fields.harvest_year] == y, 0)
-
+                harvest = harvest.assign_attrs({"lineage": k})
                 m = Model(harvest=harvest, lineage=k)
 
             Meta.model_collection[k] = m
-            Meta.model_list.append(m)
+            # Meta.mdx[lineage] = m
 
-            # client = get_client()
-            # client.submit(m.run)
-            # client.log_event("New Sim", "Lineage: " + str(k))
+            client = get_client()
+            future = client.submit(m.run)
+            # Meta.model_collection[k] = future
+            Meta.futures.append(future)
+            client.log_event("New Sim", "Lineage: " + str(k))
+
         return
 
 
@@ -173,8 +189,6 @@ class Model(object):
             self.working_table = self.calculate_products_in_use(self.working_table)
         else:
             self.working_table = self.recycled
-
-        self.working_table = self.working_table.assign_attrs({"lineage": self.lineage})
 
         # self.working_table = dd.from_pandas(
         #     self.working_table, npartitions=self.recycled.shape[0] // 3
@@ -262,8 +276,8 @@ class Model(object):
             decayed = [v * math.exp(-math.log(2) * x / hl) for x in range(len(df.coords[nm.Fields.harvest_year]))]
             dd = xr.DataArray(decayed, dims=nm.Fields.harvest_year, coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]}).astype(
                 "float32"
-            )
-            df[nm.Fields.products_in_use] = dd
+            )          
+            df[nm.Fields.products_in_use] = dd 
         return df
 
     @staticmethod
@@ -289,12 +303,17 @@ class Model(object):
         end_use[nm.Fields.end_use_sum] = xr.where(
             end_use[nm.Fields.discard_type_id] == 0, end_use[nm.Fields.end_use_results], end_use[nm.Fields.end_use_results] * loss
         )
-        products_in_use = end_use.groupby(nm.Fields.end_use_id).map(Model.halflife_func)
+
+        # Don't take the whole dataframe and pass it to a mapped function, it destroys coordinates
+        products_in_use = end_use[[nm.Fields.end_use_id, nm.Fields.end_use_halflife, nm.Fields.end_use_results, nm.Fields.end_use_sum]]        
+        products_in_use = products_in_use.groupby(nm.Fields.end_use_id).map(Model.halflife_func)
+
+        end_use[nm.Fields.products_in_use] = products_in_use[nm.Fields.products_in_use]
 
         # self.results.products_in_use = products_in_use
         # self.results.working_table = products_in_use
 
-        return products_in_use
+        return end_use
 
     def _accounting_piu_range(self, df):
         for y in range(2006, 2019):
@@ -351,6 +370,7 @@ class Model(object):
         # discarded disposition totals for stuff discarded in year i.
         discard_ratios = self.md.data[nm.Tables.discard_destination_ratios]
  
+        # TODO check here for DiscardTypeID recycle error
         products_in_use[nm.Fields.discard_dispositions] = xr.where(products_in_use[nm.Fields.discard_type_id] == 0, products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=0)][nm.Fields.discard_destination_ratio], products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=1)][nm.Fields.discard_destination_ratio])
 
         # self.results.discarded_products = products_in_use
@@ -370,8 +390,6 @@ class Model(object):
         weightspace = np.array([math.exp(-math.log(2) * x / hl) for x in range(l)])
         for h in range(l):
             v = cd[h]
-            if v > 0:
-                b = 3
             weights = weightspace[:l - h]
             o = np.zeros_like(cd)
             decayed = [v * w for w in weights]
@@ -428,7 +446,7 @@ class Model(object):
         recycled[nm.Fields.products_in_use] = recycled[nm.Fields.can_decay]
         recycled[nm.Fields.harvest_year] = recycled[nm.Fields.harvest_year] + 1
 
-        drop_key = [nm.Fields.discarded_products_results]
+        drop_key = [nm.Fields.discarded_products_results, nm.Fields.discard_dispositions, nm.Fields.fixed_ratio, nm.Fields.halflife, nm.Fields.can_decay, nm.Fields.fixed]
         recycled = recycled.drop_vars(drop_key)
 
         zero_key = [
@@ -464,7 +482,10 @@ class Model(object):
         # nonrecycled = nonrecycled.stack(skey=df_key)
         dispositions = nonrecycled[[nm.Fields.halflife, nm.Fields.can_decay, nm.Fields.fixed, nm.Fields.discard_remaining]]
         dispositions = dispositions.stack(skey=df_key)
-        dispositions = dispositions.groupby("skey").apply(Model.halflife_setup)
+        try:
+            dispositions = dispositions.groupby("skey").apply(Model.halflife_setup)
+        except:
+            dispositions.groupby("skey").apply(Model.halflife_setup)
         # print("DISPOSITIONS APPLY", timeit.default_timer() - s)
 
         dispositions[nm.Fields.could_decay] = dispositions[nm.Fields.can_decay].groupby("skey").cumsum(dim=nm.Fields.harvest_year)
