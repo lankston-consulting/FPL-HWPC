@@ -25,7 +25,7 @@ class Meta(singleton.Singleton):
         if Meta._instance is None:
             super().__new__(cls, args, kwargs)
 
-            Meta.cluster = LocalCluster(n_workers=8, processes=False)
+            Meta.cluster = LocalCluster(n_workers=10, processes=False)
             Meta.client = Client(Meta.cluster)
 
             # Meta.lock = Lock()
@@ -62,8 +62,6 @@ class Meta(singleton.Singleton):
         first_year = years.min().item()
         last_year = years.max().item()
 
-        ModelFactory(harvest_init=harvest)
-
         combs = dict()
         for x in range(first_year, last_year + 1):
             n = last_year - x
@@ -86,12 +84,21 @@ class Meta(singleton.Singleton):
                         tomb = tuple(lomb)
                         combs[tomb] = False
 
-        
-        count = 0
-        results = as_completed(Meta.futures)
-        for f in results:
-            y = f.result()
-            print(count)
+        print(f"Nodes to simulate: {len(combs)}")
+
+        ModelFactory(harvest_init=harvest)
+
+        model_futures = as_completed(Meta.futures)
+        model_results = dict()
+        for f in model_futures:
+            r = f.result()
+            model_results[r.lineage] = r
+            if len(model_results) // 100 == 0:
+                print(f"{len(model_results)} nodes processed.")
+            if len(model_results) == len(combs):
+                print("We're done here.")
+                break
+            
 
         print("Model run time", timeit.default_timer() - s)
 
