@@ -127,7 +127,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         dx = df.to_xarray()
 
         # Limit data here for testing
-        dx = dx.where(dx.coords[nm.Fields.harvest_year] > 2006, drop=True)
+        dx = dx.where(dx.coords[nm.Fields.harvest_year] > 2013, drop=True)
         filtr = dx.coords[nm.Fields.harvest_year].values
 
         ModelData.data[nm.Tables.harvest] = dx

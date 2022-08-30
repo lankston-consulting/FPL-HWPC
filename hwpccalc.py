@@ -46,8 +46,8 @@ def run(path="hpwc-user-inputs/c6f40afe-b532-49d1-96e1-c45898a50e35", name="cali
 
     # e = email.Email()
     # e.send_email(str(m.md.data['email'].columns.values[0]))
-    
-    print('model finished.')
+
+    print("model finished.")
 
     return
 

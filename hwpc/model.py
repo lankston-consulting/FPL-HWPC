@@ -1,14 +1,9 @@
-from datetime import timedelta
 from itertools import combinations
 import math
 import numpy as np
 import numba as nb
-import pandas as pd
 import timeit
-import dask.bag as db
-import dask.dataframe as dd
-import dask.delayed
-from dask.distributed import Client, LocalCluster, get_client, Lock, as_completed
+from dask.distributed import Client, LocalCluster, as_completed
 import xarray as xr
 
 from hwpc import model_data_xr as model_data
@@ -20,6 +15,7 @@ from utils import singleton
 
 recurse_limit = 3
 
+
 class Meta(singleton.Singleton):
     def __new__(cls, *args, **kwargs):
         if Meta._instance is None:
@@ -28,95 +24,21 @@ class Meta(singleton.Singleton):
             Meta.cluster = LocalCluster(n_workers=10, processes=False)
             Meta.client = Client(Meta.cluster)
 
-            # Meta.lock = Lock()
+            print(Meta.client)
 
-            Meta.model_collection = dict()    
-            Meta.futures = list()        
+            Meta.model_collection = dict()
+            Meta.futures = list()
+            Meta.results = as_completed(Meta.futures)
 
         return cls._instance
 
-    @classmethod
-    def reset(cls):
-        del Meta._instance
-        Meta.client.close()
-        Meta.cluster.close()
-
-        return Meta()
-
-    @staticmethod
-    def run_simulation():
-        md = model_data.ModelData()
-        harvest = md.data[nm.Tables.harvest]
-
-        ModelFactory(harvest_init=harvest)
-
-        return
-
-    @staticmethod
-    def run_simulation_dask():
-        s = timeit.default_timer()
-        md = model_data.ModelData()
-        harvest = md.data[nm.Tables.harvest]
-
-        years = harvest[nm.Fields.harvest_year]
-        first_year = years.min().item()
-        last_year = years.max().item()
-
-        combs = dict()
-        for x in range(first_year, last_year + 1):
-            n = last_year - x
-            combs[(x, )] = False
-
-            years = list(range(x + 1, last_year + 1))
-            
-            if n > recurse_limit:
-                for y in range(1, recurse_limit + 1):
-                    c = combinations(years, y)
-                    for comb in c:
-                        lomb = [x] + list(comb)
-                        tomb = tuple(lomb)
-                        combs[tomb] = False
-            else:
-                for y in range(1, n + 1):
-                    c = combinations(years, y)
-                    for comb in c:
-                        lomb = [x] + list(comb)
-                        tomb = tuple(lomb)
-                        combs[tomb] = False
-
-        print(f"Nodes to simulate: {len(combs)}")
-
-        ModelFactory(harvest_init=harvest)
-
-        model_futures = as_completed(Meta.futures)
-        model_results = dict()
-        for f in model_futures:
-            r = f.result()
-            model_results[r.lineage] = r
-            if len(model_results) // 100 == 0:
-                print(f"{len(model_results)} nodes processed.")
-            if len(model_results) == len(combs):
-                print("We're done here.")
-                break
-            
-
-        print("Model run time", timeit.default_timer() - s)
-
-        return 
-
-
-class ModelFactory(object):
-    def __init__(self, harvest_init=None, lineage=None, recycled=None):
-
-        if lineage and len(lineage) >= recurse_limit:
-            return
-        
-        years = harvest_init[nm.Fields.harvest_year]  # .unique().astype(int)
+    def model_factory(self, harvest_init=None, lineage=None, recycled=None):
+        years = harvest_init[nm.Fields.harvest_year]
         first_year = years.min().item()
         last_year = years.max().item()
 
         if recycled is not None:
-            years = recycled[nm.Fields.harvest_year]  # .unique().astype(int)
+            years = recycled[nm.Fields.harvest_year]
             first_year = years.min().item()
 
         # Create the dataframes needed to run each harvest year or recycle year "independently"
@@ -131,8 +53,10 @@ class ModelFactory(object):
             if recycled is not None:
                 year_recycled = recycled.copy(deep=True)
                 year_recycled = year_recycled.assign_attrs({"lineage": k})
-                year_recycled = year_recycled.sel(Year = list(range(y, last_year + 1)))
-                year_recycled[nm.Fields.products_in_use] = xr.where(year_recycled[nm.Fields.harvest_year] == y, year_recycled[nm.Fields.products_in_use], 0)
+                year_recycled = year_recycled.sel(Year=list(range(y, last_year + 1)))
+                year_recycled[nm.Fields.products_in_use] = xr.where(
+                    year_recycled[nm.Fields.harvest_year] == y, year_recycled[nm.Fields.products_in_use], 0
+                )
 
                 m = Model(harvest=harvest_init, recycled=year_recycled, lineage=k)
             else:
@@ -142,16 +66,165 @@ class ModelFactory(object):
                 harvest = harvest.assign_attrs({"lineage": k})
                 m = Model(harvest=harvest, lineage=k)
 
-            Meta.model_collection[k] = m
+            # Meta.model_collection[k] = m
             # Meta.mdx[lineage] = m
 
-            client = get_client()
-            future = client.submit(m.run)
-            # Meta.model_collection[k] = future
-            Meta.futures.append(future)
-            client.log_event("New Sim", "Lineage: " + str(k))
+            # client = get_client()
+            future = self.client.submit(m.run, key=k)
+            self.results.add(future)
+            self.client.log_event("New Sim", "Lineage: " + str(k))
 
         return
+
+    def run_simulation(self):
+        md = model_data.ModelData()
+        harvest = md.data[nm.Tables.harvest]
+
+        self.model_factory(harvest_init=harvest)
+
+        return
+
+    def run_simulation_dask(self):
+        s = timeit.default_timer()
+        md = model_data.ModelData()
+        harvest = md.data[nm.Tables.harvest]
+
+        years = harvest[nm.Fields.harvest_year]
+        first_year = years.min().item()
+        last_year = years.max().item()
+
+        # combs = dict()
+        # for x in range(first_year, last_year + 1):
+        #     n = last_year - x
+        #     combs[(x,)] = False
+
+        #     years = list(range(x + 1, last_year + 1))
+
+        #     if n > recurse_limit:
+        #         for y in range(1, recurse_limit + 1):
+        #             c = combinations(years, y)
+        #             for comb in c:
+        #                 lomb = [x] + list(comb)
+        #                 tomb = tuple(lomb)
+        #                 combs[tomb] = False
+        #     else:
+        #         for y in range(1, n + 1):
+        #             c = combinations(years, y)
+        #             for comb in c:
+        #                 lomb = [x] + list(comb)
+        #                 tomb = tuple(lomb)
+        #                 combs[tomb] = False
+
+        # print(f"Nodes to simulate: {len(combs)}")
+
+        self.model_factory(harvest_init=harvest)
+
+        # model_results = dict()
+        final = None
+        for f in self.results:
+            r = f.result()
+            if final is None:
+                final = harvest
+                final = final.merge(r, join="left", compat="override", fill_value=0)
+            else:
+                # rex = r.copy(deep=True)
+                r_year = r.attrs["lineage"][-1]
+                years = list(range(first_year, last_year + 1))
+
+
+                
+                # with final.loc[dict(Year=years)] as fex:
+                #     fex[nm.Fields.end_use_results] = fex[nm.Fields.end_use_results] + r[nm.Fields.end_use_results]
+                #     fex[nm.Fields.end_use_sum] = fex[nm.Fields.end_use_sum] + r[nm.Fields.end_use_sum]
+                #     fex[nm.Fields.products_in_use] = fex[nm.Fields.products_in_use] + r[nm.Fields.products_in_use]
+                #     fex[nm.Fields.discarded_products_results] = fex[nm.Fields.discarded_products_results] + r[nm.Fields.discarded_products_results]
+                #     fex[nm.Fields.discard_dispositions] = fex[nm.Fields.discard_dispositions] + r[nm.Fields.discard_dispositions]
+                #     fex[nm.Fields.can_decay] = fex[nm.Fields.can_decay] + r[nm.Fields.can_decay]
+                #     fex[nm.Fields.fixed] = fex[nm.Fields.fixed] + r[nm.Fields.fixed]
+                #     fex[nm.Fields.discard_remaining] = fex[nm.Fields.discard_remaining] + r[nm.Fields.discard_remaining]
+                #     fex[nm.Fields.could_decay] = fex[nm.Fields.could_decay] + r[nm.Fields.could_decay]
+                #     fex[nm.Fields.emitted] = fex[nm.Fields.emitted] + r[nm.Fields.emitted]
+                #     fex[nm.Fields.present] = fex[nm.Fields.present] + r[nm.Fields.present]
+                #     final.loc[dict(Year=years)] = fex
+
+                # final = final.expand_dims(dim="Year")
+                # final[nm.Fields.end_use_results] = final[nm.Fields.end_use_results] + r[nm.Fields.end_use_results]
+                # final[nm.Fields.end_use_sum] = final[nm.Fields.end_use_sum] + r[nm.Fields.end_use_sum]
+                # final[nm.Fields.products_in_use] = final[nm.Fields.products_in_use] + r[nm.Fields.products_in_use]
+                # final[nm.Fields.discarded_products_results] = final[nm.Fields.discarded_products_results] + r[nm.Fields.discarded_products_results]
+                # final[nm.Fields.discard_dispositions] = final[nm.Fields.discard_dispositions] + r[nm.Fields.discard_dispositions]
+                # final[nm.Fields.can_decay] = final[nm.Fields.can_decay] + r[nm.Fields.can_decay]
+                # final[nm.Fields.fixed] = final[nm.Fields.fixed] + r[nm.Fields.fixed]
+                # final[nm.Fields.discard_remaining] = final[nm.Fields.discard_remaining] + r[nm.Fields.discard_remaining]
+                # final[nm.Fields.could_decay] = final[nm.Fields.could_decay] + r[nm.Fields.could_decay]
+                # final[nm.Fields.emitted] = final[nm.Fields.emitted] + r[nm.Fields.emitted]
+                # final[nm.Fields.present] = final[nm.Fields.present] + r[nm.Fields.present]
+            del r
+            del f
+
+        print("===========================")
+        print("Model run time", f"{(timeit.default_timer() - s) / 60} minutes")
+        print("===========================")
+
+        # for mr in sorted(model_results): print(mr)
+
+        # ods = None
+        # for r in sorted(model_results):
+        #     ds = model_results[r]
+        #     if ods is None:
+        #         ods = ds
+        #     else:
+        #         ods = ods + ds
+
+        return
+
+
+# class ModelFactory(object):
+#     def __init__(self, harvest_init=None, lineage=None, recycled=None):
+
+#         years = harvest_init[nm.Fields.harvest_year]
+#         first_year = years.min().item()
+#         last_year = years.max().item()
+
+#         if recycled is not None:
+#             years = recycled[nm.Fields.harvest_year]
+#             first_year = years.min().item()
+
+#         # Create the dataframes needed to run each harvest year or recycle year "independently"
+#         for y in range(first_year, last_year + 1):
+#             if lineage is None:
+#                 k = (y,)
+#             else:
+#                 lineage = list(lineage)
+#                 k = lineage + [y]
+#                 k = tuple(k)
+
+#             if recycled is not None:
+#                 year_recycled = recycled.copy(deep=True)
+#                 year_recycled = year_recycled.assign_attrs({"lineage": k})
+#                 year_recycled = year_recycled.sel(Year=list(range(y, last_year + 1)))
+#                 year_recycled[nm.Fields.products_in_use] = xr.where(
+#                     year_recycled[nm.Fields.harvest_year] == y, year_recycled[nm.Fields.products_in_use], 0
+#                 )
+
+#                 m = Model(harvest=harvest_init, recycled=year_recycled, lineage=k)
+#             else:
+#                 # Get the harvest record for this year
+#                 harvest = harvest_init.where(harvest_init.coords[nm.Fields.harvest_year] >= y, drop=True)
+#                 harvest = harvest.where(harvest.coords[nm.Fields.harvest_year] == y, 0)
+#                 harvest = harvest.assign_attrs({"lineage": k})
+#                 m = Model(harvest=harvest, lineage=k)
+
+#             # Meta.model_collection[k] = m
+#             # Meta.mdx[lineage] = m
+
+#             client = get_client()
+#             future = client.submit(m.run, key=k)
+#             # Meta.model_collection[k] = future
+#             Meta.results.add(future)
+#             client.log_event("New Sim", "Lineage: " + str(k))
+
+#         return
 
 
 class Model(object):
@@ -173,9 +246,6 @@ class Model(object):
         # self.results = results.Results(recycled=recycled_link is not None)
         self.lineage = lineage
 
-        # the amount of product that is not lost
-        self.end_use_loss_factor = float(self.md.data[nm.Tables.loss_factor].columns.values[0])
-
         # User inputs delivered to results
         # self.results.harvest_data = self.harvests
         # self.results.timber_products_data = self.md.data[
@@ -185,23 +255,20 @@ class Model(object):
         #     nm.Tables.primary_products_data
         # ]
 
-    # @dask.delayed
     def run(self):
+        print("Lineage:", self.lineage)
 
         if self.recycled is None:
             self.working_table = self.harvests.merge(self.md.ids, join="left", fill_value=0)
-            # self.working_table = self.harvests
             # self.working_table = self.calculate_primary_product_mcg(self.working_table)
             self.working_table = self.calculate_end_use_products(self.working_table)
             self.working_table = self.calculate_products_in_use(self.working_table)
         else:
             self.working_table = self.recycled
 
-        # self.working_table = dd.from_pandas(
-        #     self.working_table, npartitions=self.recycled.shape[0] // 3
-        # )
         self.working_table = self.calculate_discarded_dispositions(self.working_table)
         self.working_table = self.calculate_dispositions(self.working_table)
+
         # self.calculate_fuel_burned()
         # self.calculate_discarded_burned()
         # self.summarize()
@@ -212,7 +279,6 @@ class Model(object):
 
         return self.working_table
 
-    # @dask.delayed
     def calculate_primary_product_mcg(self, working_table):
         """Calculate the amounts of primary products (MgC) harvested in each year."""
         # TODO this needs reworked using the new ids system. The new system bypasses the intermedate
@@ -256,7 +322,6 @@ class Model(object):
 
         return primary_products
 
-    # @dask.delayed
     def calculate_end_use_products(self, working_table):
         """Calculate the amount of end use products harvested in each year."""
 
@@ -283,16 +348,15 @@ class Model(object):
             decayed = [v * math.exp(-math.log(2) * x / hl) for x in range(len(df.coords[nm.Fields.harvest_year]))]
             dd = xr.DataArray(decayed, dims=nm.Fields.harvest_year, coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]}).astype(
                 "float32"
-            )          
-            df[nm.Fields.products_in_use] = dd 
+            )
+            df[nm.Fields.products_in_use] = dd
         return df
 
     @staticmethod
     def chi_func(df):
-
+        raise NotImplementedError()
         return
 
-    # @dask.delayed
     def calculate_products_in_use(self, working_table):
         """Calculate the amount of end use products from each vintage year that are still in use
         during each inventory year.
@@ -312,7 +376,7 @@ class Model(object):
         )
 
         # Don't take the whole dataframe and pass it to a mapped function, it destroys coordinates
-        products_in_use = end_use[[nm.Fields.end_use_id, nm.Fields.end_use_halflife, nm.Fields.end_use_results, nm.Fields.end_use_sum]]        
+        products_in_use = end_use[[nm.Fields.end_use_id, nm.Fields.end_use_halflife, nm.Fields.end_use_results, nm.Fields.end_use_sum]]
         products_in_use = products_in_use.groupby(nm.Fields.end_use_id).map(Model.halflife_func)
 
         end_use[nm.Fields.products_in_use] = products_in_use[nm.Fields.products_in_use]
@@ -322,35 +386,34 @@ class Model(object):
 
         return end_use
 
-    def _accounting_piu_range(self, df):
-        for y in range(2006, 2019):
-            self._accounting_piu(df, y)
-        return
+    # def _accounting_piu_range(self, df):
+    #     for y in range(2006, 2019):
+    #         self._accounting_piu(df, y)
+    #     return
 
-    def _accounting_piu(self, df, year):
-        eu = df["end_use"].loc[dict(Year=year)].sum()
-        piu = df["products_in_use"].loc[dict(Year=year)].sum()
-        print(f"EU: {eu} | PIU: {piu}")
-        return 
+    # def _accounting_piu(self, df, year):
+    #     eu = df["end_use"].loc[dict(Year=year)].sum()
+    #     piu = df["products_in_use"].loc[dict(Year=year)].sum()
+    #     print(f"EU: {eu} | PIU: {piu}")
+    #     return
 
-    def _accounting_dis_range(self, df):
-        for y in range(2006, 2019):
-            self._accounting_dis(df, y)
-        return
+    # def _accounting_dis_range(self, df):
+    #     for y in range(2006, 2019):
+    #         self._accounting_dis(df, y)
+    #     return
 
-    def _accounting_dis(self, df, year):
-        eu = df["end_use"].loc[dict(Year=year)].sum()
-        piu = df["products_in_use"].loc[dict(Year=year)].sum()
-        dis = df["discarded_products"].loc[dict(Year=year)].sum()
-        print(f"EU: {eu} | PIU: {piu} | DP: {dis}")
-        return 
+    # def _accounting_dis(self, df, year):
+    #     eu = df["end_use"].loc[dict(Year=year)].sum()
+    #     piu = df["products_in_use"].loc[dict(Year=year)].sum()
+    #     dis = df["discarded_products"].loc[dict(Year=year)].sum()
+    #     print(f"EU: {eu} | PIU: {piu} | DP: {dis}")
+    #     return
 
-    def _accounting_single(self, df, field, year):
-        dis = df[field].loc[dict(Year=year)].sum()
-        print(f"{field}: {dis}")
-        return
+    # def _accounting_single(self, df, field, year):
+    #     dis = df[field].loc[dict(Year=year)].sum()
+    #     print(f"{field}: {dis}")
+    #     return
 
-    # @dask.delayed
     def calculate_discarded_dispositions(self, working_table):
         """Calculate the amount discarded during each inventory year and divide it up between the
         different dispositions (landfills, dumps, etc).
@@ -376,19 +439,22 @@ class Model(object):
         # amount that goes into landfills, dumps, etc, and then add these to the
         # discarded disposition totals for stuff discarded in year i.
         discard_ratios = self.md.data[nm.Tables.discard_destination_ratios]
- 
+
         # TODO check here for DiscardTypeID recycle error
-        products_in_use[nm.Fields.discard_dispositions] = xr.where(products_in_use[nm.Fields.discard_type_id] == 0, products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=0)][nm.Fields.discard_destination_ratio], products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=1)][nm.Fields.discard_destination_ratio])
+        products_in_use[nm.Fields.discard_dispositions] = xr.where(
+            products_in_use[nm.Fields.discard_type_id] == 0,
+            products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=0)][nm.Fields.discard_destination_ratio],
+            products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=1)][nm.Fields.discard_destination_ratio],
+        )
 
         # self.results.discarded_products = products_in_use
         # self.results.working_table = products_in_use
 
         return products_in_use
 
-
     @staticmethod
-    @nb.jit(nopython=True, nogil=True)
-    def halflife_nb(hl, cd, dr):
+    # @nb.jit(nopython=True, nogil=True)
+    def halflife_nb(hl, cd):
         # Calculate the amounts that were discarded in year y that could decay but
         # are still remaining in year i, by plugging the amount subject to decay into
         # the decay formula that uses half lives.
@@ -397,7 +463,7 @@ class Model(object):
         weightspace = np.array([math.exp(-math.log(2) * x / hl) for x in range(l)])
         for h in range(l):
             v = cd[h]
-            weights = weightspace[:l - h]
+            weights = weightspace[: l - h]
             o = np.zeros_like(cd)
             decayed = [v * w for w in weights]
             o[h:] = decayed
@@ -412,13 +478,13 @@ class Model(object):
             df[nm.Fields.discard_remaining] = 0
         else:
             cd = df[nm.Fields.can_decay].to_numpy()
-            dr = df[nm.Fields.discard_remaining].to_numpy()
-            drnp = Model.halflife_nb(halflife, cd, dr)
-            dd = xr.DataArray(drnp, dims=df.dims, coords=df.coords).astype("float32")
+            if cd.sum() > 0:
+                i = 1
+            dr = Model.halflife_nb(halflife, cd)
+            dd = xr.DataArray(dr, dims=df.dims, coords=df.coords).astype("float32")
             df[nm.Fields.discard_remaining] = dd
         return df
 
-    # @dask.delayed
     def calculate_dispositions(self, working_table):
         """Calculate the amounts of discarded products that have been emitted, are still remaining,
         etc., for each inventory year.
@@ -436,47 +502,56 @@ class Model(object):
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio.
         dispositions = working_table
-        dispositions[nm.Fields.fixed_ratio] = xr.where(working_table[nm.Fields.discard_type_id] == 0, destinations.loc[dict(DiscardTypeID=0)][nm.Fields.fixed_ratio], destinations.loc[dict(DiscardTypeID=1)][nm.Fields.fixed_ratio])
-        dispositions[nm.Fields.halflife] = xr.where(working_table[nm.Fields.discard_type_id] == 0, destinations.loc[dict(DiscardTypeID=0)][nm.Fields.halflife], destinations.loc[dict(DiscardTypeID=1)][nm.Fields.halflife])
+        dispositions[nm.Fields.fixed_ratio] = xr.where(
+            working_table[nm.Fields.discard_type_id] == 0,
+            destinations.loc[dict(DiscardTypeID=0)][nm.Fields.fixed_ratio],
+            destinations.loc[dict(DiscardTypeID=1)][nm.Fields.fixed_ratio],
+        )
+        dispositions[nm.Fields.halflife] = xr.where(
+            working_table[nm.Fields.discard_type_id] == 0,
+            destinations.loc[dict(DiscardTypeID=0)][nm.Fields.halflife],
+            destinations.loc[dict(DiscardTypeID=1)][nm.Fields.halflife],
+        )
         dispositions[nm.Fields.can_decay] = dispositions[nm.Fields.discard_dispositions] * (1 - dispositions[nm.Fields.fixed_ratio])
         dispositions[nm.Fields.fixed] = dispositions[nm.Fields.discard_dispositions] * dispositions[nm.Fields.fixed_ratio]
 
-        # For the new recycling, remove products assigned to be recycled and
-        # begin a new simulation using the recycled products as "harvest" amounts
-        # NOTE the below line doesn't work, it resets coords in a bad way. Hard coding selection.
-        # recycled = dispositions.where(dispositions.coords[nm.Fields.discard_destination_id] == recycled_id, drop=True)
-        recycled = dispositions.loc[dict(DiscardDestinationID=recycled_id)]
-        recycled = recycled.drop_vars(nm.Fields.discard_destination_id)
+        if len(self.lineage) < recurse_limit:
+            # For the new recycling, remove products assigned to be recycled and
+            # begin a new simulation using the recycled products as "harvest" amounts
+            # NOTE the below line doesn't work, it resets coords in a bad way. Hard coding selection.
+            # recycled = dispositions.where(dispositions.coords[nm.Fields.discard_destination_id] == recycled_id, drop=True)
+            recycled = dispositions.loc[dict(DiscardDestinationID=recycled_id)]
+            recycled = recycled.drop_vars(nm.Fields.discard_destination_id)
 
-        # Set the recycled material to be "in use" in the next year
-        # TODO Check that recycling actually works after this, because this adds DiscardTypeID as a coordinate to products_in_use
-        recycled[nm.Fields.products_in_use] = recycled[nm.Fields.can_decay]
-        recycled[nm.Fields.harvest_year] = recycled[nm.Fields.harvest_year] + 1
+            # Set the recycled material to be "in use" in the next year
+            # TODO Check that recycling actually works after this, because this adds DiscardTypeID as a coordinate to products_in_use
+            recycled[nm.Fields.products_in_use] = recycled[nm.Fields.can_decay]
+            recycled[nm.Fields.harvest_year] = recycled[nm.Fields.harvest_year] + 1
 
-        drop_key = [nm.Fields.discarded_products_results, nm.Fields.discard_dispositions, nm.Fields.fixed_ratio, nm.Fields.halflife, nm.Fields.can_decay, nm.Fields.fixed]
-        recycled = recycled.drop_vars(drop_key)
+            drop_key = [
+                nm.Fields.discarded_products_results,
+                nm.Fields.discard_dispositions,
+                nm.Fields.fixed_ratio,
+                nm.Fields.halflife,
+                nm.Fields.can_decay,
+                nm.Fields.fixed,
+            ]
+            recycled = recycled.drop_vars(drop_key)
 
-        zero_key = [
-            nm.Fields.ccf,
-            nm.Fields.end_use_results,
-            nm.Fields.end_use_sum,
-        ]
+            zero_key = [
+                nm.Fields.ccf,
+                nm.Fields.end_use_results,
+                nm.Fields.end_use_sum,
+            ]
 
-        # Zero out harvest info because recycled material isn't harvested
-        recycled[zero_key] = xr.zeros_like(recycled[zero_key])
+            # Zero out harvest info because recycled material isn't harvested
+            recycled[zero_key] = xr.zeros_like(recycled[zero_key])
 
+            Meta().model_factory(harvest_init=self.harvests, recycled=recycled, lineage=self.lineage)
 
-        nonrecycled = dispositions.sel(DiscardDestinationID=[0, 2, 3, 4], drop=True)
-
-        # with Meta.lock:
-        #     print("==================================")
-        #     print("Lineage:", self.lineage)
-        #     print("Recycled Size:", recycled.shape)
-        #     print("Nonrecycled Size:", nonrecycled.shape)
-        #     print("==================================")
-        print("Lineage:", self.lineage)
-
-        ModelFactory(harvest_init=self.harvests, recycled=recycled, lineage=self.lineage)        
+            nonrecycled = dispositions.sel(DiscardDestinationID=[0, 2, 3, 4], drop=True)
+        else:
+            nonrecycled = dispositions
 
         df_key = [
             nm.Fields.end_use_id,
@@ -486,7 +561,10 @@ class Model(object):
         nonrecycled[nm.Fields.discard_remaining] = xr.zeros_like(nonrecycled[nm.Fields.can_decay])
 
         # s = timeit.default_timer()
-        # nonrecycled = nonrecycled.stack(skey=df_key)
+        # To get the discard remaining (present) amounts over time, we need to filter the dataframe to just the variables
+        # at play, which are the can_decay and halflife primarily. We have to do this because dask can't chain groupby calls,
+        # so we need to stack the grouping key. If we keep the whole dataset, this would reset the entire index which is
+        # not desireable.
         dispositions = nonrecycled[[nm.Fields.halflife, nm.Fields.can_decay, nm.Fields.fixed, nm.Fields.discard_remaining]]
         dispositions = dispositions.stack(skey=df_key)
         try:
@@ -495,8 +573,14 @@ class Model(object):
             dispositions.groupby("skey").apply(Model.halflife_setup)
         # print("DISPOSITIONS APPLY", timeit.default_timer() - s)
 
+        # The "could_decay" is the cumulative sum of "can_decay", which gives us the growing discard over time. This would be
+        # the amount of product that could be present if it didn't decay. This minus the discard remaining results in the
+        # emissions of that product.
         dispositions[nm.Fields.could_decay] = dispositions[nm.Fields.can_decay].groupby("skey").cumsum(dim=nm.Fields.harvest_year)
+
+        # Unstack the key from the active table and write the new data back to the primary dataframe.
         nonrecycled[nm.Fields.could_decay] = dispositions.unstack()[nm.Fields.could_decay]
+        nonrecycled[nm.Fields.discard_remaining] = dispositions.unstack()[nm.Fields.discard_remaining]
 
         # Calculate emissions from stuff discarded in year y by subracting the amount
         # remaining from the total amount that could decay.
@@ -511,7 +595,7 @@ class Model(object):
 
         return nonrecycled
 
-    # # @dask.delayed
+    # #
     # def calculate_fuel_burned(self):
     #     """Calculate the amount of fuel burned during each vintage year."""
     #     dispositions = self.results.working_table
@@ -531,7 +615,7 @@ class Model(object):
 
     #     return
 
-    # # @dask.delayed
+    # #
     # def calculate_discarded_burned(self):
     #     """Calculate the amount of discarded products that were burned."""
     #     # For each year, sum up the amount of discarded paper and wood that are burned, and then
@@ -561,7 +645,7 @@ class Model(object):
 
     #     return
 
-    # # @dask.delayed
+    # #
     # def summarize(self):
     #     P = nm.Fields.ppresent
     #     E = nm.Fields.eemitted
@@ -761,7 +845,7 @@ class Model(object):
 
     #     return
 
-    # # @dask.delayed
+    # #
     # def convert_c02_e(self):
     #     C = nm.Fields.c
     #     CO2 = nm.Fields.co2
@@ -847,7 +931,7 @@ class Model(object):
 
     #     return
 
-    # # @dask.delayed
+    # #
     # def final_table(self):
 
     #     final = self.results.fuelwood.merge(
