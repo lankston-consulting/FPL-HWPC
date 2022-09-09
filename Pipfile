@@ -4,26 +4,22 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-lcutils = {ref = "main", git = "https://${GITHUB_USER}:${GITHUB_PAT}@github.com/${GITHUB_REPO}.git"}
+bokeh = "*"
+boto3 = {extras = ["crt"], version = "*"}
+dask = {extras = ["dataframe", "distributed"], version = "*"}
+dask-cloudprovider = "*"
+flask = "*"
 numpy = "*"
 pandas = "*"
 python-dotenv = "*"
-matplotlib = "*"
-dask = {extras = ["dataframe", "delayed", "distributed"], version = "*"}
 sendgrid = "*"
-bokeh = "*"
 xarray = "*"
-numba = "*"
-numbagg = "*"
-scipy = "*"
-boto3 = {extras = ["crt"], version = "*"}
 
 [dev-packages]
+black = {extras = ["jupyter"], version = "*"}
 ipykernel = "*"
 jupyter = "*"
-black = {extras = ["jupyter"], version = "*"}
 pylama = "*"
-pooch = "*"
 
 [requires]
 python_version = "3.9"

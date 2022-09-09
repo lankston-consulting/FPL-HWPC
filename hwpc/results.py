@@ -121,6 +121,250 @@ class Results(pickler.Pickler):
 
         return
 
+    def summarize(self):
+        P = nm.Fields.ppresent
+        E = nm.Fields.eemitted
+
+        results = self.results.working_table
+
+        df_keys = [nm.Fields.harvest_year, nm.Fields.products_in_use]
+        products_in_use = results.loc[:, df_keys].drop_duplicates().groupby(by=nm.Fields.harvest_year).agg({nm.Fields.products_in_use: np.sum})
+        self.results.products_in_use = products_in_use
+
+        # Get discard destination IDs for sorting through results
+        discard_destinations = self.md.data[nm.Tables.discard_destinations]
+
+        # For burned and composted, we can directly get the emissions from the results table
+        df_keys = [nm.Fields.harvest_year, nm.Fields.emitted]
+
+        # Get the burned records from results. We want to save the emitted amount, which for burned is all accounted for carbon
+        burned_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.burned][
+            nm.Fields.discard_destination_id
+        ].iloc[0]
+        burned = (
+            results.loc[results[nm.Fields.discard_destination_id] == burned_id, df_keys]
+            .drop_duplicates()
+            .groupby(by=nm.Fields.harvest_year)
+            .agg({nm.Fields.emitted: np.sum})
+        )
+        burned = burned.rename(columns={nm.Fields.emitted: E(nm.Fields.burned)})
+        self.results.burned = burned
+
+        # Get the aggregation of burned emissions that are multiplied by the energy capture ratio of every year, should be 0
+        burned_w_capture = self.results.burned_w_energy_capture
+        burned_w_capture = burned_w_capture.groupby(by=nm.Fields.harvest_year).agg({nm.Fields.burned_with_energy_capture: np.sum})
+        self.results.burned_w_energy_capture = burned_w_capture
+
+        burned_wo_capture = self.results.burned_wo_energy_capture
+        burned_wo_capture = burned_wo_capture.groupby(by=nm.Fields.harvest_year).agg({nm.Fields.emitted: np.sum})
+        self.results.burned_wo_energy_capture = burned_wo_capture
+
+        # Now get composted. Same process as burned
+        composted_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.composted][
+            nm.Fields.discard_destination_id
+        ].iloc[0]
+        composted = (
+            results.loc[results[nm.Fields.discard_destination_id] == composted_id, df_keys]
+            .drop_duplicates()
+            .groupby(by=nm.Fields.harvest_year)
+            .agg({nm.Fields.emitted: np.sum})
+        )
+        composted = composted.rename(columns={nm.Fields.emitted: E(nm.Fields.composted)})
+        self.results.composted = composted
+
+        # For the SWDS emissions, we want to get the amount present before getting the amount emitted
+        df_keys = [nm.Fields.harvest_year, nm.Fields.present]
+
+        # Start with recovered AKA recycled present. This might mean "in use", but recycled rather than directly used from harvest
+        recycled_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.recycled][
+            nm.Fields.discard_destination_id
+        ].iloc[0]
+        recovered_in_use = (
+            results.loc[results[nm.Fields.discard_destination_id] == recycled_id, df_keys]
+            .drop_duplicates()
+            .groupby(by=nm.Fields.harvest_year)
+            .agg({nm.Fields.present: np.sum})
+        )
+        recovered_in_use = recovered_in_use.rename(columns={nm.Fields.present: P(nm.Fields.recycled)})
+        self.results.recovered_in_use = recovered_in_use
+
+        # Get landfill present
+        landfill_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.landfills][
+            nm.Fields.discard_destination_id
+        ].iloc[0]
+        in_landfills = (
+            results.loc[results[nm.Fields.discard_destination_id] == landfill_id, df_keys]
+            .drop_duplicates()
+            .groupby(by=nm.Fields.harvest_year)
+            .agg({nm.Fields.present: np.sum})
+        )
+        in_landfills = in_landfills.rename(columns={nm.Fields.present: P(nm.Fields.landfills)})
+        self.results.in_landfills = in_landfills
+
+        # Finally get dump amount present
+        dump_id = discard_destinations[discard_destinations[nm.Fields.discard_description] == nm.Fields.dumps][nm.Fields.discard_destination_id].iloc[
+            0
+        ]
+        in_dumps = (
+            results.loc[results[nm.Fields.discard_destination_id] == dump_id, df_keys]
+            .drop_duplicates()
+            .groupby(by=nm.Fields.harvest_year)
+            .agg({nm.Fields.present: np.sum})
+        )
+        in_dumps = in_dumps.rename(columns={nm.Fields.present: P(nm.Fields.dumps)})
+        self.results.in_dumps = in_dumps
+
+        # TODO not so suspicious after all
+        fuelwood = self.results.fuelwood
+        fuelwood = fuelwood.groupby(by=nm.Fields.harvest_year).agg({nm.Fields.emitted: np.sum})
+        fuelwood = fuelwood.rename(columns={nm.Fields.emitted: E(nm.Fields.fuel)})
+        self.results.fuelwood = fuelwood
+
+        # Collect all the emissions to be converted to CO2e. HISTORICALLY this was only for emissions, but not everything needs to be in CO2e...
+        df_keys = [nm.Fields.harvest_year, nm.Fields.emitted]
+        landfills_emitted = (
+            results.loc[results[nm.Fields.discard_destination_id] == landfill_id, df_keys]
+            .drop_duplicates()
+            .groupby(by=nm.Fields.harvest_year)
+            .agg({nm.Fields.emitted: np.sum})
+        )
+        landfills_emitted = landfills_emitted.rename(columns={nm.Fields.emitted: E(nm.Fields.landfills)})
+        dumps_emitted = (
+            results.loc[results[nm.Fields.discard_destination_id] == dump_id, df_keys]
+            .groupby(by=nm.Fields.harvest_year)
+            .agg({nm.Fields.emitted: np.sum})
+        )
+        dumps_emitted = dumps_emitted.rename(columns={nm.Fields.emitted: E(nm.Fields.dumps)})
+        recycled_emitted = (
+            results.loc[results[nm.Fields.discard_destination_id] == recycled_id, df_keys]
+            .drop_duplicates()
+            .groupby(by=nm.Fields.harvest_year)
+            .agg({nm.Fields.emitted: np.sum})
+        )
+        recycled_emitted = recycled_emitted.rename(columns={nm.Fields.emitted: E(nm.Fields.recycled)})
+        burned_emitted = burned
+        compost_emitted = composted
+
+        # self.results.emissions = {'fuelwood': fuelwood, 'landfills_emitted': landfills_emitted, 'dumps_emitted': dumps_emitted, 'recycled_emitted': recycled_emitted, 'burned_emitted': burned_emitted, 'compost_emitted': compost_emitted}
+
+        # Merge up all the present dispositions
+        all_in_use = products_in_use.merge(recovered_in_use, how="inner", on=nm.Fields.harvest_year).drop_duplicates()
+        all_in_use = all_in_use.merge(in_landfills, how="inner", on=nm.Fields.harvest_year).drop_duplicates()
+        all_in_use = all_in_use.merge(in_dumps, how="inner", on=nm.Fields.harvest_year).drop_duplicates()
+        # SWDS is just the sum of landfills and dumps. Compost gets emitted, recycled is kinda "in use", and burned is directly emitted
+        all_in_use[P(nm.Fields.swds)] = all_in_use[[P(nm.Fields.landfills), P(nm.Fields.dumps)]].sum(axis=1)
+        self.results.all_in_use = all_in_use
+
+        # Merge up all the emissions
+        all_emitted = landfills_emitted.merge(dumps_emitted, how="inner", on=nm.Fields.harvest_year).drop_duplicates()
+        all_emitted = all_emitted.merge(recycled_emitted, how="inner", on=nm.Fields.harvest_year).drop_duplicates()
+        all_emitted = all_emitted.merge(burned_emitted, how="inner", on=nm.Fields.harvest_year).drop_duplicates()
+        all_emitted = all_emitted.merge(compost_emitted, how="inner", on=nm.Fields.harvest_year).drop_duplicates()
+        all_emitted[nm.Fields.emitted_all] = all_emitted.sum(axis=1)
+        self.results.all_emitted = all_emitted
+
+        self.results.total_all_dispositions = all_in_use.merge(all_emitted, how="inner", on=nm.Fields.harvest_year).drop_duplicates()
+
+        self.results.working_table = results
+
+        return
+
+    def convert_c02_e(self):
+        C = nm.Fields.c
+        CO2 = nm.Fields.co2
+        P = nm.Fields.ppresent
+        E = nm.Fields.eemitted
+
+        total_all_dispositions = self.results.total_all_dispositions
+
+        # Pull in fuel here too... I think it needs converting just like the rest
+        total_all_dispositions = total_all_dispositions.merge(self.results.fuelwood, on=nm.Fields.harvest_year)
+        total_all_dispositions_co2e = total_all_dispositions.apply(self.c_to_co2e, axis=1)
+
+        total_all_dispositions = total_all_dispositions.rename(lambda x: C(x), axis=1)
+        total_all_dispositions_co2e = total_all_dispositions_co2e.rename(lambda x: CO2(x), axis=1)
+
+        total_all_dispositions = total_all_dispositions.merge(total_all_dispositions_co2e, on=nm.Fields.harvest_year)
+
+        # Treat the self.results.annual_timber_products before merging to only get the relevant information
+        tmbr = self.results.annual_timber_products
+        tmbr[C(nm.Fields.primary_product_sum)] = tmbr[nm.Fields.primary_product_results].cumsum()
+        tmbr[CO2(nm.Fields.primary_product_sum)] = tmbr[C(nm.Fields.primary_product_sum)].apply(self.c_to_co2e)
+
+        # Merge the harvest results into the totals table
+        df_keys = [
+            nm.Fields.harvest_year,
+            C(nm.Fields.primary_product_sum),
+            CO2(nm.Fields.primary_product_sum),
+        ]
+        total_all_dispositions = tmbr[df_keys].merge(total_all_dispositions, on=nm.Fields.harvest_year)
+
+        df_keys = [
+            nm.Fields.harvest_year,
+            C(nm.Fields.primary_product_sum),
+            CO2(nm.Fields.primary_product_sum),
+            C(nm.Fields.products_in_use),
+            CO2(nm.Fields.products_in_use),
+            C(P(nm.Fields.recycled)),
+            CO2(P(nm.Fields.recycled)),
+            C(P(nm.Fields.swds)),
+            CO2(P(nm.Fields.swds)),
+            C(nm.Fields.emitted_all),
+            CO2(nm.Fields.emitted_all),
+        ]
+
+        df_carbon = [
+            C(nm.Fields.primary_product_sum),
+            C(nm.Fields.products_in_use),
+            C(P(nm.Fields.recycled)),
+            C(P(nm.Fields.swds)),
+            C(nm.Fields.emitted_all),
+        ]
+
+        big_table = total_all_dispositions[df_keys].drop_duplicates()
+        big_table[nm.Fields.accounted] = big_table[df_carbon].sum(axis=1)
+        big_table[nm.Fields.error] = big_table[C(nm.Fields.primary_product_sum)] - big_table[nm.Fields.accounted]
+
+        big_table["pct_error"] = big_table[nm.Fields.error] / big_table[nm.Fields.accounted]
+
+        self.results.big_table = big_table
+        self.results.total_all_dispositions = total_all_dispositions
+
+        # self.results.big_table.to_csv('x_big_table.csv')
+        # self.results.total_all_dispositions.to_csv('x_total_all.csv')
+        # self.results.working_table.to_csv('x_working.csv')
+
+        return
+
+    def final_table(self):
+
+        final = self.results.fuelwood.merge(self.results.total_all_dispositions, on=nm.Fields.harvest_year)
+
+        C = nm.Fields.c
+        CO2 = nm.Fields.co2
+        CHANGE = nm.Fields.change
+        P = nm.Fields.ppresent
+        E = nm.Fields.eemitted
+
+        final[CHANGE(C(E(nm.Fields.fuel)))] = final[C(E(nm.Fields.fuel))].diff()
+        final[CHANGE(C(nm.Fields.emitted_all))] = final[C(nm.Fields.emitted_all)].diff()
+        final[CHANGE(C(nm.Fields.products_in_use))] = final[C(nm.Fields.products_in_use)].diff()
+        final[CHANGE(C(P(nm.Fields.swds)))] = final[C(P(nm.Fields.swds))].diff()
+
+        final[CHANGE(CO2(E(nm.Fields.fuel)))] = final[CO2(E(nm.Fields.fuel))].diff()
+        final[CHANGE(CO2(nm.Fields.emitted_all))] = final[CO2(nm.Fields.emitted_all)].diff()
+        final[CHANGE(CO2(nm.Fields.products_in_use))] = final[CO2(nm.Fields.products_in_use)].diff()
+        final[CHANGE(CO2(P(nm.Fields.swds)))] = final[CO2(P(nm.Fields.swds))].diff()
+
+        self.results.final = final
+
+        self.results.big_table.to_csv("x_big_table.csv")
+        self.results.total_all_dispositions.to_csv("x_total_all.csv")
+        self.results.working_table.to_csv("x_working.csv")
+        self.results.final.to_csv("x_final.csv")
+
+        return
+
     def save_output(self):
         self.save_user_inputs()
         self.save_results()
@@ -178,36 +422,36 @@ class Results(pickler.Pickler):
         E = nm.Fields.eemitted
 
         # CUMULATIVE DISCARDED PRODUCTS
-        cum_products = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(nm.Fields.products_in_use)]]
-        self.generate_graph(
-            cum_products,
-            cum_products[nm.Fields.co2(nm.Fields.products_in_use)],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.5,
-            "Total Cumulative Carbon in End Use Products in Use",
-            "Total cumulative metric tons carbon stored in end-use products in use manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". The recalcitrance of carbon in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products in use pool in a given inventory year includes products in use and recovered products. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_end_use_products",
-            "Metric Tons CO2e",
-        )
+        # cum_products = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(nm.Fields.products_in_use)]]
+        # self.generate_graph(
+        #     cum_products,
+        #     cum_products[nm.Fields.co2(nm.Fields.products_in_use)],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.5,
+        #     "Total Cumulative Carbon in End Use Products in Use",
+        #     "Total cumulative metric tons carbon stored in end-use products in use manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". The recalcitrance of carbon in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products in use pool in a given inventory year includes products in use and recovered products. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_end_use_products",
+        #     "Metric Tons CO2e",
+        # )
 
-        self.generate_graph_no_caption(
-            cum_products,
-            cum_products[nm.Fields.co2(nm.Fields.products_in_use)],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.5,
-            "Total Cumulative Carbon in End Use Products in Use",
-            "Total cumulative metric tons carbon stored in end-use products in use manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". The recalcitrance of carbon in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products in use pool in a given inventory year includes products in use and recovered products. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_end_use_products",
-            "Metric Tons CO2e",
-        )
+        # self.generate_graph_no_caption(
+        #     cum_products,
+        #     cum_products[nm.Fields.co2(nm.Fields.products_in_use)],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.5,
+        #     "Total Cumulative Carbon in End Use Products in Use",
+        #     "Total cumulative metric tons carbon stored in end-use products in use manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". The recalcitrance of carbon in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products in use pool in a given inventory year includes products in use and recovered products. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_end_use_products",
+        #     "Metric Tons CO2e",
+        # )
 
         # CUMULATIVE  PRESENT RECOVERED PRODUCTS CARBON CO2E
         recycled_carbon = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.recycled))]]
@@ -337,292 +581,292 @@ class Results(pickler.Pickler):
             "Metric Tons CO2e",
         )
 
-        # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
-        burned_wo_energy_capture_emit = burned_wo_energy_capture[nm.Fields.emitted]
-        self.generate_graph(
-            burned_wo_energy_capture_emit,
-            burned_wo_energy_capture_emit,
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.4,
-            "Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture",
-            "Total cumulative metric tons carbon emitted from burning discarded products without energy capture manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon emiited from burned discarded products is assumed to be emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "burned_wo_energy_capture_emit",
-            "Metric Tons CO2e",
-        )
+        # # CUMULATIVE EMIT FROM DISCARD PRODUCTS WITH ENERGY CAPTURE (FUEL)
+        # burned_wo_energy_capture_emit = burned_wo_energy_capture[nm.Fields.emitted]
+        # self.generate_graph(
+        #     burned_wo_energy_capture_emit,
+        #     burned_wo_energy_capture_emit,
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.4,
+        #     "Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture",
+        #     "Total cumulative metric tons carbon emitted from burning discarded products without energy capture manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon emiited from burned discarded products is assumed to be emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "burned_wo_energy_capture_emit",
+        #     "Metric Tons CO2e",
+        # )
 
-        self.generate_graph_no_caption(
-            burned_wo_energy_capture_emit,
-            burned_wo_energy_capture_emit,
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.4,
-            "Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture",
-            "Total cumulative metric tons carbon emitted from burning discarded products without energy capture manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon emiited from burned discarded products is assumed to be emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "burned_wo_energy_capture_emit",
-            "Metric Tons CO2e",
-        )
+        # self.generate_graph_no_caption(
+        #     burned_wo_energy_capture_emit,
+        #     burned_wo_energy_capture_emit,
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.4,
+        #     "Total Cumulative Carbon Emitted from Burning Discard Products \n without Energy Capture",
+        #     "Total cumulative metric tons carbon emitted from burning discarded products without energy capture manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon emiited from burned discarded products is assumed to be emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "burned_wo_energy_capture_emit",
+        #     "Metric Tons CO2e",
+        # )
 
-        # CUMULATIVE DISCARD COMPOST CO2E
-        composted_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.composted))]]
-        self.generate_graph(
-            composted_emit,
-            composted_emit[nm.Fields.co2(E(nm.Fields.composted))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon Emitted from Compost",
-            "Total cumulative metric tons carbon emitted from composted discarded harvested wood products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other greenhouse gases such as methane.",
-            "total_composted_carbon_emitted",
-            "Metric Tons CO2e",
-        )
+        # # CUMULATIVE DISCARD COMPOST CO2E
+        # composted_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.composted))]]
+        # self.generate_graph(
+        #     composted_emit,
+        #     composted_emit[nm.Fields.co2(E(nm.Fields.composted))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon Emitted from Compost",
+        #     "Total cumulative metric tons carbon emitted from composted discarded harvested wood products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other greenhouse gases such as methane.",
+        #     "total_composted_carbon_emitted",
+        #     "Metric Tons CO2e",
+        # )
 
-        self.generate_graph_no_caption(
-            composted_emit,
-            composted_emit[nm.Fields.co2(E(nm.Fields.composted))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.5,
-            "Total Cumulative Carbon Emitted from Compost",
-            "Total cumulative metric tons carbon emitted from composted discarded harvested wood products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other greenhouse gases such as methane.",
-            "total_composted_carbon_emitted",
-            "Metric Tons CO2e",
-        )
+        # self.generate_graph_no_caption(
+        #     composted_emit,
+        #     composted_emit[nm.Fields.co2(E(nm.Fields.composted))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.5,
+        #     "Total Cumulative Carbon Emitted from Compost",
+        #     "Total cumulative metric tons carbon emitted from composted discarded harvested wood products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other greenhouse gases such as methane.",
+        #     "total_composted_carbon_emitted",
+        #     "Metric Tons CO2e",
+        # )
 
-        # CUMULATIVE DISCARD LANDFILL CARBON CO2E
-        landfills_carbon = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.landfills))]]
-        self.generate_graph(
-            landfills_carbon,
-            landfills_carbon[nm.Fields.co2(P(nm.Fields.landfills))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon in Landfills",
-            "Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_landfills_carbon_co2e",
-            "Metric Tons CO2e",
-        )
+        # # CUMULATIVE DISCARD LANDFILL CARBON CO2E
+        # landfills_carbon = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.landfills))]]
+        # self.generate_graph(
+        #     landfills_carbon,
+        #     landfills_carbon[nm.Fields.co2(P(nm.Fields.landfills))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon in Landfills",
+        #     "Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_landfills_carbon_co2e",
+        #     "Metric Tons CO2e",
+        # )
 
-        self.generate_graph_no_caption(
-            landfills_carbon,
-            landfills_carbon[nm.Fields.co2(P(nm.Fields.landfills))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon in Landfills",
-            "Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_landfills_carbon_co2e",
-            "Metric Tons CO2e",
-        )
+        # self.generate_graph_no_caption(
+        #     landfills_carbon,
+        #     landfills_carbon[nm.Fields.co2(P(nm.Fields.landfills))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon in Landfills",
+        #     "Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_landfills_carbon_co2e",
+        #     "Metric Tons CO2e",
+        # )
 
-        # CUMULATIVE DISCARD LANDFILL CARBON MGC
-        landfills_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.landfills))]]
-        self.generate_graph(
-            landfills_carbon_mgc,
-            landfills_carbon_mgc[nm.Fields.mgc(P(nm.Fields.landfills))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon in Landfills",
-            "Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool.",
-            "total_landfills_carbon_mgc",
-            "Megagrams Carbon",
-        )
+        # # CUMULATIVE DISCARD LANDFILL CARBON MGC
+        # landfills_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.landfills))]]
+        # self.generate_graph(
+        #     landfills_carbon_mgc,
+        #     landfills_carbon_mgc[nm.Fields.mgc(P(nm.Fields.landfills))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon in Landfills",
+        #     "Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool.",
+        #     "total_landfills_carbon_mgc",
+        #     "Megagrams Carbon",
+        # )
 
-        self.generate_graph_no_caption(
-            landfills_carbon_mgc,
-            landfills_carbon_mgc[nm.Fields.mgc(P(nm.Fields.landfills))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon in Landfills",
-            "Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool.",
-            "total_landfills_carbon_mgc",
-            "Megagrams Carbon",
-        )
+        # self.generate_graph_no_caption(
+        #     landfills_carbon_mgc,
+        #     landfills_carbon_mgc[nm.Fields.mgc(P(nm.Fields.landfills))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon in Landfills",
+        #     "Total cumulative metric tons carbon stored in landfills from discarded products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool.",
+        #     "total_landfills_carbon_mgc",
+        #     "Megagrams Carbon",
+        # )
 
-        # CUMULATIVE DISCARD LANDFILL CO2E
-        landfills_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.landfills))]]
-        self.generate_graph(
-            landfills_emit,
-            landfills_emit[nm.Fields.co2(E(nm.Fields.landfills))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon Emitted from Landfills",
-            "Total cumulative metric tons carbon emitted from discarded produts in landfills manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon emitted from discarded wood and paper products in landfills is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Carbon emissions are displayed in usnits of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_landfills_carbon_emitted",
-            "Metric Tons CO2e",
-        )
+        # # CUMULATIVE DISCARD LANDFILL CO2E
+        # landfills_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.landfills))]]
+        # self.generate_graph(
+        #     landfills_emit,
+        #     landfills_emit[nm.Fields.co2(E(nm.Fields.landfills))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon Emitted from Landfills",
+        #     "Total cumulative metric tons carbon emitted from discarded produts in landfills manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon emitted from discarded wood and paper products in landfills is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Carbon emissions are displayed in usnits of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_landfills_carbon_emitted",
+        #     "Metric Tons CO2e",
+        # )
 
-        self.generate_graph_no_caption(
-            landfills_emit,
-            landfills_emit[nm.Fields.co2(E(nm.Fields.landfills))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.5,
-            "Total Cumulative Carbon Emitted from Landfills",
-            "Total cumulative metric tons carbon emitted from discarded produts in landfills manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon emitted from discarded wood and paper products in landfills is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Carbon emissions are displayed in usnits of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_landfills_carbon_emitted",
-            "Metric Tons CO2e",
-        )
+        # self.generate_graph_no_caption(
+        #     landfills_emit,
+        #     landfills_emit[nm.Fields.co2(E(nm.Fields.landfills))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.5,
+        #     "Total Cumulative Carbon Emitted from Landfills",
+        #     "Total cumulative metric tons carbon emitted from discarded produts in landfills manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon emitted from discarded wood and paper products in landfills is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Carbon emissions are displayed in usnits of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_landfills_carbon_emitted",
+        #     "Metric Tons CO2e",
+        # )
 
-        # CUMULATIVE DISCARD DUMPS CARBON CO2E
-        dumps_carbon = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.dumps))]]
-        self.generate_graph(
-            dumps_carbon,
-            dumps_carbon[nm.Fields.co2(P(nm.Fields.dumps))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon in Dumps",
-            "Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_dumps_carbon_co2e",
-            "Metric Tons CO2e",
-        )
+        # # CUMULATIVE DISCARD DUMPS CARBON CO2E
+        # dumps_carbon = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(P(nm.Fields.dumps))]]
+        # self.generate_graph(
+        #     dumps_carbon,
+        #     dumps_carbon[nm.Fields.co2(P(nm.Fields.dumps))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon in Dumps",
+        #     "Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_dumps_carbon_co2e",
+        #     "Metric Tons CO2e",
+        # )
 
-        self.generate_graph_no_caption(
-            dumps_carbon,
-            dumps_carbon[nm.Fields.co2(P(nm.Fields.dumps))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.45,
-            "Total Cumulative Carbon in Dumps",
-            "Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_dumps_carbon_co2e",
-            "Metric Tons CO2e",
-        )
+        # self.generate_graph_no_caption(
+        #     dumps_carbon,
+        #     dumps_carbon[nm.Fields.co2(P(nm.Fields.dumps))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.45,
+        #     "Total Cumulative Carbon in Dumps",
+        #     "Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_dumps_carbon_co2e",
+        #     "Metric Tons CO2e",
+        # )
 
-        # CUMULATIVE DISCARD DUMPS CARBON MGC
-        dumps_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.dumps))]]
-        self.generate_graph(
-            dumps_carbon_mgc,
-            dumps_carbon_mgc[nm.Fields.mgc(P(nm.Fields.dumps))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon in Dumps",
-            "Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills.",
-            "total_dumps_carbon_mgc",
-            "Megagrams Carbon",
-        )
+        # # CUMULATIVE DISCARD DUMPS CARBON MGC
+        # dumps_carbon_mgc = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.mgc(P(nm.Fields.dumps))]]
+        # self.generate_graph(
+        #     dumps_carbon_mgc,
+        #     dumps_carbon_mgc[nm.Fields.mgc(P(nm.Fields.dumps))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon in Dumps",
+        #     "Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills.",
+        #     "total_dumps_carbon_mgc",
+        #     "Megagrams Carbon",
+        # )
 
-        self.generate_graph_no_caption(
-            dumps_carbon_mgc,
-            dumps_carbon_mgc[nm.Fields.mgc(P(nm.Fields.dumps))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.45,
-            "Total Cumulative Carbon in Dumps",
-            "Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills.",
-            "total_dumps_carbon_mgc",
-            "Megagrams Carbon",
-        )
+        # self.generate_graph_no_caption(
+        #     dumps_carbon_mgc,
+        #     dumps_carbon_mgc[nm.Fields.mgc(P(nm.Fields.dumps))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.45,
+        #     "Total Cumulative Carbon in Dumps",
+        #     "Total cumulative metric tons carbon stored in dumps from discarded products manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills.",
+        #     "total_dumps_carbon_mgc",
+        #     "Megagrams Carbon",
+        # )
 
-        # CUMULATIVE DISCARD DUMPS CO2E
-        dumps_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.dumps))]]
-        self.generate_graph(
-            dumps_emit,
-            dumps_emit[nm.Fields.co2(E(nm.Fields.dumps))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon Emitted from Dumps",
-            "Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_dumps_carbon_emitted",
-            "Metric Tons CO2e",
-        )
+        # # CUMULATIVE DISCARD DUMPS CO2E
+        # dumps_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.dumps))]]
+        # self.generate_graph(
+        #     dumps_emit,
+        #     dumps_emit[nm.Fields.co2(E(nm.Fields.dumps))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon Emitted from Dumps",
+        #     "Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_dumps_carbon_emitted",
+        #     "Metric Tons CO2e",
+        # )
 
-        self.generate_graph_no_caption(
-            dumps_emit,
-            dumps_emit[nm.Fields.co2(E(nm.Fields.dumps))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.5,
-            "Total Cumulative Carbon Emitted from Dumps",
-            "Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_dumps_carbon_emitted",
-            "Metric Tons CO2e",
-        )
+        # self.generate_graph_no_caption(
+        #     dumps_emit,
+        #     dumps_emit[nm.Fields.co2(E(nm.Fields.dumps))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.5,
+        #     "Total Cumulative Carbon Emitted from Dumps",
+        #     "Total cumulative metric tons carbon emitted from discarded products in dumps manufactured from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_dumps_carbon_emitted",
+        #     "Metric Tons CO2e",
+        # )
 
-        fuelwood_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.fuel))]]
-        self.generate_graph(
-            fuelwood_emit,
-            fuelwood_emit[nm.Fields.co2(E(nm.Fields.fuel))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.35,
-            "Total Cumulative Carbon Emitted from Fuelwood with Energy Capture",
-            "Total cumulative metric tons carbon emitted from fuelwood and wood waste used for fuel with energy capture from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_fuelwood_carbon_emitted",
-            "Metric Tons CO2e",
-        )
+        # fuelwood_emit = total_all_dispositions[[nm.Fields.harvest_year, nm.Fields.co2(E(nm.Fields.fuel))]]
+        # self.generate_graph(
+        #     fuelwood_emit,
+        #     fuelwood_emit[nm.Fields.co2(E(nm.Fields.fuel))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.35,
+        #     "Total Cumulative Carbon Emitted from Fuelwood with Energy Capture",
+        #     "Total cumulative metric tons carbon emitted from fuelwood and wood waste used for fuel with energy capture from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_fuelwood_carbon_emitted",
+        #     "Metric Tons CO2e",
+        # )
 
-        self.generate_graph_no_caption(
-            fuelwood_emit,
-            fuelwood_emit[nm.Fields.co2(E(nm.Fields.fuel))],
-            total_all_dispositions[nm.Fields.harvest_year],
-            0.5,
-            "Total Cumulative Carbon Emitted from Fuelwood with Energy Capture",
-            "Total cumulative metric tons carbon emitted from fuelwood and wood waste used for fuel with energy capture from total timber harvested from "
-            + str(total_all_dispositions[nm.Fields.harvest_year].min())
-            + " to "
-            + str(total_all_dispositions[nm.Fields.harvest_year].max())
-            + ". Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
-            "total_fuelwood_carbon_emitted",
-            "Metric Tons CO2e",
-        )
+        # self.generate_graph_no_caption(
+        #     fuelwood_emit,
+        #     fuelwood_emit[nm.Fields.co2(E(nm.Fields.fuel))],
+        #     total_all_dispositions[nm.Fields.harvest_year],
+        #     0.5,
+        #     "Total Cumulative Carbon Emitted from Fuelwood with Energy Capture",
+        #     "Total cumulative metric tons carbon emitted from fuelwood and wood waste used for fuel with energy capture from total timber harvested from "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].min())
+        #     + " to "
+        #     + str(total_all_dispositions[nm.Fields.harvest_year].max())
+        #     + ". Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Carbon emissions are displayed in units of carbon dioxide equivalent (CO2e) and do not include other carbon-based greenhouse gases such as methane.",
+        #     "total_fuelwood_carbon_emitted",
+        #     "Metric Tons CO2e",
+        # )
 
         # ALL DISPOSITIONS
         with tempfile.TemporaryFile() as temp:
