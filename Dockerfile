@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.9.12-slim
 
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
@@ -11,6 +11,9 @@ COPY . ./
 # Install production dependencies.
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 8786
+EXPOSE 8787
 
 # Run the web service on container startup. Here we use the gunicorn
 # webserver, with one worker process and 8 threads.

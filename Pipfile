@@ -7,13 +7,13 @@ name = "pypi"
 bokeh = "*"
 boto3 = {extras = ["crt"], version = "*"}
 dask = {extras = ["dataframe", "distributed"], version = "*"}
-dask-cloudprovider = "*"
 flask = "*"
 numpy = "*"
 pandas = "*"
 python-dotenv = "*"
 sendgrid = "*"
 xarray = "*"
+dask-cloudprovider = {extras = ["aws"], version = "*"}
 
 [dev-packages]
 black = {extras = ["jupyter"], version = "*"}

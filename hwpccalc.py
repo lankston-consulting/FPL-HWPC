@@ -1,7 +1,9 @@
 import config
+import traceback
 
-from hwpc import model
-from hwpc import input_download
+from hwpc import meta
+
+# from hwpc import input_download
 from hwpc import names
 
 # from hwpc import email
@@ -19,9 +21,13 @@ def run(path="hpwc-user-inputs/c6f40afe-b532-49d1-96e1-c45898a50e35", name="cali
 
     # i = input_download.InputDownload()
     # i.downloads()
-    me = model.Meta()
+    me = meta.Meta()
 
-    me.run_simulation_dask()
+    try:
+        me.run_simulation()
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
 
     # e = email.Email()
     # e.send_email(str(m.md.data['email'].columns.values[0]))
