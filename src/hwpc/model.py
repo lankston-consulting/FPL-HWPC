@@ -6,6 +6,7 @@ import xarray as xr
 
 from hwpc.names import Names as nm
 
+
 recurse_limit = 2
 first_recycle_year = 1980  # TODO make this dynamic
 
@@ -71,7 +72,7 @@ class Model(object):
             working_table = Model.calculate_end_use_products(working_table)
             working_table = Model.calculate_products_in_use(md, working_table)
         else:
-            working_table = recycled        
+            working_table = recycled
 
         working_table = Model.calculate_discarded_dispositions(md, working_table)
         working_table = Model.calculate_dispositions(harvests, lineage, md, working_table)
@@ -302,3 +303,7 @@ class Model(object):
             recycled_futures = Model.model_factory(model_data=md, harvest_init=harvests, recycled=recycled, lineage=lineage)
 
         return final_dispositions, recycled_futures
+
+
+if __name__ == "__main__":
+    print("Local test")

@@ -1,7 +1,7 @@
 import config
 import traceback
 
-from hwpc import meta
+import meta_model
 
 # from hwpc import input_download
 from hwpc import names
@@ -21,7 +21,7 @@ def run(path="hpwc-user-inputs/c6f40afe-b532-49d1-96e1-c45898a50e35", name="cali
 
     # i = input_download.InputDownload()
     # i.downloads()
-    me = meta.Meta()
+    me = meta_model.MetaModel()
 
     try:
         me.run_simulation()

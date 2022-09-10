@@ -4,7 +4,7 @@ import shutil
 
 from dotenv import load_dotenv
 
-from config import gch
+from src.config import gch
 
 from hwpc.names import Names as nm
 

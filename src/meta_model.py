@@ -11,12 +11,12 @@ from hwpc.names import Names as nm
 from utils import singleton
 
 
-class Meta(singleton.Singleton):
+class MetaModel(singleton.Singleton):
     def __new__(cls, *args, **kwargs):
-        if Meta._instance is None:
+        if MetaModel._instance is None:
             super().__new__(cls, args, kwargs)
 
-            Meta.cluster = LocalCluster(n_workers=8, processes=True)
+            MetaModel.cluster = LocalCluster(n_workers=8, processes=True)
 
             # Meta.cluster = FargateCluster(
             #     image = "234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
@@ -28,13 +28,13 @@ class Meta(singleton.Singleton):
             #     n_workers = 8
             # )
 
-            Meta.cluster.adapt(minimum=8, maximum=30, wait_count=6)
+            MetaModel.cluster.adapt(minimum=8, maximum=30, wait_count=6)
 
-            Meta.client = Client(Meta.cluster)
+            MetaModel.client = Client(MetaModel.cluster)
 
-            Meta.lock = Lock("plock")
+            MetaModel.lock = Lock("plock")
 
-            print(Meta.client)
+            print(MetaModel.client)
 
         return cls._instance
 
@@ -59,26 +59,26 @@ class Meta(singleton.Singleton):
                 r, r_futures = f.result()
                 ykey = r.lineage[0]
                 if ykey in year_ds_col_all:
-                    year_ds_col_all[ykey] = Meta.aggregate_results(year_ds_col_all[ykey], r)
+                    year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
                 else:
                     year_ds_col_all[ykey] = r
 
                 if ds_all is None:
                     ds_all = r
                 else:
-                    ds_all = Meta.aggregate_results(ds_all, r)
+                    ds_all = MetaModel.aggregate_results(ds_all, r)
 
                 # Save the recycled materials on their own for reporting
                 if len(r.lineage) > 1:
                     if ykey in year_ds_col_rec:
-                        year_ds_col_rec[ykey] = Meta.aggregate_results(year_ds_col_rec[ykey], r)
+                        year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
                     else:
                         year_ds_col_rec[ykey] = r
 
                     if ds_rec is None:
                         ds_rec = r
                     else:
-                        ds_rec = Meta.aggregate_results(ds_rec, r)
+                        ds_rec = MetaModel.aggregate_results(ds_rec, r)
 
                 if r_futures:
                     ac.update(r_futures)
@@ -93,11 +93,11 @@ class Meta(singleton.Singleton):
                 print("Model run time", f"{(timeit.default_timer() - s) / 60} minutes")
                 print("===========================")
 
-            m = Meta.make_results(ds_all, save=True)
+            m = MetaModel.make_results(ds_all, save=True)
             for y in year_ds_col_all:
-                m = Meta.make_results(year_ds_col_all[y], prefix=str(y), save=True)
+                m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
         except Exception as e:
-            Meta.cluster.close()
+            MetaModel.cluster.close()
             print(e)
             traceback.print_exc()
         return
@@ -105,7 +105,7 @@ class Meta(singleton.Singleton):
     @staticmethod
     def aggregate_results(src_ds, new_ds):
         if src_ds.lineage[-1] > new_ds.lineage[-1]:
-            return Meta.aggregate_results(new_ds, src_ds)
+            return MetaModel.aggregate_results(new_ds, src_ds)
 
         new_ds = new_ds.merge(src_ds, join="right", fill_value=0, compat="override")
         src_ds[nm.Fields.end_use_results] = src_ds[nm.Fields.end_use_results] + new_ds[nm.Fields.end_use_results]
@@ -163,20 +163,20 @@ class Meta(singleton.Singleton):
         )
 
         compost_emitted = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=2)].sum(dim=nm.Fields.end_use_id)
-        compost_emitted = Meta.c_to_co2e(compost_emitted)
+        compost_emitted = MetaModel.c_to_co2e(compost_emitted)
         compost_emitted.name = CO2(E(nm.Fields.composted))
         # compost_emitted = compost_emitted.cumsum()
 
         carbon_present_landfills = ds[nm.Fields.present].loc[dict(DiscardDestinationID=3)].sum(dim=nm.Fields.end_use_id)
         carbon_present_landfills.name = MGC(P(nm.Fields.landfills))
         carbon_emitted_landfills = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=3)].sum(dim=nm.Fields.end_use_id)
-        carbon_emitted_landfills = Meta.c_to_co2e(carbon_emitted_landfills)
+        carbon_emitted_landfills = MetaModel.c_to_co2e(carbon_emitted_landfills)
         carbon_emitted_landfills.name = CO2(E(nm.Fields.landfills))
 
         carbon_present_dumps = ds[nm.Fields.present].loc[dict(DiscardDestinationID=4)].sum(dim=nm.Fields.end_use_id)
         carbon_present_dumps.name = MGC(P(nm.Fields.landfills))
         carbon_emitted_dumps = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=4)].sum(dim=nm.Fields.end_use_id)
-        carbon_emitted_dumps = Meta.c_to_co2e(carbon_emitted_dumps)
+        carbon_emitted_dumps = MetaModel.c_to_co2e(carbon_emitted_dumps)
         carbon_emitted_dumps.name = CO2(E(nm.Fields.dumps))
 
         end_use_in_use = ds[nm.Fields.products_in_use].sum(dim=nm.Fields.end_use_id)
@@ -184,7 +184,7 @@ class Meta(singleton.Singleton):
 
         # TODO this is probably wrong (some should come from emitted probably...)
         burned_without_energy_capture = ds[nm.Fields.products_in_use].sum(dim=nm.Fields.end_use_id)
-        burned_without_energy_capture = Meta.c_to_co2e(burned_without_energy_capture)
+        burned_without_energy_capture = MetaModel.c_to_co2e(burned_without_energy_capture)
         burned_without_energy_capture.name = CO2(E(nm.Fields.burned_wo_energy_capture))
         # burned_without_energy_capture_cum = burned_without_energy_capture.cumsum()
         # TODO burned_with_energy_capture
@@ -192,7 +192,7 @@ class Meta(singleton.Singleton):
 
         # TODO do we need to carry over the PIU to Emitted for fuels?
         fuel_carbon_emitted = ds[nm.Fields.products_in_use].where(ds.data_vars[nm.Fields.fuel] == 1, drop=True).sum(dim=nm.Fields.end_use_id)
-        fuel_carbon_emitted = Meta.c_to_co2e(fuel_carbon_emitted)
+        fuel_carbon_emitted = MetaModel.c_to_co2e(fuel_carbon_emitted)
         fuel_carbon_emitted.name = CO2(E(nm.Fields.fuel))
         # fuel_carbon_emitted = fuel_carbon_emitted.cumsum()
 

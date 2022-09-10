@@ -52,10 +52,12 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         return
 
     @staticmethod
-    def load_data() -> None:
+    def load_data(path_override=None) -> None:
         """Read data into pandas DataFrames
         TODO Right now this just looks at default data
         """
+        if path_override is None:
+            path = "data/inputs.json"
         with open("data/inputs.json") as f:
             j = json.load(f)
             for k in j:
@@ -90,7 +92,6 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
         # Limit data here for testing
         dx = dx.where(dx.coords[nm.Fields.harvest_year] >= _debug_year, drop=True)
-        filtr = dx.coords[nm.Fields.harvest_year].values
 
         ModelData.data[nm.Tables.harvest] = dx
 

@@ -2,7 +2,7 @@ import pytest
 import unittest
 import sys
 
-from hwpccalc import model_data
+from src.hwpccalc import model_data
 
 
 class TestLookups(unittest.TestCase):
