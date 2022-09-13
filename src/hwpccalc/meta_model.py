@@ -1,12 +1,16 @@
 import timeit
 from dask.distributed import Client, LocalCluster, as_completed, Lock
 from dask_cloudprovider.aws import FargateCluster
+from io import BytesIO
 import traceback
 import xarray as xr
-
+import tempfile
+import zipfile
+import zlib
 from hwpc import model
 from hwpc import model_data
 from hwpc.names import Names as nm
+from utils.s3_helper import S3Helper
 
 from utils import singleton
 
@@ -206,23 +210,71 @@ class MetaModel(singleton.Singleton):
         cumulative_carbon_stocks[CHANGE(nm.Fields.swds)] = cumulative_carbon_stocks[nm.Fields.swds].diff(dim=nm.Fields.harvest_year)
 
         if save:
+            zip_buffer = BytesIO()
+        
+            zip = zipfile.ZipFile(zip_buffer, mode='w', compression=zipfile.ZIP_STORED, allowZip64=False)
+            # with tempfile.TemporaryFile() as temp:
+            # harvest_data.to_csv(temp)
+            # temp.seek(0)
+            # self.zip.writestr('harvest_data.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
             if len(prefix) > 1:
                 prefix = prefix + "_"
-            ds.to_dataframe().to_csv("output/" + prefix + "results.csv")
-            final.to_dataframe().to_csv("output/" + prefix + "final.csv")
-            annual_harvest_and_timber.to_dataframe().to_csv("output/" + prefix + "annual_harvest_and_timber_product_output.csv")
-            cumulative_carbon_stocks[[CHANGE(nm.Fields.products_in_use), CHANGE(nm.Fields.swds)]].to_dataframe().to_csv(
-                "output/" + prefix + "annual_net_change_carbon_stocks.csv"
-            )
-            burned_without_energy_capture.to_dataframe().to_csv("output/" + prefix + "burned_wo_energy_capture_emit.csv")
-            compost_emitted.to_dataframe().to_csv("output/" + prefix + "total_composted_carbon_emitted.csv")
-            cumulative_carbon_stocks[[nm.Fields.products_in_use, nm.Fields.swds]].to_dataframe().to_csv(
-                "output/" + prefix + "total_cumulative_carbon_stocks.csv"
-            )
-            carbon_emitted_dumps.to_dataframe().to_csv("output/" + prefix + "total_dumps_carbon_emitted.csv")
-            carbon_present_dumps.to_dataframe().to_csv("output/" + prefix + "total_dumps_carbon.csv")
-            end_use_in_use.to_dataframe().to_csv("output/" + prefix + "total_end_use_products.csv")
-            fuel_carbon_emitted.to_dataframe().to_csv("output/" + prefix + "total_fuelwood_carbon_emitted.csv")
-            carbon_emitted_landfills.to_dataframe().to_csv("output/" + prefix + "total_landfills_carbon_emitted.csv")
-            carbon_present_landfills.to_dataframe().to_csv("output/" + prefix + "total_landfills_carbon.csv")
+            with tempfile.TemporaryFile() as temp:
+                ds.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('results.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                final.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('final.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                annual_harvest_and_timber.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('annual_harvest_and_timber_product_output.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                cumulative_carbon_stocks[[CHANGE(nm.Fields.products_in_use), CHANGE(nm.Fields.swds)]].to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('annual_net_change_carbon_stocks.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                burned_without_energy_capture.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('burned_wo_energy_capture_emit.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                compost_emitted.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('total_composted_carbon_emitted.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:   
+                cumulative_carbon_stocks[[nm.Fields.products_in_use, nm.Fields.swds]].to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('total_cumulative_carbon_stocks.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:     
+                carbon_emitted_dumps.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('total_dumps_carbon_emitted.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                carbon_present_dumps.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('total_dumps_carbon.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                end_use_in_use.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('total_end_use_products.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                fuel_carbon_emitted.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('total_fuelwood_carbon_emitted.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                carbon_emitted_landfills.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('total_landfills_carbon_emitted.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:    
+                carbon_present_landfills.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr('total_landfills_carbon.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
+            
+            zip.close()
+            zip_buffer.seek(0)
+            S3Helper.upload_file(zip_buffer, 'hwpc', nm.Output.output_path + '/results/' + nm.Output.run_name + '.zip')
+
+                
         return
