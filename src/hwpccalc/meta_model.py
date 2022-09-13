@@ -16,23 +16,23 @@ class MetaModel(singleton.Singleton):
         if MetaModel._instance is None:
             super().__new__(cls, args, kwargs)
 
-            # MetaModel.cluster = LocalCluster(n_workers=8, processes=True)
+            MetaModel.cluster = LocalCluster(n_workers=8, processes=True)
 
-            MetaModel.cluster = FargateCluster(
-                image = "234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
-                scheduler_cpu = 4096,
-                scheduler_mem = 8192,
-                worker_cpu = 1024,
-                worker_nthreads = 2,
-                worker_mem = 2048,
-                n_workers = 1
-            )
+            # MetaModel.cluster = FargateCluster(
+            #     image = "234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
+            #     scheduler_cpu = 4096,
+            #     scheduler_mem = 8192,
+            #     worker_cpu = 1024,
+            #     worker_nthreads = 2,
+            #     worker_mem = 2048,
+            #     n_workers = 1
+            # )
 
             MetaModel.cluster.adapt(minimum=1, maximum=30, wait_count=6)
 
-            MetaModel.client = Client(MetaModel.cluster, serializers=["dask", "cloudpickle"], deserializers=["dask", "cloudpickle"])
+            MetaModel.client = Client(MetaModel.cluster, serializers=["dask", "cloudpickle"])
 
-            MetaModel.lock = Lock("plock")
+            # MetaModel.lock = Lock("plock")
 
             print(MetaModel.client)
 
@@ -56,7 +56,14 @@ class MetaModel(singleton.Singleton):
 
         try:
             for f in ac:
-                r, r_futures = f.result()
+                try:
+                    r, r_futures = f.result()
+                except:
+                    from hwpc import model
+                    from hwpc import model_data
+                    from hwpc.names import Names as nm
+                    r, r_futures = f.result()
+
                 ykey = r.lineage[0]
                 if ykey in year_ds_col_all:
                     year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
@@ -88,10 +95,10 @@ class MetaModel(singleton.Singleton):
 
             ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
 
-            with Lock("plock"):
-                print("===========================")
-                print("Model run time", f"{(timeit.default_timer() - s) / 60} minutes")
-                print("===========================")
+            # with Lock("plock"):
+            #     print("===========================")
+            #     print("Model run time", f"{(timeit.default_timer() - s) / 60} minutes")
+            #     print("===========================")
 
             m = MetaModel.make_results(ds_all, save=True)
             for y in year_ds_col_all:

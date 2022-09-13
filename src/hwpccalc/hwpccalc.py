@@ -23,11 +23,7 @@ def run(path="hpwc-user-inputs/c6f40afe-b532-49d1-96e1-c45898a50e35", name="cali
     # i.downloads()
     me = meta_model.MetaModel()
 
-    try:
-        me.run_simulation()
-    except Exception as e:
-        print(e)
-        traceback.print_exc()
+    me.run_simulation()
 
     # e = email.Email()
     # e.send_email(str(m.md.data['email'].columns.values[0]))

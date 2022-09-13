@@ -72,8 +72,8 @@ class Model(object):
     @staticmethod
     def run(md=None, harvests=None, recycled=None, lineage=None):
         client = get_client()
-        with Lock("plock"):
-            print("Lineage:", lineage)
+        # with Lock("plock"):
+        #     print("Lineage:", lineage)
 
         if recycled is None:
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
