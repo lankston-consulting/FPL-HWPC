@@ -1,6 +1,11 @@
-﻿DiscardDestinationID,Description,PaperHalfLife,WoodHalfLife
-0,Burned,0,0
-1,Recycled,2.6,2.6
-2,Composted,0,0
-3,Landfills,12.5,29
-4,Dumps,8.25,16.5
+﻿DiscardTypeID,TypeDescription,DiscardDestinationID,DestinationDescription,FixedRatio,HalfLife
+0,paper,0,Burned,0,0
+1,wood,0,Burned,0,0
+0,paper,1,Recycle,0,2.6
+1,wood,1,Recycle,0,2.6
+0,paper,2,Compost,0,0
+1,wood,2,Compost,0,0
+0,paper,3,Landfill,0.44,14.5
+1,wood,3,Landfill,0.77,29
+0,paper,4,Dump,0,8.25
+1,wood,4,Dump,0,16.5

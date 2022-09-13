@@ -139,9 +139,10 @@ dmypy.json
 .history/
 
 data/*
+output/*
 results/*
 x_*
 
-
+requirements.txt
 hwpc-sa.json
 

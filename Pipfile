@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+bokeh = "*"
+boto3 = {extras = ["crt"], version = "*"}
+cloudpickle = "*"
+dask = {extras = ["dataframe", "distributed"], version = "*"}
+flask = "*"
+numpy = "*"
+pandas = "*"
+python-dotenv = "*"
+sendgrid = "*"
+xarray = "*"
+dask-cloudprovider = {extras = ["aws"], version = "*"}
+
+[dev-packages]
+black = {version = "*"}
+pylama = "*"
+
+[requires]
+python_version = "3.9.14"

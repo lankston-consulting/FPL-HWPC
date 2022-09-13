@@ -1,0 +1,17 @@
+{
+    "harvest_data.csv":"default_data/harvest_data.csv",
+    "timber_products.csv":"default_data/timber_products.csv",
+    "timber_product_ratios.csv":"default_data/timber_product_ratios.csv",
+    "primary_products.csv":"default_data/primary_products.csv",
+    "primary_product_ratios.csv":"default_data/primary_product_ratios.csv",
+    "end_use_products.csv":"default_data/end_use_products.csv",
+    "end_use_product_ratios.csv":"default_data/end_use_product_ratios.csv",
+    "discard_burned_w_energy_capture.csv":"default_data/discard_burned_w_energy_capture.csv",
+    "discard_destinations.csv":"default_data/discard_destinations.csv",
+    "discard_destination_ratios.csv":"default_data/discard_destination_ratios.csv",
+    "parameters.csv":"default_data/parameters.csv",
+    "distribution_parameters.csv":"default_data/distribution_parameters.csv",
+    "id_lookup.csv":"default_data/id_lookup.csv",
+    "mbf_to_ccf_conversion.csv":"default_data/mbf_to_ccf_conversion.csv",
+    "regions.csv":"default_data/regions.csv"
+}

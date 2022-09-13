@@ -1,22 +1,22 @@
-﻿ID,Code,Description,RatioGroup
-1,01,"hardwood, sawtimber",1
-2,01,"softwood, sawtimber",1
-3,02,"hardwood, pulpwood",1
-4,02,"softwood, pulpwood",1
-5,03,"hardwood, poles",1
-6,03,"softwood, poles",1
-7,04,"hardwood, pilings",1
-8,04,"softwood, pilings",1
-9,05,"hardwood, mine props",1
-10,05,"softwood, mine props",1
-11,06,"hardwood, posts",1
-12,06,"softwood, posts",1
-13,07,"hardwood, fuelwood",1
-14,07,"softwood, fuelwood",1
-15,08,"hardwood, non-sawtimber",1
-16,08,"softwood, non-sawtimber",1
-17,09,"hardwood, ties",1
-18,09,"softwood, ties",1
+﻿TimberProductID,Code,Description,RatioGroup
+1,1,"hardwood, sawtimber",1
+2,1,"softwood, sawtimber",1
+3,2,"hardwood, pulpwood",1
+4,2,"softwood, pulpwood",1
+5,3,"hardwood, poles",1
+6,3,"softwood, poles",1
+7,4,"hardwood, pilings",1
+8,4,"softwood, pilings",1
+9,5,"hardwood, mine props",1
+10,5,"softwood, mine props",1
+11,6,"hardwood, posts",1
+12,6,"softwood, posts",1
+13,7,"hardwood, fuelwood",1
+14,7,"softwood, fuelwood",1
+15,8,"hardwood, non-sawtimber",1
+16,8,"softwood, non-sawtimber",1
+17,9,"hardwood, ties",1
+18,9,"softwood, ties",1
 19,10,"hardwood, coop bolts",1
 20,10,"softwood, coop bolts",1
 21,11,"hardwood, acid/dist.",1
