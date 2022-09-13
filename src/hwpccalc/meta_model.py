@@ -274,7 +274,7 @@ class MetaModel(singleton.Singleton):
             
             zip.close()
             zip_buffer.seek(0)
-            S3Helper.upload_file(zip_buffer, 'hwpc', nm.Output.output_path + '/results/' + nm.Output.run_name + '.zip')
+            S3Helper.upload_file(zip_buffer, 'hwpc-output', nm.Output.output_path + '/results/' + nm.Output.run_name + '.zip')
 
                 
         return
