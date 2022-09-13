@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 bokeh = "*"
 boto3 = {extras = ["crt"], version = "*"}
+cloudpickle = "*"
 dask = {extras = ["dataframe", "distributed"], version = "*"}
 flask = "*"
 numpy = "*"
@@ -16,10 +17,8 @@ xarray = "*"
 dask-cloudprovider = {extras = ["aws"], version = "*"}
 
 [dev-packages]
-black = {extras = ["jupyter"], version = "*"}
-ipykernel = "*"
-jupyter = "*"
+black = {version = "*"}
 pylama = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.9.14"

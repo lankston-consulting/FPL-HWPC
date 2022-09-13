@@ -16,21 +16,21 @@ class MetaModel(singleton.Singleton):
         if MetaModel._instance is None:
             super().__new__(cls, args, kwargs)
 
-            MetaModel.cluster = LocalCluster(n_workers=8, processes=True)
+            # MetaModel.cluster = LocalCluster(n_workers=8, processes=True)
 
-            # Meta.cluster = FargateCluster(
-            #     image = "234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
-            #     scheduler_cpu = 4096,
-            #     scheduler_mem = 8192,
-            #     worker_cpu = 1024,
-            #     worker_nthreads = 2,
-            #     worker_mem = 2048,
-            #     n_workers = 8
-            # )
+            MetaModel.cluster = FargateCluster(
+                image = "234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
+                scheduler_cpu = 4096,
+                scheduler_mem = 8192,
+                worker_cpu = 1024,
+                worker_nthreads = 2,
+                worker_mem = 2048,
+                n_workers = 1
+            )
 
-            MetaModel.cluster.adapt(minimum=8, maximum=30, wait_count=6)
+            MetaModel.cluster.adapt(minimum=1, maximum=30, wait_count=6)
 
-            MetaModel.client = Client(MetaModel.cluster)
+            MetaModel.client = Client(MetaModel.cluster, serializers=["dask", "cloudpickle"], deserializers=["dask", "cloudpickle"])
 
             MetaModel.lock = Lock("plock")
 

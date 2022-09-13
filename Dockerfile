@@ -1,12 +1,12 @@
-FROM python:3.9.12-slim
+FROM python:3.9.14
 
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
 ENV PORT 8080
 
-ENV APP_HOME /app
+ENV APP_HOME /hwpccalc
 WORKDIR $APP_HOME
-COPY . ./
+COPY ./hwpccalc ./
 
 # Install production dependencies.
 COPY requirements.txt requirements.txt

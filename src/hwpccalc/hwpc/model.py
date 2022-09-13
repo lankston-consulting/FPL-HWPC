@@ -1,10 +1,18 @@
 import math
 import numpy as np
 import timeit
+import cloudpickle
 from dask.distributed import get_client, Lock
 import xarray as xr
 
-from hwpc.names import Names as nm
+try:
+    from hwpc.names import Names as nm
+except:
+    import os
+    p = os.path.join(os.path.dirname(__file__), '..')
+    import sys
+    sys.path.append(p)
+    from hwpc.names import Names as nm
 
 
 recurse_limit = 2
@@ -305,5 +313,5 @@ class Model(object):
         return final_dispositions, recycled_futures
 
 
-if __name__ == "__main__":
-    print("Local test")
+# if __name__ == "__main__":
+#     print("Local test")
