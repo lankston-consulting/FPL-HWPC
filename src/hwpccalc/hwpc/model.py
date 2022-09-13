@@ -1,21 +1,24 @@
 import math
-import numpy as np
 import timeit
+
 import cloudpickle
-from dask.distributed import get_client, Lock
+import numpy as np
 import xarray as xr
+from dask.distributed import Lock, get_client
 
 try:
     from hwpc.names import Names as nm
 except:
     import os
-    p = os.path.join(os.path.dirname(__file__), '..')
+
+    p = os.path.join(os.path.dirname(__file__), "..")
     import sys
+
     sys.path.append(p)
     from hwpc.names import Names as nm
 
 
-recurse_limit = 2
+recurse_limit = 0
 first_recycle_year = 1980  # TODO make this dynamic
 
 
