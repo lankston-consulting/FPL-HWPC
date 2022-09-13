@@ -55,14 +55,8 @@ class MetaModel(singleton.Singleton):
 
         try:
             for f in ac:
-                try:
-                    r, r_futures = f.result()
-                except:
-                    from hwpc import model, model_data
-                    from hwpc.names import Names as nm
-
-                    r, r_futures = f.result()
-
+                r, r_futures = f.result()
+                
                 ykey = r.lineage[0]
                 if ykey in year_ds_col_all:
                     year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
