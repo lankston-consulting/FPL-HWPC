@@ -1,13 +1,12 @@
 import timeit
-from dask.distributed import Client, LocalCluster, as_completed, Lock
-from dask_cloudprovider.aws import FargateCluster
 import traceback
+
 import xarray as xr
+from dask.distributed import Client, LocalCluster, Lock, as_completed
+from dask_cloudprovider.aws import FargateCluster
 
-from hwpc import model
-from hwpc import model_data
+from hwpc import model, model_data
 from hwpc.names import Names as nm
-
 from utils import singleton
 
 
@@ -59,9 +58,9 @@ class MetaModel(singleton.Singleton):
                 try:
                     r, r_futures = f.result()
                 except:
-                    from hwpc import model
-                    from hwpc import model_data
+                    from hwpc import model, model_data
                     from hwpc.names import Names as nm
+
                     r, r_futures = f.result()
 
                 ykey = r.lineage[0]

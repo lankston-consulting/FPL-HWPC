@@ -1,5 +1,6 @@
 from utils import singleton
 
+
 class Names(singleton.Singleton):
     class Tables(singleton.Singleton):
         energy_capture = "discard_burned_with_energy_capture"
