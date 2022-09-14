@@ -18,7 +18,7 @@ except:
     from hwpc.names import Names as nm
 
 
-recurse_limit = 2
+recurse_limit = 0
 first_recycle_year = 1980  # TODO make this dynamic
 
 
