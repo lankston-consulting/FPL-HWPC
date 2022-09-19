@@ -4,11 +4,11 @@ from re import X
 import numpy as np
 import pandas as pd
 import xarray as xr
-from utils import pickler, singleton
+from hwpccalc.utils import pickler, singleton
 
-from hwpc.names import Names as nm
+from hwpccalc.hwpc.names import Names as nm
 
-_debug_year = 2008
+_debug_year = 2014
 
 
 class ModelData(pickler.Pickler, singleton.Singleton):

@@ -1,4 +1,4 @@
-from utils import singleton
+from hwpccalc.utils import singleton
 
 
 class Names(singleton.Singleton):
@@ -113,6 +113,9 @@ class Names(singleton.Singleton):
 
         burned_with_energy_capture = "burned_w_energy_capture"
         burned_wo_energy_capture = "burned_wo_energy_capture"
+
+        emitted_with_energy_capture = "emitted_w_energy_capture"
+        emitted_wo_energy_capture = "emitted_wo_energy_capture"
 
         accounted = "accounted"
         error = "error"
