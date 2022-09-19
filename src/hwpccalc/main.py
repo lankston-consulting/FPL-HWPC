@@ -1,39 +1,35 @@
-import os
-from flask import Flask, request
+import hwpccalc.config
+import hwpccalc.meta_model
 
-# from flask_cors import CORS
+# from hwpc import input_download
+from hwpccalc.hwpc import names
 
-import src.hwpccalc as hwpccalc
-
-app = Flask(__name__)
-# CORS(app)
+# from hwpc import email
 
 
-@app.route("/", methods=["GET"])
-def handle():
-    """[summary]
+def run(path="hwpc-user-inputs/c6f40afe-b532-49d1-96e1-c45898a50e35", name="cali2"):
 
-    Args:
-        p (str): TODO
-        q (str): TODO
-    Returns:
-        [type]: [description]
-    """
-    p = request.args.get("p")
-    q = request.args.get("q")
-    print(p)
-    print(q)
-    hwpccalc.run(p, q)
-    return p, 200, {}
+    names.Names()
+    names.Names.Tables()
+    names.Names.Fields()
+    names.Names.Output()
+
+    names.Names.Output.output_path = path.replace("inputs", "outputs")
+    names.Names.Output.run_name = name
+
+    # i = input_download.InputDownload()
+    # i.downloads()
+    me = hwpccalc.meta_model.MetaModel()
+
+    me.run_simulation()
+
+    # e = email.Email()
+    # e.send_email(str(m.md.data['email'].columns.values[0]))
+
+    print("model finished.")
+
+    return
 
 
 if __name__ == "__main__":
-    # This is used when running locally only. When deploying to Google App
-    # Engine, a webserver process such as Gunicorn will serve the app. This
-    # can be configured by adding an `entrypoint` to app.yaml.
-
-    # Flask's development server will automatically serve static files in
-    # the "static" directory. See:
-    # http://flask.pocoo.org/docs/1.0/quickstart/#static-files. Once deployed,
-    # App Engine itself will serve those files as configured in app.yaml.
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=True)
+    run()

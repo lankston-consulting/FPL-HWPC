@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 echo Building hwpc-calc
 pipenv requirements > requirements.txt
 docker build -t hwpc-calc:test . 

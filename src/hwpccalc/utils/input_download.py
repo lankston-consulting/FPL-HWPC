@@ -3,10 +3,7 @@ import os
 import shutil
 
 from dotenv import load_dotenv
-
-from src.config import gch
-
-from hwpc.names import Names as nm
+from hwpccalc.hwpc.names import Names as nm
 
 load_dotenv()
 

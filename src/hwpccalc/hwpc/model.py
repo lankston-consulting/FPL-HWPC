@@ -1,21 +1,17 @@
 import math
-import numpy as np
 import timeit
+
 import cloudpickle
-from dask.distributed import get_client, Lock
+import numpy as np
 import xarray as xr
-
-try:
-    from hwpc.names import Names as nm
-except:
-    import os
-    p = os.path.join(os.path.dirname(__file__), '..')
-    import sys
-    sys.path.append(p)
-    from hwpc.names import Names as nm
+from dask.distributed import Lock, get_client
 
 
-recurse_limit = 2
+from hwpccalc.hwpc.model_data import ModelData
+from hwpccalc.hwpc.names import Names as nm
+
+
+recurse_limit = 1
 first_recycle_year = 1980  # TODO make this dynamic
 
 
@@ -63,14 +59,15 @@ class Model(object):
 
             client = get_client()
             m = Model.run
-            future = client.submit(m, md=model_data, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=len(k))
+            future = client.submit(m, md=model_data, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=sum(k))
             year_model_col.append(future)
             client.log_event("New Year Group", "Lineage: " + str(k))
 
         return year_model_col
 
     @staticmethod
-    def run(md=None, harvests=None, recycled=None, lineage=None):
+    def run(md: ModelData = None, harvests: xr.Dataset = None, recycled: xr.Dataset = None, lineage: tuple = None):
+        """Model entrypoint. The model object..."""
         client = get_client()
         with Lock("plock"):
             print("Lineage:", lineage)
@@ -78,12 +75,12 @@ class Model(object):
         if recycled is None:
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
             working_table = Model.calculate_end_use_products(working_table)
-            working_table = Model.calculate_products_in_use(md, working_table)
+            working_table = Model.calculate_products_in_use(working_table, md)
         else:
             working_table = recycled
 
-        working_table = Model.calculate_discarded_dispositions(md, working_table)
-        working_table = Model.calculate_dispositions(harvests, lineage, md, working_table)
+        working_table = Model.calculate_discarded_dispositions(working_table, md)
+        working_table = Model.calculate_dispositions(working_table, md, harvests, lineage)
 
         return working_table
 
@@ -118,7 +115,7 @@ class Model(object):
         return
 
     @staticmethod
-    def calculate_products_in_use(md, working_table):
+    def calculate_products_in_use(working_table, md):
         """Calculate the amount of end use products from each vintage year that are still in use
         during each inventory year.
         """
@@ -145,7 +142,7 @@ class Model(object):
         return end_use
 
     @staticmethod
-    def calculate_discarded_dispositions(md, working_table):
+    def calculate_discarded_dispositions(working_table, md):
         """Calculate the amount discarded during each inventory year and divide it up between the
         different dispositions (landfills, dumps, etc).
         """
@@ -204,7 +201,7 @@ class Model(object):
         return df
 
     @staticmethod
-    def calculate_dispositions(harvests, lineage, md, working_table):
+    def calculate_dispositions(working_table, md, harvests, lineage):
         """Calculate the amounts of discarded products that have been emitted, are still remaining,
         etc., for each inventory year.
         """

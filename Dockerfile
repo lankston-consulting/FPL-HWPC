@@ -1,23 +1,14 @@
-FROM python:3.9.14
+FROM daskdev/dask:latest
 
-# Allow statements and log messages to immediately appear in the Knative logs
-ENV PYTHONUNBUFFERED True
-ENV PORT 8080
-
-ENV APP_HOME /hwpccalc
-WORKDIR $APP_HOME
-COPY ./hwpccalc ./
-
-# Install production dependencies.
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir dask-cloudprovider[aws]
 
-EXPOSE 8786
-EXPOSE 8787
+COPY ./dist/hwpccalc-0.0.1-py3-none-any.whl ./hwpccalc-0.0.1-py3-none-any.whl
+RUN pip install --no-cache-dir ./hwpccalc-0.0.1-py3-none-any.whl
 
-# Run the web service on container startup. Here we use the gunicorn
-# webserver, with one worker process and 8 threads.
-# For environments with multiple CPU cores, increase the number of workers
-# to be equal to the cores available.
-# Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
+COPY .env .env
+COPY ./data /data
+COPY ./default_data /default_data
+
+ENTRYPOINT ["tini", "-g", "--"]
