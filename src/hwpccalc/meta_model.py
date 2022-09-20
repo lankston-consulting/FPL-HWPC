@@ -21,7 +21,7 @@ class MetaModel(singleton.Singleton):
         if MetaModel._instance is None:
             super().__new__(cls, args, kwargs)
 
-            MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
+            MetaModel.cluster = LocalCluster(n_workers=1, processes=True)
 
             # MetaModel.cluster = FargateCluster(
             #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
@@ -204,8 +204,8 @@ class MetaModel(singleton.Singleton):
         burned_without_energy_capture = MetaModel.c_to_co2e(burned_without_energy_capture)
         burned_without_energy_capture.name = CO2(E(nm.Fields.burned_wo_energy_capture))
         # burned_without_energy_capture_cum = burned_without_energy_capture.cumsum()
-        # TODO burned_with_energy_capture
-        burned_with_energy_capture = fuel_carbon_emitted
+        # TODO discard_burned_with_energy_capture
+        burned_with_energy_capture = fuel_carbon_emitted  # TODO + discard_burned_with_energy_capture
 
         carbon_present_swds = carbon_present_landfills + carbon_present_dumps
         carbon_present_swds.name = MGC(P(nm.Fields.present))
@@ -220,18 +220,30 @@ class MetaModel(singleton.Singleton):
         emitted_w_ec.name = CO2(nm.Fields.emitted_with_energy_capture)
         emitted_wo_ec = compost_emitted + carbon_emitted_landfills + carbon_emitted_dumps + burned_without_energy_capture
         emitted_wo_ec.name = CO2(nm.Fields.emitted_wo_energy_capture)
+
         big_four = xr.Dataset(
             {
-                nm.Fields.products_in_use: end_use_in_use,
-                nm.Fields.swds: carbon_present_swds,
+                nm.Fields.products_in_use: MetaModel.c_to_co2e(end_use_in_use),
+                nm.Fields.swds: MetaModel.c_to_co2e(carbon_present_swds),
                 nm.Fields.emitted_with_energy_capture: emitted_w_ec,
                 nm.Fields.emitted_wo_energy_capture: emitted_wo_ec,
             }
         )
+        emitted_all = xr.Dataset(
+            {
+                CO2(E(nm.Fields.fuel)): fuel_carbon_emitted,
+                CO2(E(nm.Fields.composted)): compost_emitted,
+                MGC(E(nm.Fields.dumps)): carbon_emitted_dumps,
+                CO2(E(nm.Fields.landfills)): carbon_emitted_landfills,
+            }
+        )
+        carbon_present_distinct_swds = xr.Dataset(
+            {MGC(P(nm.Fields.dumps)): carbon_present_dumps, MGC(P(nm.Fields.landfills)): carbon_present_landfills}
+        )
+        carbon_emitted_distinct_swds = xr.Dataset(
+            {CO2(E(nm.Fields.dumps)): carbon_emitted_dumps, CO2(E(nm.Fields.landfills)): carbon_emitted_landfills}
+        )
 
-        solids = xr.Dataset({MGC(P(nm.Fields.landfills)): carbon_present_landfills, MGC(P(nm.Fields.dumps)): carbon_present_dumps})
-
-        all_emissions = xr.Dataset()
         if save:
             zip_buffer = BytesIO()
 
@@ -245,62 +257,79 @@ class MetaModel(singleton.Singleton):
             with tempfile.TemporaryFile() as temp:
                 ds.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("results.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "results.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 final.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("final.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "final.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 annual_harvest_and_timber.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("annual_harvest_and_timber_product_output.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "annual_harvest_and_timber_product_output.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 cumulative_carbon_stocks[[CHANGE(nm.Fields.products_in_use), CHANGE(nm.Fields.swds)]].to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("annual_net_change_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "annual_net_change_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 burned_without_energy_capture.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("burned_wo_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "burned_wo_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 burned_with_energy_capture.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("burned_w_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "burned_w_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 compost_emitted.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("total_composted_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "total_composted_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 cumulative_carbon_stocks[[nm.Fields.products_in_use, nm.Fields.swds]].to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("total_cumulative_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "total_cumulative_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_emitted_dumps.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("total_dumps_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "total_dumps_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_present_dumps.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("total_dumps_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "total_dumps_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 end_use_in_use.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("total_end_use_products.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "total_end_use_products.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 fuel_carbon_emitted.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("total_fuelwood_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "total_fuelwood_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_emitted_landfills.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("total_landfills_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "total_landfills_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_present_landfills.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr("total_landfills_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                zip.writestr(prefix + "total_landfills_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+
+            with tempfile.TemporaryFile() as temp:
+                big_four.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr(prefix + "big_four.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                emitted_all.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr(prefix + "emitted_all.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                carbon_present_distinct_swds.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr(prefix + "carbon_present_distinct_swds.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                carbon_emitted_distinct_swds.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr(prefix + "carbon_emitted_distinct_swds.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
             zip.close()
             zip_buffer.seek(0)
-            S3Helper.upload_file(zip_buffer, "hwpc-output", nm.Output.output_path + "/results/" + nm.Output.run_name + ".zip")
+            S3Helper.upload_file(zip_buffer, "hwpc-output", nm.Output.output_path + "/results/" + prefix + nm.Output.run_name + ".zip")
 
         return

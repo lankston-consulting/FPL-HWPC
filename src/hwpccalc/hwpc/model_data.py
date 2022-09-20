@@ -8,7 +8,7 @@ from hwpccalc.utils import pickler, singleton
 
 from hwpccalc.hwpc.names import Names as nm
 
-_debug_year = 2014
+_debug_year = 2015
 
 
 class ModelData(pickler.Pickler, singleton.Singleton):

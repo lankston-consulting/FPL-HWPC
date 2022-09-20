@@ -13,6 +13,7 @@ numpy = "*"
 pandas = "*"
 python-dotenv = "*"
 xarray = "*"
+scipy = "*"
 
 [dev-packages]
 black = {version = "*"}

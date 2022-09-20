@@ -11,7 +11,7 @@ from hwpccalc.hwpc.model_data import ModelData
 from hwpccalc.hwpc.names import Names as nm
 
 
-recurse_limit = 1
+recurse_limit = 0
 first_recycle_year = 1980  # TODO make this dynamic
 
 
@@ -79,7 +79,7 @@ class Model(object):
         else:
             working_table = recycled
 
-        working_table = Model.calculate_discarded_dispositions(working_table, md)
+        working_table = Model.calculate_discarded_dispositions(working_table, md, lineage)
         working_table = Model.calculate_dispositions(working_table, md, harvests, lineage)
 
         return working_table
@@ -142,7 +142,7 @@ class Model(object):
         return end_use
 
     @staticmethod
-    def calculate_discarded_dispositions(working_table, md):
+    def calculate_discarded_dispositions(working_table, md, lineage):
         """Calculate the amount discarded during each inventory year and divide it up between the
         different dispositions (landfills, dumps, etc).
         """
@@ -167,6 +167,8 @@ class Model(object):
         # amount that goes into landfills, dumps, etc, and then add these to the
         # discarded disposition totals for stuff discarded in year i.
         discard_ratios = md.data[nm.Tables.discard_destination_ratios]
+
+        # if len(lineage) <= recurse_limit and lineage[0] >= first_recycle_year:
 
         # TODO check here for DiscardTypeID recycle error
         products_in_use[nm.Fields.discard_dispositions] = xr.where(
@@ -306,6 +308,9 @@ class Model(object):
             recycled[zero_key] = xr.zeros_like(recycled[zero_key])
 
             recycled_futures = Model.model_factory(model_data=md, harvest_init=harvests, recycled=recycled, lineage=lineage)
+
+        else:
+            pass
 
         return final_dispositions, recycled_futures
 
