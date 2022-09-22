@@ -1,7 +1,7 @@
 import argparse
+
 import hwpccalc.config
 import hwpccalc.meta_model
-
 # from hwpc import input_download
 from hwpccalc.hwpc import names
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
-    parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/20220919-1336")
+    parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/20220921-1740")
     parser.add_argument("-n", "--name", help="User provided name of simulation run.", default="cali2")
 
     args, _ = parser.parse_known_args()

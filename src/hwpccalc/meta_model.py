@@ -17,11 +17,16 @@ from hwpccalc.utils.s3_helper import S3Helper
 
 
 class MetaModel(singleton.Singleton):
+    """ """
+
     def __new__(cls, *args, **kwargs):
+        """MetaModel is designed to be a singleton, so instance variables are set
+        up here for scheduling, tracking, and resolving model runs.
+        """
         if MetaModel._instance is None:
             super().__new__(cls, args, kwargs)
 
-            MetaModel.cluster = LocalCluster(n_workers=1, processes=True)
+            MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
 
             # MetaModel.cluster = FargateCluster(
             #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
@@ -44,6 +49,7 @@ class MetaModel(singleton.Singleton):
         return cls._instance
 
     def run_simulation(self):
+        """ """
         s = timeit.default_timer()
         md = model_data.ModelData()
         harvest = md.data[nm.Tables.harvest]
@@ -100,8 +106,12 @@ class MetaModel(singleton.Singleton):
                 print("===========================")
 
             m = MetaModel.make_results(ds_all, save=True)
+            if ds_rec is not None:
+                m = MetaModel.make_results(ds_rec, save=True)
             for y in year_ds_col_all:
                 m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
+                if ds_rec is not None:
+                    m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_rec", save=True)
         except Exception as e:
             MetaModel.cluster.close()
             print(e)
@@ -210,11 +220,17 @@ class MetaModel(singleton.Singleton):
         carbon_present_swds = carbon_present_landfills + carbon_present_dumps
         carbon_present_swds.name = MGC(P(nm.Fields.present))
 
-        cumulative_carbon_stocks = xr.Dataset({nm.Fields.products_in_use: end_use_in_use, nm.Fields.swds: carbon_present_swds})
-        cumulative_carbon_stocks[CHANGE(nm.Fields.products_in_use)] = cumulative_carbon_stocks[nm.Fields.products_in_use].diff(
+        cumulative_carbon_stocks = xr.Dataset({MGC(nm.Fields.products_in_use): end_use_in_use, MGC(nm.Fields.swds): carbon_present_swds})
+        cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.products_in_use))] = cumulative_carbon_stocks[MGC(nm.Fields.products_in_use)].diff(
             dim=nm.Fields.harvest_year
         )
-        cumulative_carbon_stocks[CHANGE(nm.Fields.swds)] = cumulative_carbon_stocks[nm.Fields.swds].diff(dim=nm.Fields.harvest_year)
+        cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.swds))] = cumulative_carbon_stocks[MGC(nm.Fields.swds)].diff(dim=nm.Fields.harvest_year)
+
+        # totalYearlyNetChange PDF
+        cumulative_stock_change = cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.swds))] + cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.products_in_use))]
+        cumulative_stock_change.name = MGC(CHANGE(nm.Fields.present))
+        # totalSelectedNetChange PDF
+        cumulative_selected_stock_change = cumulative_carbon_stocks.sel(Year=cumulative_carbon_stocks[nm.Fields.harvest_year] % 5 == 0)
 
         emitted_w_ec = fuel_carbon_emitted
         emitted_w_ec.name = CO2(nm.Fields.emitted_with_energy_capture)
@@ -223,17 +239,17 @@ class MetaModel(singleton.Singleton):
 
         big_four = xr.Dataset(
             {
-                nm.Fields.products_in_use: MetaModel.c_to_co2e(end_use_in_use),
-                nm.Fields.swds: MetaModel.c_to_co2e(carbon_present_swds),
-                nm.Fields.emitted_with_energy_capture: emitted_w_ec,
-                nm.Fields.emitted_wo_energy_capture: emitted_wo_ec,
+                CO2(P(nm.Fields.products_in_use)): MetaModel.c_to_co2e(end_use_in_use),
+                CO2(P(nm.Fields.swds)): MetaModel.c_to_co2e(carbon_present_swds),
+                CO2(E(nm.Fields.emitted_with_energy_capture)): emitted_w_ec,
+                CO2(E(nm.Fields.emitted_wo_energy_capture)): emitted_wo_ec,
             }
         )
         emitted_all = xr.Dataset(
             {
                 CO2(E(nm.Fields.fuel)): fuel_carbon_emitted,
                 CO2(E(nm.Fields.composted)): compost_emitted,
-                MGC(E(nm.Fields.dumps)): carbon_emitted_dumps,
+                CO2(E(nm.Fields.dumps)): carbon_emitted_dumps,
                 CO2(E(nm.Fields.landfills)): carbon_emitted_landfills,
             }
         )
@@ -243,6 +259,22 @@ class MetaModel(singleton.Singleton):
         carbon_emitted_distinct_swds = xr.Dataset(
             {CO2(E(nm.Fields.dumps)): carbon_emitted_dumps, CO2(E(nm.Fields.landfills)): carbon_emitted_landfills}
         )
+
+        # totalYearlyDispositions PDF 
+        mega_table = xr.Dataset({
+            CO2(nm.Fields.emitted_with_energy_capture): emitted_w_ec,
+            CO2(CHANGE(nm.Fields.emitted_with_energy_capture)): emitted_w_ec.diff(dim=nm.Fields.harvest_year),
+            CO2(nm.Fields.emitted_wo_energy_capture): emitted_wo_ec,
+            CO2(CHANGE(nm.Fields.emitted_wo_energy_capture)): emitted_wo_ec.diff(dim=nm.Fields.harvest_year),
+            MGC(nm.Fields.products_in_use): cumulative_carbon_stocks[MGC(nm.Fields.products_in_use)],
+            MGC(CHANGE(nm.Fields.products_in_use)): cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.products_in_use))],
+            MGC(nm.Fields.swds): cumulative_carbon_stocks[MGC(nm.Fields.swds)],
+            MGC(CHANGE(nm.Fields.swds)): cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.swds))],
+            MGC(nm.Fields.present): cumulative_carbon_stocks[MGC(nm.Fields.swds)] + cumulative_carbon_stocks[MGC(nm.Fields.products_in_use)],
+            MGC(CHANGE(nm.Fields.present)): cumulative_stock_change})
+
+        # totalSelectedDispositions PDF
+        mega_selected_table = mega_table.sel(Year=cumulative_carbon_stocks[nm.Fields.harvest_year] % 5 == 0)
 
         if save:
             zip_buffer = BytesIO()
@@ -267,7 +299,7 @@ class MetaModel(singleton.Singleton):
                 temp.seek(0)
                 zip.writestr(prefix + "annual_harvest_and_timber_product_output.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
-                cumulative_carbon_stocks[[CHANGE(nm.Fields.products_in_use), CHANGE(nm.Fields.swds)]].to_dataframe().to_csv(temp)
+                cumulative_carbon_stocks[[MGC(CHANGE(nm.Fields.products_in_use)), MGC(CHANGE(nm.Fields.swds))]].to_dataframe().to_csv(temp)
                 temp.seek(0)
                 zip.writestr(prefix + "annual_net_change_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
@@ -283,7 +315,7 @@ class MetaModel(singleton.Singleton):
                 temp.seek(0)
                 zip.writestr(prefix + "total_composted_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
-                cumulative_carbon_stocks[[nm.Fields.products_in_use, nm.Fields.swds]].to_dataframe().to_csv(temp)
+                cumulative_carbon_stocks[[MGC(nm.Fields.products_in_use), MGC(nm.Fields.swds)]].to_dataframe().to_csv(temp)
                 temp.seek(0)
                 zip.writestr(prefix + "total_cumulative_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
@@ -311,6 +343,7 @@ class MetaModel(singleton.Singleton):
                 temp.seek(0)
                 zip.writestr(prefix + "total_landfills_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
+            # Flashy page outputs
             with tempfile.TemporaryFile() as temp:
                 big_four.to_dataframe().to_csv(temp)
                 temp.seek(0)
@@ -327,6 +360,25 @@ class MetaModel(singleton.Singleton):
                 carbon_emitted_distinct_swds.to_dataframe().to_csv(temp)
                 temp.seek(0)
                 zip.writestr(prefix + "carbon_emitted_distinct_swds.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+
+            # PDF table outputs
+            with tempfile.TemporaryFile() as temp:
+                cumulative_stock_change.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr(prefix + "total_yearly_net_change.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                cumulative_selected_stock_change.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr(prefix + "total_selected_net_change.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                mega_table.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr(prefix + "total_yearly_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+            with tempfile.TemporaryFile() as temp:
+                mega_selected_table.to_dataframe().to_csv(temp)
+                temp.seek(0)
+                zip.writestr(prefix + "total_selected_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+
 
             zip.close()
             zip_buffer.seek(0)

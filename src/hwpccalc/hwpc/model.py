@@ -5,11 +5,9 @@ import cloudpickle
 import numpy as np
 import xarray as xr
 from dask.distributed import Lock, get_client
-
-
 from hwpccalc.hwpc.model_data import ModelData
 from hwpccalc.hwpc.names import Names as nm
-
+from scipy.stats import chi2, expon
 
 recurse_limit = 0
 first_recycle_year = 1980  # TODO make this dynamic
@@ -95,6 +93,20 @@ class Model(object):
 
         return end_use
 
+    # @staticmethod
+    # def halflife_func(df):
+    #     hl = df[nm.Fields.end_use_halflife].item()
+    #     if hl == 0:
+    #         df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
+    #     else:
+    #         v = df[nm.Fields.end_use_sum][0].item()
+    #         decayed = [v * math.exp(-math.log(2) * t / hl) for t in range(len(df.coords[nm.Fields.harvest_year]))]
+    #         dd = xr.DataArray(decayed, dims=nm.Fields.harvest_year, coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]}).astype(
+    #             "float32"
+    #         )
+    #         df[nm.Fields.products_in_use] = dd
+    #     return df
+
     @staticmethod
     def halflife_func(df):
         hl = df[nm.Fields.end_use_halflife].item()
@@ -102,7 +114,8 @@ class Model(object):
             df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
         else:
             v = df[nm.Fields.end_use_sum][0].item()
-            decayed = [v * math.exp(-math.log(2) * x / hl) for x in range(len(df.coords[nm.Fields.harvest_year]))]
+            s = 1 / (math.log(2) / hl)
+            decayed = [v * expon.sf(t, scale=s) for t in range(len(df.coords[nm.Fields.harvest_year]))]
             dd = xr.DataArray(decayed, dims=nm.Fields.harvest_year, coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]}).astype(
                 "float32"
             )
@@ -110,9 +123,18 @@ class Model(object):
         return df
 
     @staticmethod
-    def chi_func(df):
-        raise NotImplementedError()
-        return
+    def chi2_func(df):
+        hl = df[nm.Fields.end_use_halflife].item()
+        if hl == 0:
+            df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
+        else:
+            v = df[nm.Fields.end_use_sum][0].item()
+            decayed = [v * chi2.sf(t, df=hl) for t in range(len(df.coords[nm.Fields.harvest_year]))]
+            dd = xr.DataArray(decayed, dims=nm.Fields.harvest_year, coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]}).astype(
+                "float32"
+            )
+            df[nm.Fields.products_in_use] = dd
+        return df
 
     @staticmethod
     def calculate_products_in_use(working_table, md):
@@ -135,7 +157,7 @@ class Model(object):
 
         # Don't take the whole dataframe and pass it to a mapped function, it destroys coordinates
         products_in_use = end_use[[nm.Fields.end_use_id, nm.Fields.end_use_halflife, nm.Fields.end_use_results, nm.Fields.end_use_sum]]
-        products_in_use = products_in_use.groupby(nm.Fields.end_use_id).map(Model.halflife_func)
+        products_in_use = products_in_use.groupby(nm.Fields.end_use_id).map(Model.chi2_func)
 
         end_use[nm.Fields.products_in_use] = products_in_use[nm.Fields.products_in_use]
 
@@ -168,7 +190,18 @@ class Model(object):
         # discarded disposition totals for stuff discarded in year i.
         discard_ratios = md.data[nm.Tables.discard_destination_ratios]
 
-        # if len(lineage) <= recurse_limit and lineage[0] >= first_recycle_year:
+        # If this is an edge, where either the maximum recurion depth has been reached
+        # or if the new recycling method is just straight turned off, discribute carbon
+        # from recycling proportionally into the other discard pools
+        if len(lineage) > recurse_limit and lineage[0] >= first_recycle_year:            
+            discard_ratios[nm.Fields.discard_destination_ratio] = discard_ratios[nm.Fields.discard_destination_ratio] + (
+                discard_ratios[nm.Fields.discard_destination_ratio]
+                * discard_ratios[nm.Fields.discard_destination_ratio].loc[dict(DiscardDestinationID=1)]
+            )
+            discard_ratios.loc[
+                dict(DiscardDestinationID=1)
+            ] = 0  # xr.zeros_like(discard_ratios[nm.Fields.discard_destination_id].loc[dict(DiscardDestinationID=1)])
+            discard_ratios = discard_ratios
 
         # TODO check here for DiscardTypeID recycle error
         products_in_use[nm.Fields.discard_dispositions] = xr.where(
@@ -182,14 +215,15 @@ class Model(object):
     @staticmethod
     def halflife_sum(df):
         # nb isn't giving a performance increase
-        halflife = df[nm.Fields.halflife].item()
-        if halflife == 0:
+        hl = df[nm.Fields.halflife].item()
+        if hl == 0:
             df[nm.Fields.discard_remaining] = 0
         else:
             can_decay = df[nm.Fields.can_decay]
             l = len(can_decay)
             ox = np.zeros((l, l), dtype=np.float32)
-            weightspace = np.array([math.exp(-math.log(2) * x / halflife) for x in range(l)])
+            s = 1 / (math.log(2) / hl)
+            weightspace = np.array([expon.sf(t, scale=s) for t in range(l)])
             for h in range(l):
                 v = can_decay[h].item()
                 weights = weightspace[: l - h]
@@ -237,9 +271,6 @@ class Model(object):
             nm.Fields.end_use_id,
             nm.Fields.discard_destination_id,
         ]
-
-        recycled = dispositions.loc[dict(DiscardDestinationID=recycled_id)]
-        recycled = recycled.drop_vars(nm.Fields.discard_destination_id)
 
         final_dispositions = dispositions
 
@@ -308,9 +339,6 @@ class Model(object):
             recycled[zero_key] = xr.zeros_like(recycled[zero_key])
 
             recycled_futures = Model.model_factory(model_data=md, harvest_init=harvests, recycled=recycled, lineage=lineage)
-
-        else:
-            pass
 
         return final_dispositions, recycled_futures
 

@@ -17,10 +17,14 @@ scipy = "*"
 
 [dev-packages]
 black = {version = "*"}
-pylama = "*"
-setuptools = "*"
 build = "*"
+pylama = "*"
+pylint = "*"
 pipenv-setup = {extras = ["black"], version = "*"}
+setuptools = "*"
+ipykernel = "*"
+jupyter = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.8.13"
