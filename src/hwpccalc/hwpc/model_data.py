@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from hwpccalc.hwpc.names import Names as nm
-from hwpccalc.utils import pickler, singleton
+from hwpccalc.utils import pickler, singleton, s3_helper
 
 _debug_year = 1900
 
@@ -23,6 +23,8 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     discard_types_dict = dict()
 
+   
+    
     ids = None
 
     paper_val = 0
@@ -54,17 +56,34 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         """Read data into pandas DataFrames
         TODO Right now this just looks at default data
         """
-        if path_override is None:
-            path = "data/inputs.json"
-        with open("data/inputs.json") as f:
+        # if path_override is None:
+        #     path = "data/inputs.json"
+        print(nm.Output.output_path)
+        print(nm.Output.run_name)
+        json_file = s3_helper.S3Helper.download_file("hwpc","hwpc-user-inputs/"+nm.Output.output_path+"/user_input.json")
+        
+
+        with open(json_file.name) as f:
             j = json.load(f)
+            nm.Output.scenario_info = j
+            print(j)
             for k in j:
-                no_csv = k.replace(".csv", "")
-                p = j[k]
+                if k == "inputs":
+                    for l in j[k]:
+                        if(j[k][l]) == "Default Data":
+                            default_csv = s3_helper.S3Helper.download_file("hwpc","default-data/"+l)
+                            with open(default_csv.name) as csv:
+                                ModelData.data[l] = pd.read_csv(csv)
+                        else: 
+                            user_csv = s3_helper.S3Helper.download_file("hwpc","hwpc-user-inputs/"+nm.Output.output_path+"/"+l)
+                            with open(user_csv.name) as csv:
+                                ModelData.data[l] = pd.read_csv(csv)
+                            # ModelData.data[]
+                # no_csv = k.replace(".csv", "")
+                # p = j[k]
                 # if no_csv == nm.Tables.harvest:
                 #     ks = {nm.Fields.harvest_year: "int16"}
-                ModelData.data[no_csv] = pd.read_csv(p)
-
+                # ModelData.data[no_csv] = pd.read_csv(p)
         return
 
     @staticmethod
