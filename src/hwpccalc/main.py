@@ -37,7 +37,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
-    parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/720ba6e9-41e8-494f-8dab-05ee5a665033")
+    parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/dfe1c76b-5ebe-4c4f-a773-bc99668b59fd")
     parser.add_argument("-n", "--name", help="User provided name of simulation run.", default="cali2")
 
     args, _ = parser.parse_known_args()

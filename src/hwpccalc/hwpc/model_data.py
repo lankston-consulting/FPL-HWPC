@@ -132,7 +132,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         ModelData.data[nm.Tables.timber_products] = dx
 
         # Parse the region and attempt to pull in default data
-        region = ModelData.data[nm.Tables.region].columns[0]
+        region = nm.Output.scenario_info["region"]["name"]
         region_match = ModelData.get_region_id(region)
 
         df = ModelData.data[nm.Tables.primary_product_ratios]
