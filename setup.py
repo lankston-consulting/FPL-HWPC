@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="hwpccalc",
-    version="0.0.1",
+    version="0.0.2",
     install_requires=[
         "awscrt==0.14.0",
         "bokeh==2.4.3",

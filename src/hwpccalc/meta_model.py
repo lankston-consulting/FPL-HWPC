@@ -217,7 +217,9 @@ class MetaModel(singleton.Singleton):
 
         # TODO do we need to carry over the PIU to Emitted for fuels?
         # fuel_carbon_emitted = ds[nm.Fields.products_in_use].where(ds.data_vars[nm.Fields.fuel] == 1, drop=True).sum(dim=nm.Fields.end_use_id) # old method, for backup
-        fuel_carbon_emitted = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=0)].where(ds.data_vars[nm.Fields.fuel] == 1, drop=True).sum(dim=nm.Fields.end_use_id)
+        fuel_carbon_emitted = (
+            ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=0)].where(ds.data_vars[nm.Fields.fuel] == 1, drop=True).sum(dim=nm.Fields.end_use_id)
+        )
         fuel_carbon_emitted = MetaModel.c_to_co2e(fuel_carbon_emitted)
         fuel_carbon_emitted.name = CO2(E(nm.Fields.fuel))
         # fuel_carbon_emitted = fuel_carbon_emitted.cumsum()

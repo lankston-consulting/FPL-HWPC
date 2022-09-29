@@ -23,8 +23,6 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     discard_types_dict = dict()
 
-   
-    
     ids = None
 
     paper_val = 0
@@ -58,26 +56,25 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         """
         # if path_override is None:
         #     path = "data/inputs.json"
-        print(nm.Output.output_path)
-        print(nm.Output.run_name)
-        json_file = s3_helper.S3Helper.download_file("hwpc","hwpc-user-inputs/"+nm.Output.output_path+"/user_input.json")
-        
+        # print(nm.Output.output_path)
+        # print(nm.Output.run_name)
+        json_file = s3_helper.S3Helper.download_file("hwpc", nm.Output.input_path + "/user_input.json")
 
         with open(json_file.name) as f:
             j = json.load(f)
             nm.Output.scenario_info = j
-            print(j)
+            # print(j)
             for k in j:
                 if k == "inputs":
                     for l in j[k]:
-                        if(j[k][l]) == "Default Data":
-                            default_csv = s3_helper.S3Helper.download_file("hwpc","default-data/"+l)
+                        if (j[k][l]) == "Default Data":
+                            default_csv = s3_helper.S3Helper.download_file("hwpc", "default-data/" + l)
                             with open(default_csv.name) as csv:
-                                ModelData.data[l] = pd.read_csv(csv)
-                        else: 
-                            user_csv = s3_helper.S3Helper.download_file("hwpc","hwpc-user-inputs/"+nm.Output.output_path+"/"+l)
+                                ModelData.data[l.replace(".csv", "")] = pd.read_csv(csv)
+                        else:
+                            user_csv = s3_helper.S3Helper.download_file("hwpc", nm.Output.input_path + "/" + l)
                             with open(user_csv.name) as csv:
-                                ModelData.data[l] = pd.read_csv(csv)
+                                ModelData.data[l.replace(".csv", "")] = pd.read_csv(csv)
                             # ModelData.data[]
                 # no_csv = k.replace(".csv", "")
                 # p = j[k]
@@ -112,9 +109,9 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
         ModelData.data[nm.Tables.harvest] = dx
 
-        # TODO does this work?
-        if ModelData.data[nm.Tables.harvest_data_type].columns.values[0] == "mbf":
-            ModelData._get_mbf_conversion()
+        # TODO This does not work post S3 update
+        # if ModelData.data[nm.Tables.harvest_data_type].columns.values[0] == "mbf":
+        #     ModelData._get_mbf_conversion()
 
         df = ModelData.data[nm.Tables.timber_products_ratios]
         # Just in case the year was read as a string, parse to numeric

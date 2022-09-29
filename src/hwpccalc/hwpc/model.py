@@ -93,25 +93,11 @@ class Model(object):
 
         return end_use
 
-    # @staticmethod
-    # def halflife_func(df):
-    #     hl = df[nm.Fields.end_use_halflife].item()
-    #     if hl == 0:
-    #         df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
-    #     else:
-    #         v = df[nm.Fields.end_use_sum][0].item()
-    #         decayed = [v * math.exp(-math.log(2) * t / hl) for t in range(len(df.coords[nm.Fields.harvest_year]))]
-    #         dd = xr.DataArray(decayed, dims=nm.Fields.harvest_year, coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]}).astype(
-    #             "float32"
-    #         )
-    #         df[nm.Fields.products_in_use] = dd
-    #     return df
-
     @staticmethod
     def halflife_func(df, inverse=False):
         hl = df[nm.Fields.end_use_halflife].item()
         if hl == 0:
-            df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
+            df[nm.Fields.products_in_use] = df[nm.Fields.end_use_sum]
         else:
             v = df[nm.Fields.end_use_sum][0].item()
             s = 1 / (math.log(2) / hl)
@@ -129,7 +115,7 @@ class Model(object):
     def chi2_func(df, inverse=False):
         hl = df[nm.Fields.end_use_halflife].item()
         if hl == 0:
-            df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
+            df[nm.Fields.products_in_use] = df[nm.Fields.end_use_sum]
         else:
             v = df[nm.Fields.end_use_sum][0].item()
             if inverse:
@@ -207,7 +193,7 @@ class Model(object):
                 discard_ratios[nm.Fields.discard_destination_ratio]
                 * discard_ratios[nm.Fields.discard_destination_ratio].loc[dict(DiscardDestinationID=1)]
             )
-            discard_ratios.loc[dict(DiscardDestinationID=1)] = 0  
+            discard_ratios.loc[dict(DiscardDestinationID=1)] = 0
 
         # TODO check here for DiscardTypeID recycle error
         products_in_use[nm.Fields.discard_dispositions] = xr.where(
@@ -215,8 +201,6 @@ class Model(object):
             products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=0)][nm.Fields.discard_destination_ratio],
             products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=1)][nm.Fields.discard_destination_ratio],
         )
-
-        
 
         # Set the discard result for fuel to 100% of "product in use". Then 0 out products in use.
         fuel_ids = products_in_use[nm.Fields.products_in_use].loc[products_in_use.data_vars["Fuel"] == 1].coords["EndUseID"].values
@@ -285,7 +269,7 @@ class Model(object):
             nm.Fields.discard_destination_id,
         ]
 
-        final_dispositions = dispositions
+        final_dispositions = dispositions.copy(deep=True)
 
         final_dispositions[nm.Fields.discard_remaining] = xr.zeros_like(final_dispositions[nm.Fields.can_decay])
 
@@ -294,7 +278,7 @@ class Model(object):
         # at play, which are the can_decay and halflife primarily. We have to do this because dask can't chain groupby calls,
         # so we need to stack the grouping key. If we keep the whole dataset, this would reset the entire index which is
         # not desireable.
-        dispositions = final_dispositions[[nm.Fields.halflife, nm.Fields.can_decay, nm.Fields.discard_remaining]] # removed "fixed" from df
+        dispositions = final_dispositions[[nm.Fields.halflife, nm.Fields.can_decay, nm.Fields.discard_remaining]]  # removed "fixed" from df
         dispositions = dispositions.stack(skey=df_key)
 
         dispositions = dispositions.groupby("skey").apply(Model.halflife_sum)
