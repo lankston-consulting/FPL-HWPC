@@ -108,14 +108,17 @@ class Model(object):
     #     return df
 
     @staticmethod
-    def halflife_func(df):
+    def halflife_func(df, inverse=False):
         hl = df[nm.Fields.end_use_halflife].item()
         if hl == 0:
             df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
         else:
             v = df[nm.Fields.end_use_sum][0].item()
             s = 1 / (math.log(2) / hl)
-            decayed = [v * expon.sf(t, scale=s) for t in range(len(df.coords[nm.Fields.harvest_year]))]
+            if inverse:
+                decayed = [v * expon.cdf(t, scale=s) for t in range(len(df.coords[nm.Fields.harvest_year]))]
+            else:
+                decayed = [v * expon.sf(t, scale=s) for t in range(len(df.coords[nm.Fields.harvest_year]))]
             dd = xr.DataArray(decayed, dims=nm.Fields.harvest_year, coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]}).astype(
                 "float32"
             )
@@ -123,13 +126,16 @@ class Model(object):
         return df
 
     @staticmethod
-    def chi2_func(df):
+    def chi2_func(df, inverse=False):
         hl = df[nm.Fields.end_use_halflife].item()
         if hl == 0:
             df[nm.Fields.products_in_use] = df[nm.Fields.end_use_results]
         else:
             v = df[nm.Fields.end_use_sum][0].item()
-            decayed = [v * chi2.sf(t, df=hl) for t in range(len(df.coords[nm.Fields.harvest_year]))]
+            if inverse:
+                decayed = [v * chi2.cdf(t, df=hl) for t in range(len(df.coords[nm.Fields.harvest_year]))]
+            else:
+                decayed = [v * chi2.sf(t, df=hl) for t in range(len(df.coords[nm.Fields.harvest_year]))]
             dd = xr.DataArray(decayed, dims=nm.Fields.harvest_year, coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]}).astype(
                 "float32"
             )
@@ -174,13 +180,16 @@ class Model(object):
         # then subtracting the amount discarded in previous years.
         products_in_use = working_table
 
-        piu_shift = products_in_use[nm.Fields.products_in_use].shift({nm.Fields.harvest_year: 1})
-        end_use = products_in_use["end_use"].loc[dict(Year=products_in_use.coords["Year"].min())]
-        piu_shift.loc[dict(Year=products_in_use.coords["Year"].min())] = end_use
+        # piu_shift = products_in_use[nm.Fields.products_in_use].shift({nm.Fields.harvest_year: 1})
+        # end_use = products_in_use["end_use"].loc[dict(Year=products_in_use.coords["Year"].min())]
+        # piu_shift.loc[dict(Year=products_in_use.coords["Year"].min())] = end_use
 
-        products_in_use[nm.Fields.discarded_products_results] = piu_shift - products_in_use[nm.Fields.products_in_use]
+        # products_in_use[nm.Fields.discarded_products_results] = piu_shift - products_in_use[nm.Fields.products_in_use]
 
-        # Zero out the stuff that was fuel.
+        products_in_use[nm.Fields.discarded_products_results] = products_in_use.groupby(nm.Fields.end_use_id).map(Model.chi2_func, inverse=True)
+
+        # Zero out the stuff that was fuel. We will manually set the "discard" emissions after the other types
+        # are discarded according to ratios (Fuel is an exception that 100% is emitted)
         products_in_use[nm.Fields.discarded_products_results] = products_in_use[nm.Fields.discarded_products_results].where(
             products_in_use.data_vars[nm.Fields.fuel] == 0, 0
         )
@@ -193,15 +202,12 @@ class Model(object):
         # If this is an edge, where either the maximum recurion depth has been reached
         # or if the new recycling method is just straight turned off, discribute carbon
         # from recycling proportionally into the other discard pools
-        if len(lineage) > recurse_limit and lineage[0] >= first_recycle_year:            
+        if len(lineage) > recurse_limit and lineage[0] >= first_recycle_year:
             discard_ratios[nm.Fields.discard_destination_ratio] = discard_ratios[nm.Fields.discard_destination_ratio] + (
                 discard_ratios[nm.Fields.discard_destination_ratio]
                 * discard_ratios[nm.Fields.discard_destination_ratio].loc[dict(DiscardDestinationID=1)]
             )
-            discard_ratios.loc[
-                dict(DiscardDestinationID=1)
-            ] = 0  # xr.zeros_like(discard_ratios[nm.Fields.discard_destination_id].loc[dict(DiscardDestinationID=1)])
-            discard_ratios = discard_ratios
+            discard_ratios.loc[dict(DiscardDestinationID=1)] = 0  
 
         # TODO check here for DiscardTypeID recycle error
         products_in_use[nm.Fields.discard_dispositions] = xr.where(
@@ -210,15 +216,22 @@ class Model(object):
             products_in_use[nm.Fields.discarded_products_results] * discard_ratios.loc[dict(DiscardTypeID=1)][nm.Fields.discard_destination_ratio],
         )
 
+        
+
+        # Set the discard result for fuel to 100% of "product in use". Then 0 out products in use.
+        fuel_ids = products_in_use[nm.Fields.products_in_use].loc[products_in_use.data_vars["Fuel"] == 1].coords["EndUseID"].values
+        products_in_use[nm.Fields.discard_dispositions].loc[dict(EndUseID=fuel_ids, DiscardDestinationID=0)] = products_in_use[
+            nm.Fields.products_in_use
+        ].loc[products_in_use.data_vars["Fuel"] == 1]
+        products_in_use[nm.Fields.products_in_use].loc[products_in_use.data_vars["Fuel"] == 1] = 0
+
         return products_in_use
 
     @staticmethod
     def halflife_sum(df):
         # nb isn't giving a performance increase
         hl = df[nm.Fields.halflife].item()
-        if hl == 0:
-            df[nm.Fields.discard_remaining] = 0
-        else:
+        if hl != 0:
             can_decay = df[nm.Fields.can_decay]
             l = len(can_decay)
             ox = np.zeros((l, l), dtype=np.float32)
@@ -281,7 +294,7 @@ class Model(object):
         # at play, which are the can_decay and halflife primarily. We have to do this because dask can't chain groupby calls,
         # so we need to stack the grouping key. If we keep the whole dataset, this would reset the entire index which is
         # not desireable.
-        dispositions = final_dispositions[[nm.Fields.halflife, nm.Fields.can_decay, nm.Fields.fixed, nm.Fields.discard_remaining]]
+        dispositions = final_dispositions[[nm.Fields.halflife, nm.Fields.can_decay, nm.Fields.discard_remaining]] # removed "fixed" from df
         dispositions = dispositions.stack(skey=df_key)
 
         dispositions = dispositions.groupby("skey").apply(Model.halflife_sum)
@@ -301,6 +314,9 @@ class Model(object):
         # remaining from the total amount that could decay.
         final_dispositions[nm.Fields.emitted] = final_dispositions[nm.Fields.could_decay] - final_dispositions[nm.Fields.discard_remaining]
         final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.discard_remaining]
+
+        if lineage[0] == 2011:
+            i = 2
 
         # Landfills are a bit different. Not all of it is subject to decay, so get the fixed amount and add it to present through time
         final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.present] + final_dispositions[nm.Fields.fixed]

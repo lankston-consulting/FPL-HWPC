@@ -7,7 +7,7 @@ import xarray as xr
 from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import pickler, singleton, s3_helper
 
-_debug_year = 1900
+_debug_year = 1980
 
 
 class ModelData(pickler.Pickler, singleton.Singleton):
