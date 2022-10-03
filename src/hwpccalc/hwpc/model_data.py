@@ -140,7 +140,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         # TODO after data revisions, check that region matching still works
         if region_match:
             ModelData.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.region_id] == region_match]
-
+            df = df[df[nm.Fields.region_id] == region_match]
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
         df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("int16")
         df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
@@ -224,6 +224,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         df = df.set_index([nm.Fields.discard_type_id, nm.Fields.discard_destination_id])
         dx = df.to_xarray()
         ModelData.data[nm.Tables.discard_destinations] = dx
+        print("done with data")
 
         return
 
@@ -239,8 +240,9 @@ class ModelData(pickler.Pickler, singleton.Singleton):
             int: A numeric ID for the region
         """
         regions = ModelData.data[nm.Tables.regions]
+        print(regions)
         if region in regions[nm.Fields.region_name].unique():
-            match_region = regions.loc[regions[nm.Fields.region_name] == region][nm.Fields.id].iloc[0]
+            match_region = regions.loc[regions[nm.Fields.region_name] == region]["Region"+nm.Fields.id].iloc[0]
         else:
             match_region = None
         return match_region

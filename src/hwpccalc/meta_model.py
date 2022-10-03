@@ -54,13 +54,15 @@ class MetaModel(singleton.Singleton):
         """ """
         sim_start = timeit.default_timer()
         md = model_data.ModelData()
+        # print(md.data)
         harvest = md.data[nm.Tables.harvest]
+        print(harvest)
 
         years = harvest[nm.Fields.harvest_year]
 
         final_futures = model.Model.model_factory(model_data=md, harvest_init=harvest)
         ac = as_completed(final_futures)
-
+        print("ac",ac)
         year_ds_col_all = dict()
         year_ds_col_rec = dict()
 
