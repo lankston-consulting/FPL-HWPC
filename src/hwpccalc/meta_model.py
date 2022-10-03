@@ -15,7 +15,6 @@ from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import singleton
 from hwpccalc.utils.s3_helper import S3Helper
 
-
 class MetaModel(singleton.Singleton):
     """ """
 
@@ -53,16 +52,13 @@ class MetaModel(singleton.Singleton):
     def run_simulation(self):
         """ """
         sim_start = timeit.default_timer()
-        md = model_data.ModelData()
-        # print(md.data)
+        md = model_data.ModelData(path=nm.Output.input_path)
         harvest = md.data[nm.Tables.harvest]
-        print(harvest)
 
         years = harvest[nm.Fields.harvest_year]
 
-        final_futures = model.Model.model_factory(model_data=md, harvest_init=harvest)
+        final_futures = model.Model.model_factory(model_data_path=nm.Output.input_path, harvest_init=harvest)
         ac = as_completed(final_futures)
-        print("ac",ac)
         year_ds_col_all = dict()
         year_ds_col_rec = dict()
 
