@@ -56,7 +56,7 @@ class MetaModel(singleton.Singleton):
         md = model_data.ModelData()
         # print(md.data)
         harvest = md.data[nm.Tables.harvest]
-        print(harvest)
+        print(md.data)
 
         years = harvest[nm.Fields.harvest_year]
 
