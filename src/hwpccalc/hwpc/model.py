@@ -15,7 +15,7 @@ first_recycle_year = 1980  # TODO make this dynamic
 
 class Model(object):
     @staticmethod
-    def model_factory(model_data=None, harvest_init=None, lineage=None, recycled=None):
+    def model_factory(model_data_path=None, harvest_init=None, lineage=None, recycled=None):
         years = harvest_init[nm.Fields.harvest_year]
         first_year = years.min().item()
         last_year = years.max().item()
@@ -57,18 +57,20 @@ class Model(object):
 
             client = get_client()
             m = Model.run
-            future = client.submit(m, md=model_data, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=sum(k))
+            future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=sum(k))
             year_model_col.append(future)
             client.log_event("New Year Group", "Lineage: " + str(k))
 
         return year_model_col
 
     @staticmethod
-    def run(md: ModelData = None, harvests: xr.Dataset = None, recycled: xr.Dataset = None, lineage: tuple = None):
+    def run(model_data_path: str = None, harvests: xr.Dataset = None, recycled: xr.Dataset = None, lineage: tuple = None):
         """Model entrypoint. The model object..."""
         client = get_client()
         with Lock("plock"):
             print("Lineage:", lineage)
+
+        md = ModelData(path=model_data_path)
 
         if recycled is None:
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
