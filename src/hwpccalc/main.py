@@ -5,13 +5,14 @@ import hwpccalc.meta_model
 
 from hwpccalc.hwpc import names
 
-# from hwpc import email
+from hwpccalc.utils import email
 
 
 def run(args):
 
     path = args.path
     name = args.name
+    
 
     names.Names()
     names.Names.Tables()
@@ -22,8 +23,11 @@ def run(args):
     names.Names.Output.output_path = path.replace("inputs", "outputs")
     names.Names.Output.run_name = name
     me = hwpccalc.meta_model.MetaModel()
-
     me.run_simulation()
+    print(names.Names.Output.scenario_info)
+    email.Email().send_email()
+    # email.Email().send_email()
+    # print(b)
 
     # e = email.Email()
     # e.send_email(str(m.md.data['email'].columns.values[0]))
@@ -37,7 +41,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
-    parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/a98af620-2da7-41b9-bf63-4346a81c0133")
+    parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/c97c02f6-596f-449f-8b0a-ebb4c3e4a396")
     parser.add_argument("-n", "--name", help="User provided name of simulation run.", default="cali2")
 
     args, _ = parser.parse_known_args()

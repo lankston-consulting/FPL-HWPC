@@ -10,7 +10,7 @@ from hwpccalc.utils import pickler, singleton, s3_helper
 _debug_year = 1980
 
 
-class ModelData(pickler.Pickler, singleton.Singleton):
+class ModelData(pickler.Pickler):
 
     data = dict()
     region = None
@@ -30,23 +30,17 @@ class ModelData(pickler.Pickler, singleton.Singleton):
 
     ds = None
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            super().__new__(cls, *args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:        
+        if "path" in kwargs:
+            self.load_data(path_override=kwargs["path"])
+        else:
+            self.load_data(path_override=nm.Output.input_path)
+        
+        self.prep_data()
 
-            self = cls
-
-            self.load_data()
-            self.prep_data()
-
-            self._primary_product_to_timber_product()
-            self._end_use_to_timber_product()
-            self._end_use_to_primary_product()
-
-        return cls._instance
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+        self._primary_product_to_timber_product()
+        self._end_use_to_timber_product()
+        self._end_use_to_primary_product()
         return
 
     @staticmethod
@@ -56,14 +50,12 @@ class ModelData(pickler.Pickler, singleton.Singleton):
         """
         # if path_override is None:
         #     path = "data/inputs.json"
-        # print(nm.Output.output_path)
-        # print(nm.Output.run_name)
-        json_file = s3_helper.S3Helper.download_file("hwpc", nm.Output.input_path + "/user_input.json")
+
+        json_file = s3_helper.S3Helper.download_file("hwpc", path_override + "/user_input.json")
 
         with open(json_file.name) as f:
             j = json.load(f)
             nm.Output.scenario_info = j
-            # print(j)
             for k in j:
                 if k == "inputs":
                     for l in j[k]:
@@ -72,7 +64,7 @@ class ModelData(pickler.Pickler, singleton.Singleton):
                             with open(default_csv.name) as csv:
                                 ModelData.data[l.replace(".csv", "")] = pd.read_csv(csv)
                         else:
-                            user_csv = s3_helper.S3Helper.download_file("hwpc", nm.Output.input_path + "/" + l)
+                            user_csv = s3_helper.S3Helper.download_file("hwpc", path_override + "/" + l)
                             with open(user_csv.name) as csv:
                                 ModelData.data[l.replace(".csv", "")] = pd.read_csv(csv)
                             # ModelData.data[]
