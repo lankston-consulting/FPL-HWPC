@@ -141,6 +141,7 @@ dmypy.json
 data/*
 output/*
 results/*
+test_data/*
 x_*
 
 requirements.txt
