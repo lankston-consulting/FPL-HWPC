@@ -71,7 +71,7 @@ class Model(object):
             print("Lineage:", lineage)
 
         md = ModelData(path=model_data_path)
-
+        
         if recycled is None:
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
             working_table = Model.calculate_end_use_products(working_table)
@@ -190,15 +190,10 @@ class Model(object):
         # by subtracting the products in use from the amount of harvested product and
         # then subtracting the amount discarded in previous years.
         products_in_use = working_table
-
-        piu_shift = products_in_use[nm.Fields.products_in_use].shift({nm.Fields.harvest_year: 1}, fill_value=0)
-        end_use = products_in_use["end_use"].loc[dict(Year=products_in_use.coords["Year"].min())]
-        piu_shift.loc[dict(Year=products_in_use.coords["Year"].min())] = end_use
-
-        products_in_use[nm.Fields.discarded_products] = piu_shift - products_in_use[nm.Fields.products_in_use]
-
-        if lineage[0] == 1985:
-            i = 2
+        end_use = xr.zeros_like(products_in_use[nm.Fields.end_use_products]) + products_in_use[nm.Fields.end_use_products][0]
+        products_in_use[nm.Fields.discarded_products] = end_use - products_in_use[nm.Fields.products_in_use]
+        products_in_use[nm.Fields.discarded_products] = products_in_use[nm.Fields.discarded_products].diff(dim=nm.Fields.harvest_year)
+        products_in_use[nm.Fields.discarded_products] = products_in_use[nm.Fields.discarded_products].fillna(0)
 
         # products_in_use[nm.Fields.discard_products] = products_in_use.groupby(nm.Fields.end_use_id).map(Model.chi2_func_inverse)
 
@@ -243,9 +238,6 @@ class Model(object):
         )
         products_in_use[nm.Fields.products_in_use].loc[dict(EndUseID=fuel_ids)] = 0
 
-        if lineage[0] == 1985:
-            i = 2
-
         return products_in_use
 
     @staticmethod
@@ -254,20 +246,21 @@ class Model(object):
         hl = df[nm.Fields.halflife].item()
         if hl != 0:
             can_decay = df[nm.Fields.can_decay]
-            l = len(can_decay)
-            ox = np.zeros((l, l), dtype=np.float64)
-            s = 1 / (math.log(2) / hl)
-            weightspace = np.array([expon.sf(t, scale=s) for t in range(l)])
-            for h in range(l):
-                v = can_decay[h].item()
-                weights = weightspace[: l - h]
-                o = np.zeros_like(can_decay)
-                decayed = [v * w for w in weights]
-                o[h:] = decayed
-                ox[h] = o
-            discard_remaining = np.sum(ox, axis=0)
-            dd = xr.DataArray(discard_remaining, dims=df.dims, coords=df.coords).astype("float64")
-            df[nm.Fields.discarded_remaining] = dd
+            if can_decay.sum() != 0:
+                l = len(can_decay)
+                ox = np.zeros((l, l), dtype=np.float64)
+                s = 1 / (math.log(2) / hl)
+                weightspace = np.array([expon.sf(t, scale=s) for t in range(l)])
+                for h in range(l):
+                    v = can_decay[h].item()
+                    weights = weightspace[: l - h]
+                    o = np.zeros_like(can_decay)
+                    decayed = [v * w for w in weights]
+                    o[h:] = decayed
+                    ox[h] = o
+                discard_remaining = np.sum(ox, axis=0)
+                dd = xr.DataArray(discard_remaining, dims=df.dims, coords=df.coords).astype("float64")
+                df[nm.Fields.discarded_remaining] = dd
         return df
 
     @staticmethod
@@ -275,7 +268,6 @@ class Model(object):
         """Calculate the amounts of discarded products that have been emitted, are still remaining,
         etc., for each inventory year.
         """
-
         # Calculate the amount in landfills that was discarded during this inventory year
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio. This will be used in later iterations of the i loop.
@@ -336,11 +328,8 @@ class Model(object):
         final_dispositions[nm.Fields.emitted] = final_dispositions[nm.Fields.could_decay] - final_dispositions[nm.Fields.discarded_remaining]
         final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.discarded_remaining]
 
-        if lineage[0] == 1985:
-            i = 2
-
         # Landfills are a bit different. Not all of it is subject to decay, so get the fixed amount and add it to present through time
-        final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.present] + final_dispositions[nm.Fields.fixed]
+        final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.present] + final_dispositions[nm.Fields.fixed].cumsum(dim="Year")
 
         recycled_futures = None
         if len(lineage) <= recurse_limit and lineage[0] >= first_recycle_year:

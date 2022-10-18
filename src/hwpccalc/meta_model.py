@@ -113,6 +113,8 @@ class MetaModel(singleton.Singleton):
             if ds_rec is not None:
                 m = MetaModel.make_results(ds_rec, save=True)
             for y in year_ds_col_all:
+                if y == min(list(year_ds_col_all.keys())):
+                    continue
                 if y == 1985:
                     n = 1
                 try:
@@ -218,8 +220,6 @@ class MetaModel(singleton.Singleton):
         carbon_emitted_dumps.name = CO2(E(nm.Fields.dumps))
         carbon_emitted_dumps = carbon_emitted_dumps.drop_vars(nm.Fields.discard_destination_id)
 
-        # TODO do we need to carry over the PIU to Emitted for fuels?
-        # fuel_carbon_emitted = ds[nm.Fields.products_in_use].where(ds.data_vars[nm.Fields.fuel] == 1, drop=True).sum(dim=nm.Fields.end_use_id) # old method, for backup
         fuel_carbon_emitted = (
             ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=0)].where(ds.data_vars[nm.Fields.fuel] == 1, drop=True).sum(dim=nm.Fields.end_use_id)
         )
