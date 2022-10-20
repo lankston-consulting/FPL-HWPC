@@ -7,7 +7,7 @@ import zipfile
 from io import BytesIO
 
 import xarray as xr
-from dask.distributed import Client, LocalCluster, Lock, as_completed
+from dask.distributed import Client, LocalCluster, Lock, as_completed, Semaphore
 from dask_cloudprovider.aws import FargateCluster
 
 from hwpccalc.hwpc import model, model_data
@@ -28,7 +28,7 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.start = timeit.default_timer()
 
-            MetaModel.cluster = LocalCluster(n_workers=12, processes=True)
+            MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
 
             # MetaModel.cluster = FargateCluster(
             #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
@@ -46,6 +46,8 @@ class MetaModel(singleton.Singleton):
             # MetaModel.client = Client('tcp://127.0.0.1:34069')
 
             MetaModel.lock = Lock("plock")
+            MetaModel.sem = Semaphore(max_leases=60, name="Limiter")
+
 
             print(MetaModel.client)
 

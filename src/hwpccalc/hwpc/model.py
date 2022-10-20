@@ -4,12 +4,12 @@ import traceback
 
 import numpy as np
 import xarray as xr
-from dask.distributed import Lock, get_client
+from dask.distributed import Lock, Semaphore, get_client
 from hwpccalc.hwpc.model_data import ModelData
 from hwpccalc.hwpc.names import Names as nm
 from scipy.stats import chi2, expon
 
-recurse_limit = 0
+recurse_limit = 2
 first_recycle_year = 1980  # TODO make this dynamic
 
 
@@ -32,7 +32,7 @@ class Model(object):
 
         # Create the dataframes needed to run each harvest year or recycle year "independently"
         year_model_col = list()
-        for y in range(first_year, last_year + 1):
+        for y in range(last_year, first_year - 1, -1):
             if lineage is None:
                 k = (y,)
             else:
@@ -44,6 +44,12 @@ class Model(object):
                 year_recycled = recycled.copy(deep=True)
                 year_recycled = year_recycled.assign_attrs({"lineage": k})
                 year_recycled = year_recycled.sel(Year=list(range(y, last_year + 1)))
+                year_recycled[nm.Fields.end_use_products] = xr.where(
+                    year_recycled[nm.Fields.harvest_year] == y, year_recycled[nm.Fields.end_use_products], 0
+                )
+                year_recycled[nm.Fields.end_use_available] = xr.where(
+                    year_recycled[nm.Fields.harvest_year] == y, year_recycled[nm.Fields.end_use_available], 0
+                )
                 year_recycled[nm.Fields.products_in_use] = xr.where(
                     year_recycled[nm.Fields.harvest_year] == y, year_recycled[nm.Fields.products_in_use], 0
                 )
@@ -57,9 +63,11 @@ class Model(object):
 
             client = get_client()
             m = Model.run
-            future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=sum(k))
-            year_model_col.append(future)
-            client.log_event("New Year Group", "Lineage: " + str(k))
+            p = y * len(k) + sum(k)
+            with Semaphore(max_leases=60, name="Limiter"):
+                future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=sum(k))
+                year_model_col.append(future)
+                client.log_event("New Year Group", "Lineage: " + str(k))
 
         return year_model_col
 
@@ -74,24 +82,38 @@ class Model(object):
         
         if recycled is None:
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
-            working_table = Model.calculate_end_use_products(working_table)
-            working_table = Model.calculate_products_in_use(working_table, md)
+            working_table = Model.calculate_end_use_products(working_table, md)
         else:
             working_table = recycled
 
+        working_table = Model.calculate_products_in_use(working_table, md)
         working_table = Model.calculate_discarded_dispositions(working_table, md, lineage)
         working_table = Model.calculate_dispositions(working_table, md, model_data_path, harvests, lineage)
 
         return working_table
 
     @staticmethod
-    def calculate_end_use_products(working_table):
+    def calculate_end_use_products(working_table, md):
         """Calculate the amount of end use products harvested in each year."""
 
         # Multiply the primary-to-end-use ratio for each end use product by the amount of the
         # corresponding primary product.
         end_use = working_table
         end_use[nm.Fields.end_use_products] = working_table[nm.Fields.ccf] * working_table[nm.Fields.end_use_ratio_direct]
+
+        # Make sure the rows are ascending to do the half life. Don't do this inplace
+        # end_use = end_use.sort_values(by=nm.Fields.harvest_year)
+        end_use = working_table.merge(
+            md.data[nm.Tables.end_use_products],
+            join="left",
+            compat="override",
+            fill_value=0,
+        )
+
+        loss = 1 - float(nm.Output.scenario_info[nm.Fields.loss_factor])
+        end_use[nm.Fields.end_use_available] = xr.where(
+            end_use[nm.Fields.discard_type_id] == 0, end_use[nm.Fields.end_use_products], end_use[nm.Fields.end_use_products] * loss
+        )
 
         return end_use
 
@@ -158,19 +180,7 @@ class Model(object):
         """Calculate the amount of end use products from each vintage year that are still in use
         during each inventory year.
         """
-        # Make sure the rows are ascending to do the half life. Don't do this inplace
-        # end_use = end_use.sort_values(by=nm.Fields.harvest_year)
-        end_use = working_table.merge(
-            md.data[nm.Tables.end_use_products],
-            join="left",
-            compat="override",
-            fill_value=0,
-        )
-
-        loss = 1 - float(nm.Output.scenario_info[nm.Fields.loss_factor])
-        end_use[nm.Fields.end_use_available] = xr.where(
-            end_use[nm.Fields.discard_type_id] == 0, end_use[nm.Fields.end_use_products], end_use[nm.Fields.end_use_products] * loss
-        )
+        end_use = working_table
 
         # Don't take the whole dataframe and pass it to a mapped function, it destroys coordinates
         products_in_use = end_use[[nm.Fields.end_use_id, nm.Fields.end_use_halflife, nm.Fields.end_use_products, nm.Fields.end_use_available]]
@@ -342,7 +352,10 @@ class Model(object):
 
             # Set the recycled material to be "in use" in the next year
             # TODO Check that recycling actually works after this, because this adds DiscardTypeID as a coordinate to products_in_use
+            recycled[nm.Fields.end_use_products] = recycled[nm.Fields.can_decay]
+            recycled[nm.Fields.end_use_available] = recycled[nm.Fields.can_decay]
             recycled[nm.Fields.products_in_use] = recycled[nm.Fields.can_decay]
+
             recycled[nm.Fields.harvest_year] = recycled[nm.Fields.harvest_year] + 1
 
             drop_key = [
@@ -352,17 +365,15 @@ class Model(object):
                 nm.Fields.halflife,
                 nm.Fields.can_decay,
                 nm.Fields.fixed,
+                nm.Fields.discarded_remaining,
+                nm.Fields.could_decay,
+                nm.Fields.emitted,
+                nm.Fields.present
             ]
             recycled = recycled.drop_vars(drop_key)
 
-            zero_key = [
-                nm.Fields.ccf,
-                nm.Fields.end_use_products,
-                nm.Fields.end_use_available,
-            ]
-
             # Zero out harvest info because recycled material isn't harvested
-            recycled[zero_key] = xr.zeros_like(recycled[zero_key])
+            recycled[nm.Fields.ccf] = xr.zeros_like(recycled[nm.Fields.ccf])
 
             recycled_futures = Model.model_factory(model_data_path=model_data_path, harvest_init=harvests, recycled=recycled, lineage=lineage)
 
