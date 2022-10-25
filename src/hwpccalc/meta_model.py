@@ -37,7 +37,7 @@ class MetaModel(singleton.Singleton):
                 worker_cpu=1024,
                 worker_nthreads=2,
                 worker_mem=2048,
-                n_workers=72,
+                n_workers=2,
             )
 
             # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
