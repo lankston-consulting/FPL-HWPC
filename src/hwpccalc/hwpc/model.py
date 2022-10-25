@@ -64,10 +64,9 @@ class Model(object):
             client = get_client()
             m = Model.run
             p = y * len(k) + sum(k)
-            with Semaphore(max_leases=60, name="Limiter"):
-                future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=sum(k))
-                year_model_col.append(future)
-                client.log_event("New Year Group", "Lineage: " + str(k))
+            future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=sum(k))
+            year_model_col.append(future)
+            client.log_event("New Year Group", "Lineage: " + str(k))
 
         return year_model_col
 
@@ -75,8 +74,8 @@ class Model(object):
     def run(model_data_path: str = None, harvests: xr.Dataset = None, recycled: xr.Dataset = None, lineage: tuple = None):
         """Model entrypoint. The model object..."""
         client = get_client()
-        with Lock("plock"):
-            print("Lineage:", lineage)
+        # with Lock("plock"):
+        #     print("Lineage:", lineage)
 
         md = ModelData(path=model_data_path)
         

@@ -28,17 +28,17 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.start = timeit.default_timer()
 
-            MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
+            # MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
 
-            # MetaModel.cluster = FargateCluster(
-            #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
-            #     scheduler_cpu=2048,
-            #     scheduler_mem=4096,
-            #     worker_cpu=1024,
-            #     worker_nthreads=2,
-            #     worker_mem=2048,
-            #     n_workers=32,
-            # )
+            MetaModel.cluster = FargateCluster(
+                image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
+                scheduler_cpu=2048,
+                scheduler_mem=4096,
+                worker_cpu=1024,
+                worker_nthreads=2,
+                worker_mem=2048,
+                n_workers=72,
+            )
 
             # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
 
@@ -46,8 +46,6 @@ class MetaModel(singleton.Singleton):
             # MetaModel.client = Client('tcp://127.0.0.1:34069')
 
             MetaModel.lock = Lock("plock")
-            MetaModel.sem = Semaphore(max_leases=60, name="Limiter")
-
 
             print(MetaModel.client)
 
@@ -113,9 +111,9 @@ class MetaModel(singleton.Singleton):
 
             m = MetaModel.make_results(ds_all, save=True)
             if ds_rec is not None:
-                m = MetaModel.make_results(ds_rec, save=True)
+                m = MetaModel.make_results(ds_rec, prefix="rec", save=True)
             for y in year_ds_col_all:
-                if y == min(list(year_ds_col_all.keys())):
+                if y == max(list(year_ds_col_all.keys())):
                     continue
                 if y == 1985:
                     n = 1
@@ -132,9 +130,10 @@ class MetaModel(singleton.Singleton):
                 print("===========================")
 
         except Exception as e:
-            MetaModel.cluster.close()
             print(e)
             traceback.print_exc()
+        finally:
+            MetaModel.cluster.close()
         return
 
     @staticmethod
