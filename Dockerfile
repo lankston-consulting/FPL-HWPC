@@ -16,6 +16,7 @@
 
 FROM daskdev/dask:latest
 
+
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir dask-cloudprovider[aws]
@@ -30,7 +31,24 @@ COPY .env .env
 
 # ENV -n=$NAME
 # ENV -p=$USER_BUCKET
+# RUN echo "$USER_BUCKET"
+# RUN echo "$NAME"
 
 
-CMD ["src/hwpccalc/main.py", $USER_BUCKET, $NAME]
+
+# ENV -p "$USER_BUCKET"
+# ENV -n "$NAME"
+
+# ARG name
+# ARG user_string
+
+# ENV NAME $name
+# ENV USER_BUCKET $user_string
+
+# RUN echo $NAME
+# RUN echo $USER_BUCKET
+
+
+
 ENTRYPOINT ["python"]
+CMD ["src/hwpccalc/main.py", "-p", "hwpc-user-inputs/0b849568-2ea5-46ed-aed2-1f2382ce528f", "-n", "cali2"]
