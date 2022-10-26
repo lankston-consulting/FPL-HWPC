@@ -1,24 +1,26 @@
+import argparse
+
 import hwpccalc.config
 import hwpccalc.meta_model
 
-# from hwpc import input_download
 from hwpccalc.hwpc import names
 
 # from hwpc import email
 
 
-def run(path="hwpc-user-inputs/c6f40afe-b532-49d1-96e1-c45898a50e35", name="cali2"):
+def run(args):
+
+    path = args.path
+    name = args.name
 
     names.Names()
     names.Names.Tables()
     names.Names.Fields()
     names.Names.Output()
 
+    names.Names.Output.input_path = path
     names.Names.Output.output_path = path.replace("inputs", "outputs")
     names.Names.Output.run_name = name
-
-    # i = input_download.InputDownload()
-    # i.downloads()
     me = hwpccalc.meta_model.MetaModel()
 
     me.run_simulation()
@@ -32,4 +34,12 @@ def run(path="hwpc-user-inputs/c6f40afe-b532-49d1-96e1-c45898a50e35", name="cali
 
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
+    parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/3632ee74-4f53-4090-9d70-8069fbc76a6b")
+    parser.add_argument("-n", "--name", help="User provided name of simulation run.", default="montana_20221017")
+
+    args, _ = parser.parse_known_args()
+
+    run(args)

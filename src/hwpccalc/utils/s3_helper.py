@@ -62,8 +62,6 @@ class S3Helper(object):
             data ([type]): The data to be delivered to the destination folder.
             data_type ([type]): A logic check for harvested_wood_products.
         """
-        print(bucket_name)
-        print(source_file_name)
         data_json = {}
         # Code parses through data pulled from web
         for key, value in data.items():
