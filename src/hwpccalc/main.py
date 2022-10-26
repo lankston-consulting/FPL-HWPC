@@ -36,10 +36,6 @@ def run(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    # parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
-    # parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/3632ee74-4f53-4090-9d70-8069fbc76a6b")
-    # parser.add_argument("-n", "--name", help="User provided name of simulation run.", default="montana_20221017")
-
     parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
     parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/3632ee74-4f53-4090-9d70-8069fbc76a6b")
     parser.add_argument("-n", "--name", help="User provided name of simulation run.", default="montana_20221017")
