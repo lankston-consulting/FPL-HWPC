@@ -7,13 +7,14 @@ import zipfile
 from io import BytesIO
 
 import xarray as xr
-from dask.distributed import Client, LocalCluster, Lock, as_completed
+from dask.distributed import Client, LocalCluster, Lock, as_completed, Semaphore
 from dask_cloudprovider.aws import FargateCluster
 
 from hwpccalc.hwpc import model, model_data
 from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import singleton, email
 from hwpccalc.utils.s3_helper import S3Helper
+
 
 class MetaModel(singleton.Singleton):
     """ """
@@ -27,21 +28,22 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.start = timeit.default_timer()
 
-            MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
+            # MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
 
-            # MetaModel.cluster = FargateCluster(
-            #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
-            #     scheduler_cpu=2048,
-            #     scheduler_mem=4096,
-            #     worker_cpu=1024,
-            #     worker_nthreads=2,
-            #     worker_mem=2048,
-            #     n_workers=32,
-            # )
+            MetaModel.cluster = FargateCluster(
+                image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
+                scheduler_cpu=2048,
+                scheduler_mem=4096,
+                worker_cpu=1024,
+                worker_nthreads=2,
+                worker_mem=2048,
+                n_workers=2,
+            )
 
             # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
 
             MetaModel.client = Client(MetaModel.cluster)
+            # MetaModel.client = Client('tcp://127.0.0.1:34069')
 
             MetaModel.lock = Lock("plock")
 
@@ -69,7 +71,7 @@ class MetaModel(singleton.Singleton):
                 r, r_futures = f.result()
 
                 ykey = r.lineage[0]
-                if ykey == 2011:
+                if ykey == 1985:
                     j = 0
                 if ykey in year_ds_col_all:
                     year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
@@ -108,13 +110,18 @@ class MetaModel(singleton.Singleton):
 
             m = MetaModel.make_results(ds_all, save=True)
             if ds_rec is not None:
-                m = MetaModel.make_results(ds_rec, save=True)
+                m = MetaModel.make_results(ds_rec, prefix="rec", save=True)
             for y in year_ds_col_all:
-                if y == 2011:
+                if y == max(list(year_ds_col_all.keys())):
+                    continue
+                if y == 1985:
                     n = 1
-                m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
-                if ds_rec is not None:
-                    m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_rec", save=True)
+                try:
+                    m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
+                    if ds_rec is not None:
+                        m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_rec", save=True)
+                except Exception as e:
+                    print(e)
 
             with Lock("plock"):
                 print("===========================")
@@ -122,9 +129,10 @@ class MetaModel(singleton.Singleton):
                 print("===========================")
 
         except Exception as e:
-            MetaModel.cluster.close()
             print(e)
             traceback.print_exc()
+        finally:
+            MetaModel.cluster.close()
         return
 
     @staticmethod
@@ -133,14 +141,14 @@ class MetaModel(singleton.Singleton):
             return MetaModel.aggregate_results(new_ds, src_ds)
 
         new_ds = new_ds.merge(src_ds, join="right", fill_value=0, compat="override")
-        src_ds[nm.Fields.end_use_results] = src_ds[nm.Fields.end_use_results] + new_ds[nm.Fields.end_use_results]
-        src_ds[nm.Fields.end_use_sum] = src_ds[nm.Fields.end_use_sum] + new_ds[nm.Fields.end_use_sum]
+        src_ds[nm.Fields.end_use_products] = src_ds[nm.Fields.end_use_products] + new_ds[nm.Fields.end_use_products]
+        src_ds[nm.Fields.end_use_available] = src_ds[nm.Fields.end_use_available] + new_ds[nm.Fields.end_use_available]
         src_ds[nm.Fields.products_in_use] = src_ds[nm.Fields.products_in_use] + new_ds[nm.Fields.products_in_use]
-        src_ds[nm.Fields.discarded_products_results] = src_ds[nm.Fields.discarded_products_results] + new_ds[nm.Fields.discarded_products_results]
-        src_ds[nm.Fields.discard_dispositions] = src_ds[nm.Fields.discard_dispositions] + new_ds[nm.Fields.discard_dispositions]
+        src_ds[nm.Fields.discarded_products] = src_ds[nm.Fields.discarded_products] + new_ds[nm.Fields.discarded_products]
+        src_ds[nm.Fields.discarded_dispositions] = src_ds[nm.Fields.discarded_dispositions] + new_ds[nm.Fields.discarded_dispositions]
         src_ds[nm.Fields.can_decay] = src_ds[nm.Fields.can_decay] + new_ds[nm.Fields.can_decay]
         src_ds[nm.Fields.fixed] = src_ds[nm.Fields.fixed] + new_ds[nm.Fields.fixed]
-        src_ds[nm.Fields.discard_remaining] = src_ds[nm.Fields.discard_remaining] + new_ds[nm.Fields.discard_remaining]
+        src_ds[nm.Fields.discarded_remaining] = src_ds[nm.Fields.discarded_remaining] + new_ds[nm.Fields.discarded_remaining]
         src_ds[nm.Fields.could_decay] = src_ds[nm.Fields.could_decay] + new_ds[nm.Fields.could_decay]
         src_ds[nm.Fields.emitted] = src_ds[nm.Fields.emitted] + new_ds[nm.Fields.emitted]
         src_ds[nm.Fields.present] = src_ds[nm.Fields.present] + new_ds[nm.Fields.present]
@@ -168,16 +176,16 @@ class MetaModel(singleton.Singleton):
         E = nm.Fields.eemitted
         CHANGE = nm.Fields.change
 
-        if prefix == "2011":
+        if prefix == "1985":
             i = 3
 
-        final_e = ds[[nm.Fields.end_use_results, nm.Fields.products_in_use, nm.Fields.discarded_products_results]].sum(dim="EndUseID")
+        final_e = ds[[nm.Fields.end_use_products, nm.Fields.products_in_use, nm.Fields.discarded_products]].sum(dim="EndUseID")
         final_d = ds[
             [
-                nm.Fields.discard_dispositions,
+                nm.Fields.discarded_dispositions,
                 nm.Fields.can_decay,
                 nm.Fields.fixed,
-                nm.Fields.discard_remaining,
+                nm.Fields.discarded_remaining,
                 nm.Fields.could_decay,
                 nm.Fields.emitted,
                 nm.Fields.present,
@@ -185,9 +193,9 @@ class MetaModel(singleton.Singleton):
         ].sum(dim=["EndUseID", "DiscardDestinationID"])
         final = xr.merge([final_e, final_d])
 
-        annual_harvest_and_timber = ds[[nm.Fields.ccf, nm.Fields.end_use_results]].sum(dim=nm.Fields.end_use_id)
+        annual_harvest_and_timber = ds[[nm.Fields.ccf, nm.Fields.end_use_products]].sum(dim=nm.Fields.end_use_id)
         annual_harvest_and_timber = annual_harvest_and_timber.rename_vars(
-            {nm.Fields.ccf: C(nm.Fields.ccf), nm.Fields.end_use_results: MGC(nm.Fields.end_use_results)}
+            {nm.Fields.ccf: C(nm.Fields.ccf), nm.Fields.end_use_products: MGC(nm.Fields.end_use_products)}
         )
 
         compost_emitted = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=2)].sum(dim=nm.Fields.end_use_id)
@@ -212,8 +220,6 @@ class MetaModel(singleton.Singleton):
         carbon_emitted_dumps.name = CO2(E(nm.Fields.dumps))
         carbon_emitted_dumps = carbon_emitted_dumps.drop_vars(nm.Fields.discard_destination_id)
 
-        # TODO do we need to carry over the PIU to Emitted for fuels?
-        # fuel_carbon_emitted = ds[nm.Fields.products_in_use].where(ds.data_vars[nm.Fields.fuel] == 1, drop=True).sum(dim=nm.Fields.end_use_id) # old method, for backup
         fuel_carbon_emitted = (
             ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=0)].where(ds.data_vars[nm.Fields.fuel] == 1, drop=True).sum(dim=nm.Fields.end_use_id)
         )
