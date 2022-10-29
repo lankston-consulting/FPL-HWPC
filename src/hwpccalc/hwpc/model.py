@@ -64,7 +64,7 @@ class Model(object):
             client = get_client()
             m = Model.run
             p = y * len(k) + sum(k)
-            future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=sum(k))
+            future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=p)
             year_model_col.append(future)
             client.log_event("New Year Group", "Lineage: " + str(k))
 
@@ -181,9 +181,14 @@ class Model(object):
         """
         end_use = working_table
 
+        decay_func = md.decay_function
+
         # Don't take the whole dataframe and pass it to a mapped function, it destroys coordinates
         products_in_use = end_use[[nm.Fields.end_use_id, nm.Fields.end_use_halflife, nm.Fields.end_use_products, nm.Fields.end_use_available]]
-        products_in_use = products_in_use.groupby(nm.Fields.end_use_id).map(Model.chi2_func)
+        if decay_func == "halflife":
+            products_in_use = products_in_use.groupby(nm.Fields.end_use_id).map(Model.halflife_func)
+        else:
+            products_in_use = products_in_use.groupby(nm.Fields.end_use_id).map(Model.chi2_func)
 
         end_use[nm.Fields.products_in_use] = products_in_use[nm.Fields.products_in_use]
 
@@ -220,7 +225,7 @@ class Model(object):
         # If this is an edge, where either the maximum recurion depth has been reached
         # or if the new recycling method is just straight turned off, discribute carbon
         # from recycling proportionally into the other discard pools
-        if len(lineage) > recurse_limit and lineage[0] >= first_recycle_year or lineage[0] < first_recycle_year:
+        if lineage[-1] <= first_recycle_year or len(lineage) > recurse_limit:
             no_recycle_swds = (
                 discard_ratios.loc[dict(DiscardDestinationID=list([3, 4]))]["DiscardDestinationRatio"].groupby("Year").sum(dim="DiscardDestinationID")
             )
@@ -284,6 +289,9 @@ class Model(object):
         # TODO make the ID lookup dynamic. For now we just need this done so hard code it
         # recycled_id = destinations.where(destinations == nm.Fields.recycled, drop=True)[nm.Fields.discard_destination_id].item()
         recycled_id = 1
+
+        if len(lineage) > 1:
+            i = 9
 
         # Calculate the amount in landfills that was discarded during this inventory year
         # that is subject to decay by multiplying the amount in the landfill by the

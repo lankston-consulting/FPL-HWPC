@@ -16,6 +16,8 @@ class ModelData(pickler.Pickler):
     def __init__(self, *args, **kwargs) -> None:
         self.data = dict()
         self.ids = None
+        self.region = None
+        self.decay_function = None
 
         if "path" in kwargs:
             self.load_data(path_override=kwargs["path"])
@@ -38,6 +40,8 @@ class ModelData(pickler.Pickler):
         with open(json_file.name) as f:
             j = json.load(f)
             nm.Output.scenario_info = j
+            self.region = j["region"]["name"]
+            self.decay_function = j["decay_function"]
             for k in j:
                 if k == "inputs":
                     for l in j[k]:
@@ -107,8 +111,7 @@ class ModelData(pickler.Pickler):
         self.data[nm.Tables.timber_products] = dx
 
         # Parse the region and attempt to pull in default data
-        region = nm.Output.scenario_info["region"]["name"]
-        region_match = self.get_region_id(region)
+        region_match = self.get_region_id(self.region)
 
         df = self.data[nm.Tables.primary_product_ratios]
 
