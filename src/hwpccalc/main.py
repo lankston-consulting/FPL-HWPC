@@ -5,13 +5,14 @@ import hwpccalc.meta_model
 
 from hwpccalc.hwpc import names
 
-# from hwpc import email
+from hwpccalc.utils import email
 
 
 def run(args):
 
     path = args.path
     name = args.name
+    
 
     names.Names()
     names.Names.Tables()
@@ -22,8 +23,11 @@ def run(args):
     names.Names.Output.output_path = path.replace("inputs", "outputs")
     names.Names.Output.run_name = name
     me = hwpccalc.meta_model.MetaModel()
-
     me.run_simulation()
+    print(names.Names.Output.scenario_info)
+    email.Email().send_email()
+    # email.Email().send_email()
+    # print(b)
 
     # e = email.Email()
     # e.send_email(str(m.md.data['email'].columns.values[0]))

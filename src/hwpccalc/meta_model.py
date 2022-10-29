@@ -12,7 +12,7 @@ from dask_cloudprovider.aws import FargateCluster
 
 from hwpccalc.hwpc import model, model_data
 from hwpccalc.hwpc.names import Names as nm
-from hwpccalc.utils import singleton
+from hwpccalc.utils import singleton, email
 from hwpccalc.utils.s3_helper import S3Helper
 
 
@@ -58,7 +58,6 @@ class MetaModel(singleton.Singleton):
         harvest = md.data[nm.Tables.harvest]
 
         years = harvest[nm.Fields.harvest_year]
-
         final_futures = model.Model.model_factory(model_data_path=nm.Output.input_path, harvest_init=harvest)
         ac = as_completed(final_futures)
         year_ds_col_all = dict()
