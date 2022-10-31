@@ -140,6 +140,9 @@ class MetaModel(singleton.Singleton):
         if src_ds.lineage[-1] > new_ds.lineage[-1]:
             return MetaModel.aggregate_results(new_ds, src_ds)
 
+        if len(src_ds.lineage) > 2 or len(new_ds.lineage) > 2:
+            i = 0
+
         new_ds = new_ds.merge(src_ds, join="right", fill_value=0, compat="override")
         src_ds[nm.Fields.end_use_products] = src_ds[nm.Fields.end_use_products] + new_ds[nm.Fields.end_use_products]
         src_ds[nm.Fields.end_use_available] = src_ds[nm.Fields.end_use_available] + new_ds[nm.Fields.end_use_available]
