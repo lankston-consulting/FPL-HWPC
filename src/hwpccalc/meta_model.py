@@ -28,17 +28,17 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.start = timeit.default_timer()
 
-            # MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
+            MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
 
-            MetaModel.cluster = FargateCluster(
-                image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:test",
-                scheduler_cpu=2048,
-                scheduler_mem=4096,
-                worker_cpu=1024,
-                worker_nthreads=2,
-                worker_mem=2048,
-                n_workers=2,
-            )
+            # MetaModel.cluster = FargateCluster(
+            #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:latest",
+            #     scheduler_cpu=2048,
+            #     scheduler_mem=4096,
+            #     worker_cpu=1024,
+            #     worker_nthreads=2,
+            #     worker_mem=2048,
+            #     n_workers=72,
+            # )
 
             # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
 
@@ -112,14 +112,14 @@ class MetaModel(singleton.Singleton):
             if ds_rec is not None:
                 m = MetaModel.make_results(ds_rec, prefix="rec", save=True)
             for y in year_ds_col_all:
-                if y == max(list(year_ds_col_all.keys())):
-                    continue
+                # if y == max(list(year_ds_col_all.keys())):
+                #     continue
                 if y == 1985:
                     n = 1
                 try:
                     m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
                     if ds_rec is not None:
-                        m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_rec", save=True)
+                        m = MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
                 except Exception as e:
                     print(e)
 
@@ -282,10 +282,11 @@ class MetaModel(singleton.Singleton):
         )
         emitted_all = emitted_all.squeeze()
         carbon_present_distinct_swds = xr.Dataset(
-            {MGC(P(nm.Fields.dumps)): carbon_present_dumps, MGC(P(nm.Fields.landfills)): carbon_present_landfills}
+            {MGC(P(nm.Fields.dumps)): carbon_present_dumps, MGC(P(nm.Fields.landfills)): carbon_present_landfills, MGC(nm.Fields.products_in_use): end_use_in_use}
         )
+        # TODO fix units, these are in MGC still
         carbon_emitted_distinct_swds = xr.Dataset(
-            {CO2(E(nm.Fields.dumps)): carbon_emitted_dumps, CO2(E(nm.Fields.landfills)): carbon_emitted_landfills}
+            {CO2(E(nm.Fields.dumps)): carbon_emitted_dumps, CO2(E(nm.Fields.landfills)): carbon_emitted_landfills, CO2(nm.Fields.products_in_use): end_use_in_use}
         )
 
         # totalYearlyDispositions PDF
