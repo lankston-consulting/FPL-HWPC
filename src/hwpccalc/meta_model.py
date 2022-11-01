@@ -285,7 +285,7 @@ class MetaModel(singleton.Singleton):
             {MGC(P(nm.Fields.dumps)): carbon_present_dumps, MGC(P(nm.Fields.landfills)): carbon_present_landfills, MGC(nm.Fields.products_in_use): end_use_in_use}
         )
         carbon_emitted_distinct_swds = xr.Dataset(
-            {CO2(E(nm.Fields.dumps)): MetaModel.c_to_co2e(carbon_emitted_dumps), CO2(E(nm.Fields.landfills)): MetaModel.c_to_co2e(carbon_emitted_landfills), CO2(nm.Fields.products_in_use): MetaModel.c_to_co2e(end_use_in_use)}
+            {CO2(E(nm.Fields.dumps)): carbon_emitted_dumps, CO2(E(nm.Fields.landfills)): carbon_emitted_landfills, CO2(nm.Fields.products_in_use): MetaModel.c_to_co2e(end_use_in_use)}
         )
 
         # totalYearlyDispositions PDF
