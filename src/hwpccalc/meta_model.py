@@ -117,7 +117,7 @@ class MetaModel(singleton.Singleton):
                     m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
                     if ds_rec is not None:
                         m = MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
-                        ms = MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], save=True)
+                        ms = MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
                 except Exception as e:
                     print(e)
 
