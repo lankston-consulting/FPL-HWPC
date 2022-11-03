@@ -114,7 +114,7 @@ class MetaModel(singleton.Singleton):
 
             for y in year_ds_col_all:
                 try:
-                    m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
+                    m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
                     if ds_rec is not None:
                         m = MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
                         ms = MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
@@ -128,9 +128,8 @@ class MetaModel(singleton.Singleton):
 
         except Exception as e:
             print(e)
-            traceback.print_exc()
-        finally:
-            MetaModel.cluster.close()
+            # traceback.print_exc()
+            raise e
         return
 
     @staticmethod
@@ -227,7 +226,7 @@ class MetaModel(singleton.Singleton):
         # fuel_carbon_emitted = fuel_carbon_emitted.cumsum()
 
         if rec_ds:
-            end_use_in_use_nr = nonrec_piu
+            end_use_in_use_nr = nonrec_piu.sum(dim=nm.Fields.end_use_id)
             end_use_in_use_nr.name = MGC("new_" + nm.Fields.products_in_use)
             end_use_in_use_r = rec_ds[nm.Fields.products_in_use].sum(dim=nm.Fields.end_use_id)
             end_use_in_use_r.name = MGC("reused_" + nm.Fields.products_in_use)
