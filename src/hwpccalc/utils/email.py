@@ -5,7 +5,7 @@ from botocore.exceptions import ClientError
 from hwpccalc.hwpc import names
 
 
-class Email:
+class Email(object):
     # def __init__(self) -> None:
     #     super().__init__()
     #     json = nm.Output.scenario_info
@@ -19,6 +19,7 @@ class Email:
 
         # Replace recipient@example.com with a "To" address. If your account 
         # is still in the sandbox, this address must be verified.
+        print(names.Names.Output.scenario_info["email"])
         RECIPIENT =  names.Names.Output.scenario_info["email"]
         
         # Specify a configuration set. If you do not want to use a configuration
