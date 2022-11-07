@@ -7,14 +7,15 @@ name = "pypi"
 bokeh = "*"
 boto3 = {extras = ["crt"], version = "*"}
 cloudpickle = "*"
-dask = {extras = ["dataframe", "diagnostics", "distributed"], version = "*"}
 lz4 = "~=4.0.0"
-numpy = "*"
-pandas = "*"
+numpy = "==1.23.4"
+pandas = "==1.5.1"
 python-dotenv = "*"
 xarray = "*"
 scipy = "*"
 plotly = "*"
+dask = {version = "==2022.10.0", extras = ["dataframe", "diagnostics", "distributed"]}
+dask-cloudprovider = {extras = ["aws"], version = "*"}
 
 [dev-packages]
 black = {version = "*"}
@@ -25,7 +26,6 @@ pipenv-setup = {extras = ["black"], version = "*"}
 setuptools = "*"
 ipykernel = "*"
 jupyter = "*"
-matplotlib = "*"
 
 [requires]
 python_version = "3.8.10"
