@@ -225,7 +225,7 @@ class Model(object):
         # If this is an edge, where either the maximum recurion depth has been reached
         # or if the new recycling method is just straight turned off, discribute carbon
         # from recycling proportionally into the other discard pools
-        if lineage[-1] <= first_recycle_year or len(lineage) > recurse_limit:
+        if lineage[-1] < first_recycle_year or len(lineage) > recurse_limit:
             no_recycle_swds = (
                 discard_ratios.loc[dict(DiscardDestinationID=list([3, 4]))][nm.Fields.discard_destination_ratio]
                 .groupby(nm.Fields.harvest_year)
