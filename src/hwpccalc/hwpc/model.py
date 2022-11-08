@@ -4,7 +4,7 @@ import traceback
 
 import numpy as np
 import xarray as xr
-from dask.distributed import Lock, Semaphore, get_client
+from dask.distributed import Lock, get_client
 from hwpccalc.hwpc.model_data import ModelData
 from hwpccalc.hwpc.names import Names as nm
 from scipy.stats import chi2, expon
@@ -74,11 +74,11 @@ class Model(object):
     def run(model_data_path: str = None, harvests: xr.Dataset = None, recycled: xr.Dataset = None, lineage: tuple = None):
         """Model entrypoint. The model object..."""
         client = get_client()
-        # with Lock("plock"):
-        #     print("Lineage:", lineage)
+        with Lock("plock"):
+            print("Lineage:", lineage)
 
         md = ModelData(path=model_data_path)
-        
+
         if recycled is None:
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
             working_table = Model.calculate_end_use_products(working_table, md)
@@ -227,10 +227,14 @@ class Model(object):
         # from recycling proportionally into the other discard pools
         if lineage[-1] <= first_recycle_year or len(lineage) > recurse_limit:
             no_recycle_swds = (
-                discard_ratios.loc[dict(DiscardDestinationID=list([3, 4]))]["DiscardDestinationRatio"].groupby("Year").sum(dim="DiscardDestinationID")
+                discard_ratios.loc[dict(DiscardDestinationID=list([3, 4]))][nm.Fields.discard_destination_ratio]
+                .groupby(nm.Fields.harvest_year)
+                .sum(dim=nm.Fields.discard_destination_id)
             )
             no_recycle_no_swds = (
-                discard_ratios.loc[dict(DiscardDestinationID=list([0, 2]))]["DiscardDestinationRatio"].groupby("Year").sum(dim="DiscardDestinationID")
+                discard_ratios.loc[dict(DiscardDestinationID=list([0, 2]))][nm.Fields.discard_destination_ratio]
+                .groupby(nm.Fields.harvest_year)
+                .sum(dim=nm.Fields.discard_destination_id)
             )
             no_recycle = (1 - no_recycle_no_swds) / no_recycle_swds
             discard_ratios[nm.Fields.discard_destination_ratio].loc[dict(DiscardDestinationID=list([3, 4]))] = (
@@ -290,9 +294,6 @@ class Model(object):
         # recycled_id = destinations.where(destinations == nm.Fields.recycled, drop=True)[nm.Fields.discard_destination_id].item()
         recycled_id = 1
 
-        if len(lineage) > 1:
-            i = 9
-
         # Calculate the amount in landfills that was discarded during this inventory year
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio.
@@ -349,7 +350,7 @@ class Model(object):
         final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.present] + final_dispositions[nm.Fields.fixed].cumsum(dim="Year")
 
         recycled_futures = None
-        if len(lineage) <= recurse_limit and lineage[0] >= first_recycle_year:
+        if len(lineage) <= recurse_limit and lineage[-1] >= first_recycle_year:
             # For the new recycling, remove products assigned to be recycled and
             # begin a new simulation using the recycled products as "harvest" amounts
             # NOTE the below line doesn't work, it resets coords in a bad way. Hard coding selection.
@@ -375,7 +376,7 @@ class Model(object):
                 nm.Fields.discarded_remaining,
                 nm.Fields.could_decay,
                 nm.Fields.emitted,
-                nm.Fields.present
+                nm.Fields.present,
             ]
             recycled = recycled.drop_vars(drop_key)
 
@@ -385,7 +386,3 @@ class Model(object):
             recycled_futures = Model.model_factory(model_data_path=model_data_path, harvest_init=harvests, recycled=recycled, lineage=lineage)
 
         return final_dispositions, recycled_futures
-
-
-# if __name__ == "__main__":
-#     print("Local test")

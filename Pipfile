@@ -7,22 +7,22 @@ name = "pypi"
 bokeh = "*"
 boto3 = {extras = ["crt"], version = "*"}
 cloudpickle = "*"
+dask = {version = "==2022.10.0", extras = ["dataframe", "diagnostics", "distributed"]}
+dask-cloudprovider = {extras = ["aws"], version = "*"}
 lz4 = "~=4.0.0"
 numpy = "==1.23.4"
 pandas = "==1.5.1"
 python-dotenv = "*"
+pipenv-setup = {extras = ["black"], version = "*"}
 xarray = "*"
 scipy = "*"
 plotly = "*"
-dask = {version = "==2022.10.0", extras = ["dataframe", "diagnostics", "distributed"]}
-dask-cloudprovider = {extras = ["aws"], version = "*"}
 
 [dev-packages]
 black = {version = "*"}
 build = "*"
 pylama = "*"
 pylint = "*"
-pipenv-setup = {extras = ["black"], version = "*"}
 setuptools = "*"
 ipykernel = "*"
 jupyter = "*"
