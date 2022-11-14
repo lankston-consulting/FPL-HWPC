@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-bokeh = "*"
+bokeh = "<3.0.0"
 boto3 = {extras = ["crt"], version = "*"}
 cloudpickle = "*"
 dask = {version = "==2022.10.0", extras = ["dataframe", "diagnostics", "distributed"]}
@@ -17,6 +17,7 @@ pipenv-setup = {extras = ["black"], version = "*"}
 xarray = "*"
 scipy = "*"
 plotly = "*"
+pylance = "*"
 
 [dev-packages]
 black = {version = "*"}

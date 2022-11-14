@@ -28,7 +28,9 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.start = timeit.default_timer()
 
-            MetaModel.cluster = LocalCluster(n_workers=16, threads_per_worker=4, processes=True)
+            print("Provisioning cluster...")
+
+            MetaModel.cluster = LocalCluster(n_workers=16, threads_per_worker=2, processes=True, memory_limit=None)
 
             # MetaModel.cluster = FargateCluster(
             #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:robb",
@@ -42,7 +44,11 @@ class MetaModel(singleton.Singleton):
 
             # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
 
+            print("Cluster provisioned.")
+
             MetaModel.client = Client(MetaModel.cluster)
+
+            print("Client attached.")
 
             MetaModel.lock = Lock("plock")
 
@@ -56,6 +62,8 @@ class MetaModel(singleton.Singleton):
         md = model_data.ModelData(path=nm.Output.input_path)
         harvest = md.data[nm.Tables.harvest]
 
+        print("Starting simluation.")
+
         final_futures = model.Model.model_factory(model_data_path=nm.Output.input_path, harvest_init=harvest)
         ac = as_completed(final_futures)
         year_ds_col_all = dict()
@@ -63,6 +71,8 @@ class MetaModel(singleton.Singleton):
 
         ds_all = None
         ds_rec = None
+
+        print("Futures created.")
 
         try:
             for f in ac:
@@ -120,6 +130,9 @@ class MetaModel(singleton.Singleton):
                     if ds_rec is not None and y in list(year_ds_col_rec.keys()):  # No recycling in the first year
                         m = MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
                         ms = MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
+                    # else:
+                    #     ms = MetaModel.make_results(year_ds_col_all[y], xr.zeros_like(year_ds_col_all[y]), prefix=str(y), save=True)
+
                 except Exception as e:
                     print(e)
 
@@ -166,7 +179,7 @@ class MetaModel(singleton.Singleton):
         return c * 44.0 / 12.0
 
     @staticmethod
-    def make_results(ds, rec_ds=None, prefix="", save=False):
+    def make_results(ds: xr.Dataset, rec_ds: xr.Dataset=None, prefix:str="", save=False):
 
         C = nm.Fields.c
         MGC = nm.Fields.mgc
@@ -177,6 +190,7 @@ class MetaModel(singleton.Singleton):
 
         nonrec_piu = None
         if rec_ds:
+            ds, rec_ds = xr.align(ds, rec_ds, join="left", fill_value=0)
             nonrec_piu = ds[nm.Fields.products_in_use] - rec_ds[nm.Fields.products_in_use]
 
         final_e = ds[[nm.Fields.end_use_products, nm.Fields.products_in_use, nm.Fields.discarded_products]].sum(dim="EndUseID")
@@ -304,7 +318,7 @@ class MetaModel(singleton.Singleton):
         else:
             big_four = xr.Dataset(
                 {
-                    CO2(P(nm.Fields.products_in_use)): MetaModel.c_to_co2e(end_use_in_use),
+                    "new_" + CO2(P(nm.Fields.products_in_use)): MetaModel.c_to_co2e(end_use_in_use),
                     CO2(P(nm.Fields.swds)): MetaModel.c_to_co2e(carbon_present_swds),
                     CO2(E(nm.Fields.emitted_with_energy_capture)): emitted_w_ec,
                     CO2(E(nm.Fields.emitted_wo_energy_capture)): emitted_wo_ec,
