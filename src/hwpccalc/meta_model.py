@@ -153,11 +153,11 @@ class MetaModel(singleton.Singleton):
                         ms = MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
                     except Exception as e:
                         print(str(y), "ds_all:", e)
-                if ds_rec is None:
-                    try:
-                        ms = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
-                    except Exception as e:
-                        print(str(y), "ds_all:", e)
+                # if ds_rec is None:
+                #     try:
+                #         ms = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
+                #     except Exception as e:
+                #         print(str(y), "ds_all:", e)
                 else:
                     try:
                         ms = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
