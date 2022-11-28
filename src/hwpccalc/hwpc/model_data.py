@@ -9,7 +9,7 @@ from hwpccalc.utils import pickler, s3_helper
 
 pd.options.mode.chained_assignment = None
 
-_debug_year = 1980
+_debug_year = 1900
 
 class ModelData(pickler.Pickler):
     def __init__(self, *args, **kwargs) -> None:
