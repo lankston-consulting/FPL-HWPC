@@ -130,12 +130,15 @@ class MetaModel(singleton.Singleton):
                     ms = MetaModel.make_results(ds_all, ds_rec, save=True)
                 except Exception as e:
                     print("ds_all:", e)
+            else:
+                # If there's no ds_rec, that either means there's no recycling, OR there hasn't 
+                # been any recycling so far (this run), OR ?
+                try:
+                    ms = MetaModel.make_results(ds_all, xr.zeros_like(ds_all), save=True)
+                except Exception as e:
+                    print("ds_all:", e)
 
             for y in year_ds_col_all:
-                # Skip the last year... the output writing doesn't like 0-length dataframes
-                if y >= max(list(year_ds_col_all.keys())):
-                    continue
-
                 try:
                     m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
                 except Exception as e:
@@ -150,6 +153,12 @@ class MetaModel(singleton.Singleton):
                         ms = MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
                     except Exception as e:
                         print(str(y), "ds_all:", e)
+                if ds_rec is None:
+                    try:
+                        ms = MetaModel.make_results(year_ds_col_all[y], xr.zeros_like(year_ds_col_all[y]), prefix=str(y), save=True)
+                    except Exception as e:
+                        print(str(y), "ds_all:", e)
+
                 # else:
                 #     ms = MetaModel.make_results(year_ds_col_all[y], xr.zeros_like(year_ds_col_all[y]), prefix=str(y), save=True)
 
@@ -231,7 +240,6 @@ class MetaModel(singleton.Singleton):
         compost_emitted = MetaModel.c_to_co2e(compost_emitted)
         compost_emitted.name = CO2(E(nm.Fields.composted))
         compost_emitted = compost_emitted.drop_vars(nm.Fields.discard_destination_id)
-        # compost_emitted = compost_emitted.cumsum()
 
         carbon_present_landfills = ds[nm.Fields.present].loc[dict(DiscardDestinationID=3)].sum(dim=nm.Fields.end_use_id)
         carbon_present_landfills.name = MGC(P(nm.Fields.landfills))
@@ -255,7 +263,6 @@ class MetaModel(singleton.Singleton):
         fuel_carbon_emitted = MetaModel.c_to_co2e(fuel_carbon_emitted)
         fuel_carbon_emitted.name = CO2(E(nm.Fields.fuel))
         fuel_carbon_emitted = fuel_carbon_emitted.drop_vars(nm.Fields.discard_destination_id)
-        # fuel_carbon_emitted = fuel_carbon_emitted.cumsum()
 
         if rec_ds:
             end_use_in_use_nr = nonrec_piu.sum(dim=nm.Fields.end_use_id)
@@ -343,7 +350,6 @@ class MetaModel(singleton.Singleton):
                     CO2(E(nm.Fields.emitted_wo_energy_capture)): emitted_wo_ec,
                 }
             )
-        big_four = big_four
         emitted_all = xr.Dataset(
             {
                 CO2(E(nm.Fields.fuel)): fuel_carbon_emitted,
@@ -352,7 +358,6 @@ class MetaModel(singleton.Singleton):
                 CO2(E(nm.Fields.landfills)): carbon_emitted_landfills,
             }
         )
-        emitted_all = emitted_all
         if rec_ds:
             carbon_present_distinct_swds = xr.Dataset(
                 {

@@ -82,6 +82,9 @@ class Model(object):
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
             working_table = Model.calculate_end_use_products(working_table, md)
         else:
+            # TODO short circuit unnecessary nodes. i.e. a "recycling" run of (1950, 1959)
+            # is going to be all zeroes because no material was recycled. We should figure out
+            # a way to auto-return an automatic all-zeros return dataframe.
             working_table = recycled
 
         working_table = Model.calculate_products_in_use(working_table, md)
@@ -354,6 +357,8 @@ class Model(object):
         final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.present] + final_dispositions[nm.Fields.fixed].cumsum(dim="Year")
 
         recycled_futures = None
+        # TODO this doesn't work. The 
+        # 
         if len(lineage) <= recurse_limit and lineage[-1] >= first_recycle_year:
             # For the new recycling, remove products assigned to be recycled and
             # begin a new simulation using the recycled products as "harvest" amounts
