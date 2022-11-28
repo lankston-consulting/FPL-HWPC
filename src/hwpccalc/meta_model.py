@@ -134,7 +134,7 @@ class MetaModel(singleton.Singleton):
                 # If there's no ds_rec, that either means there's no recycling, OR there hasn't 
                 # been any recycling so far (this run), OR ?
                 try:
-                    ms = MetaModel.make_results(ds_all, xr.zeros_like(ds_all), save=True)
+                    ms = MetaModel.make_results(ds_all, save=True)
                 except Exception as e:
                     print("ds_all:", e)
 
@@ -144,7 +144,7 @@ class MetaModel(singleton.Singleton):
                 except Exception as e:
                         print(str(y), "ds_all_comb:", e)
                 
-                if ds_rec is not None and y in list(year_ds_col_rec.keys()):  # No recycling in the first year
+                if ds_rec is not None and y in list(year_ds_col_rec.keys()):  # No recycling in the first year # Colton TODO this doesn't need ds_rec
                     try:
                         m = MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
                     except Exception as e:
@@ -158,7 +158,11 @@ class MetaModel(singleton.Singleton):
                         ms = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
                     except Exception as e:
                         print(str(y), "ds_all:", e)
-
+                else:
+                    try:
+                        ms = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
+                    except Exception as e:
+                        print(str(y), "ds_all:", e)
                 # else:
                 #     ms = MetaModel.make_results(year_ds_col_all[y], xr.zeros_like(year_ds_col_all[y]), prefix=str(y), save=True)
 
