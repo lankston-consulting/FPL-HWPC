@@ -155,7 +155,7 @@ class MetaModel(singleton.Singleton):
                         print(str(y), "ds_all:", e)
                 if ds_rec is None:
                     try:
-                        ms = MetaModel.make_results(year_ds_col_all[y], xr.zeros_like(year_ds_col_all[y]), prefix=str(y), save=True)
+                        ms = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
                     except Exception as e:
                         print(str(y), "ds_all:", e)
 
