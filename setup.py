@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="hwpccalc",
-    version="0.0.3",
+    version="0.0.4",
     install_requires=[
         "aiobotocore==2.4.0",
         "aiohttp==3.8.3; python_version >= '3.6'",
