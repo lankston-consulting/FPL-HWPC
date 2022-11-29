@@ -279,8 +279,7 @@ class MetaModel(singleton.Singleton):
             end_use_in_use = ds[nm.Fields.products_in_use].sum(dim=nm.Fields.end_use_id)
             end_use_in_use.name = MGC(nm.Fields.products_in_use)
 
-        # TODO this is probably wrong (some should come from emitted probably...)
-        burned_without_energy_capture = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=0)].sum(dim=nm.Fields.end_use_id)
+        burned_without_energy_capture = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=0)].where(ds.data_vars[nm.Fields.fuel] == 0, drop=True).sum(dim=nm.Fields.end_use_id)
         burned_without_energy_capture = MetaModel.c_to_co2e(burned_without_energy_capture)
         burned_without_energy_capture.name = CO2(E(nm.Fields.burned_wo_energy_capture))
         burned_without_energy_capture = burned_without_energy_capture.drop_vars(nm.Fields.discard_destination_id)
