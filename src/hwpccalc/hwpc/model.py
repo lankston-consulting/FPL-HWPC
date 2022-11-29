@@ -9,8 +9,8 @@ from hwpccalc.hwpc.model_data import ModelData
 from hwpccalc.hwpc.names import Names as nm
 from scipy.stats import chi2, expon
 
-recurse_limit = 2
-first_recycle_year = 1980  # TODO make this dynamic
+recurse_limit = 1
+first_recycle_year = 1970  # TODO make this dynamic
 
 
 class Model(object):
@@ -83,6 +83,10 @@ class Model(object):
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
             working_table = Model.calculate_end_use_products(working_table, md)
         else:
+            # TODO short circuit unnecessary nodes. i.e. a "recycling" run of (1950, 1959)
+            # is going to be all zeroes because no material was recycled. We should figure out
+            # a way to auto-return an automatic all-zeros return dataframe.
+
             working_table = recycled
 
         working_table = Model.calculate_products_in_use(working_table, md)
@@ -208,6 +212,13 @@ class Model(object):
         products_in_use[nm.Fields.discarded_products] = end_use - products_in_use[nm.Fields.products_in_use]
         products_in_use[nm.Fields.discarded_products] = products_in_use[nm.Fields.discarded_products].diff(dim=nm.Fields.harvest_year)
         products_in_use[nm.Fields.discarded_products] = products_in_use[nm.Fields.discarded_products].fillna(0)
+
+        if len(lineage) > 1:
+            # If this was recycled, the end use amounts are being hacked, so set them to 0 for final aggregation
+            products_in_use[nm.Fields.end_use_products] = xr.zeros_like(products_in_use[nm.Fields.end_use_products])
+            products_in_use[nm.Fields.end_use_available] = xr.zeros_like(products_in_use[nm.Fields.end_use_available])
+
+
 
         # products_in_use[nm.Fields.discard_products] = products_in_use.groupby(nm.Fields.end_use_id).map(Model.chi2_func_inverse)
 
