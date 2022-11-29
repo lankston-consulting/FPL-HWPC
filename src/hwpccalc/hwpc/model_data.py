@@ -7,10 +7,9 @@ import xarray as xr
 from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import pickler, s3_helper
 
-_debug_year = 1900
-
 pd.options.mode.chained_assignment = None
 
+_debug_year = 1900
 
 class ModelData(pickler.Pickler):
     def __init__(self, *args, **kwargs) -> None:
