@@ -11,6 +11,7 @@ pd.options.mode.chained_assignment = None
 
 _debug_year = 1900
 
+
 class ModelData(pickler.Pickler):
     def __init__(self, *args, **kwargs) -> None:
         self.data = dict()

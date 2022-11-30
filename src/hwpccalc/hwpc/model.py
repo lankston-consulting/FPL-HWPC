@@ -218,8 +218,6 @@ class Model(object):
             products_in_use[nm.Fields.end_use_products] = xr.zeros_like(products_in_use[nm.Fields.end_use_products])
             products_in_use[nm.Fields.end_use_available] = xr.zeros_like(products_in_use[nm.Fields.end_use_available])
 
-
-
         # products_in_use[nm.Fields.discard_products] = products_in_use.groupby(nm.Fields.end_use_id).map(Model.chi2_func_inverse)
 
         # Zero out the stuff that was fuel. We will manually set the "discard" emissions after the other types
