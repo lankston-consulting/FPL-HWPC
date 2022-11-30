@@ -8,12 +8,13 @@ RUN python -m build
 FROM python:3.10 AS base
 COPY --from=builder /dist/*.whl .
 RUN pip install --no-cache-dir hwpccalc-*.whl
-RUN pip freeze > requirements.txt
+# RUN pip freeze > requirements.txt
+# RUN pip install -r requirements.txt
 COPY ./src/ ./src/
 COPY .env .env
 
  
-FROM python:3.10 AS worker
+FROM base AS worker
 EXPOSE 8786
 EXPOSE 8787
 ENTRYPOINT ["tini", "-g", "--"]
