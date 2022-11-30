@@ -1,6 +1,50 @@
+[build-system]
+requires = ["setuptools>=45"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "hwpccalc"
+version = "1.0.0b1"
+dependencies=[
+    "awscli>=1.27.1",
+    "bokeh>=2.4.2",
+    "botocore>=",
+    "boto3[crt]>=1.25.0",
+    "dask[complete]",
+    "dask-cloudprovider[aws]",
+    "distributed>=2.0",
+    "lz4",
+    "numpy>=1.18",
+    "pandas>=1.0",
+    "plotly",
+    "python-dotenv",
+    "pyarrow>=1.0",
+    "pytz",
+    "s3fs>=0.4.0",
+    "scipy",
+    "xarray",
+]
+
 [tool.black]
 line-length = 150
-target-version = ['py39']
+target-version = ['py38']
 include = '\.pyi?$'
 # 'extend-exclude' excludes files or directories in addition to the defaults
 extend-exclude = "hwpc\\/model_data_xr\\.py"
+
+# [build-system]
+# requires = ["poetry-core"]
+# build-backend = "poetry.core.masonry.api"
+
+# [tool.poetry]
+# name = "poetry-demo"
+# version = "0.1.0"
+# description = ""
+# authors = ["Sébastien Eustace <sebastien@eustace.io>"]
+# readme = "README.md"
+# packages = [{include = "poetry_demo"}]
+
+# [tool.poetry.dependencies]
+# python = "3.8"
+

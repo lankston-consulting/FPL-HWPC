@@ -11,5 +11,5 @@ __pycache__
 .venv/*
 .vscode/*
 docs/*
-new_data/*
-old_data/*
+*_data/*
+
