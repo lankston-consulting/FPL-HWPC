@@ -74,8 +74,8 @@ class Model(object):
     def run(model_data_path: str = None, harvests: xr.Dataset = None, recycled: xr.Dataset = None, lineage: tuple = None):
         """Model entrypoint. The model object..."""
         client = get_client()
-        with Lock("plock"):
-            print("Lineage:", lineage)
+        # with Lock("plock"): # This takes a TON of CPU time just blocking. Not worth it except for debugging
+        #     print("Lineage:", lineage)
 
         md = ModelData(path=model_data_path)
 
@@ -208,6 +208,7 @@ class Model(object):
         # by subtracting the products in use from the amount of harvested product and
         # then subtracting the amount discarded in previous years.
         products_in_use = working_table
+        # Zeros seems to take a lot of time. It would be great to avoid that.
         end_use = xr.zeros_like(products_in_use[nm.Fields.end_use_products]) + products_in_use[nm.Fields.end_use_products][0]
         products_in_use[nm.Fields.discarded_products] = end_use - products_in_use[nm.Fields.products_in_use]
         products_in_use[nm.Fields.discarded_products] = products_in_use[nm.Fields.discarded_products].diff(dim=nm.Fields.harvest_year)
@@ -273,7 +274,7 @@ class Model(object):
         hl = df[nm.Fields.halflife].item()
         if hl != 0:
             can_decay = df[nm.Fields.can_decay]
-            if can_decay.sum() != 0:
+            if can_decay.sum() > 0:
                 l = len(can_decay)
                 ox = np.zeros((l, l), dtype=np.float64)
                 s = 1 / (math.log(2) / hl)
@@ -307,7 +308,7 @@ class Model(object):
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio.
         dispositions = working_table
-        dispositions[nm.Fields.fixed_ratio] = xr.where(
+        dispositions[nm.Fields.fixed_ratio] = xr.where( # LOTS of compute time being chewed here
             working_table[nm.Fields.discard_type_id] == 0,
             destinations.loc[dict(DiscardTypeID=0)][nm.Fields.fixed_ratio],
             destinations.loc[dict(DiscardTypeID=1)][nm.Fields.fixed_ratio],
@@ -356,42 +357,44 @@ class Model(object):
         final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.discarded_remaining]
 
         # Landfills are a bit different. Not all of it is subject to decay, so get the fixed amount and add it to present through time
-        final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.present] + final_dispositions[nm.Fields.fixed].cumsum(dim="Year")
+        final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.present] + final_dispositions[nm.Fields.fixed].cumsum(dim=nm.Fields.harvest_year)
 
         recycled_futures = None
         if len(lineage) <= recurse_limit and lineage[-1] >= first_recycle_year:
-            # For the new recycling, remove products assigned to be recycled and
-            # begin a new simulation using the recycled products as "harvest" amounts
-            # NOTE the below line doesn't work, it resets coords in a bad way. Hard coding selection.
-            # recycled = dispositions.where(dispositions.coords[nm.Fields.discard_destination_id] == recycled_id, drop=True)
-            recycled = final_dispositions.loc[dict(DiscardDestinationID=recycled_id)]
-            recycled = recycled.drop_vars(nm.Fields.discard_destination_id)
+            # If there isn't any can_decay recycles, then there's nothing to do here. cut this off and move on.
+            if final_dispositions[nm.Fields.can_decay].loc[dict(DiscardDestinationID=1)].sum(dim=[nm.Fields.harvest_year, nm.Fields.end_use_id]) > 1:
+                # For the new recycling, remove products assigned to be recycled and
+                # begin a new simulation using the recycled products as "harvest" amounts
+                # NOTE the below line doesn't work, it resets coords in a bad way. Hard coding selection.
+                # recycled = dispositions.where(dispositions.coords[nm.Fields.discard_destination_id] == recycled_id, drop=True)
+                recycled = final_dispositions.loc[dict(DiscardDestinationID=recycled_id)]
+                recycled = recycled.drop_vars(nm.Fields.discard_destination_id)
 
-            # Set the recycled material to be "in use" in the next year
-            # TODO Check that recycling actually works after this, because this adds DiscardTypeID as a coordinate to products_in_use
-            recycled[nm.Fields.end_use_products] = recycled[nm.Fields.can_decay]
-            recycled[nm.Fields.end_use_available] = recycled[nm.Fields.can_decay]
-            recycled[nm.Fields.products_in_use] = recycled[nm.Fields.can_decay]
+                # Set the recycled material to be "in use" in the next year
+                # TODO Check that recycling actually works after this, because this adds DiscardTypeID as a coordinate to products_in_use
+                recycled[nm.Fields.end_use_products] = recycled[nm.Fields.can_decay]
+                recycled[nm.Fields.end_use_available] = recycled[nm.Fields.can_decay]
+                recycled[nm.Fields.products_in_use] = recycled[nm.Fields.can_decay]
 
-            recycled[nm.Fields.harvest_year] = recycled[nm.Fields.harvest_year] + 1
+                recycled[nm.Fields.harvest_year] = recycled[nm.Fields.harvest_year] + 1
 
-            drop_key = [
-                nm.Fields.discarded_products,
-                nm.Fields.discarded_dispositions,
-                nm.Fields.fixed_ratio,
-                nm.Fields.halflife,
-                nm.Fields.can_decay,
-                nm.Fields.fixed,
-                nm.Fields.discarded_remaining,
-                nm.Fields.could_decay,
-                nm.Fields.emitted,
-                nm.Fields.present,
-            ]
-            recycled = recycled.drop_vars(drop_key)
+                drop_key = [
+                    nm.Fields.discarded_products,
+                    nm.Fields.discarded_dispositions,
+                    nm.Fields.fixed_ratio,
+                    nm.Fields.halflife,
+                    nm.Fields.can_decay,
+                    nm.Fields.fixed,
+                    nm.Fields.discarded_remaining,
+                    nm.Fields.could_decay,
+                    nm.Fields.emitted,
+                    nm.Fields.present,
+                ]
+                recycled = recycled.drop_vars(drop_key)
 
-            # Zero out harvest info because recycled material isn't harvested
-            recycled[nm.Fields.ccf] = xr.zeros_like(recycled[nm.Fields.ccf])
+                # Zero out harvest info because recycled material isn't harvested
+                recycled[nm.Fields.ccf] = xr.zeros_like(recycled[nm.Fields.ccf])
 
-            recycled_futures = Model.model_factory(model_data_path=model_data_path, harvest_init=harvests, recycled=recycled, lineage=lineage)
+                recycled_futures = Model.model_factory(model_data_path=model_data_path, harvest_init=harvests, recycled=recycled, lineage=lineage)
 
         return final_dispositions, recycled_futures
