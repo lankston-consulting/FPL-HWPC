@@ -308,7 +308,7 @@ class Model(object):
         # that is subject to decay by multiplying the amount in the landfill by the
         # landfill-fixed-ratio.
         dispositions = working_table
-        dispositions[nm.Fields.fixed_ratio] = xr.where( # LOTS of compute time being chewed here
+        dispositions[nm.Fields.fixed_ratio] = xr.where(  # LOTS of compute time being chewed here
             working_table[nm.Fields.discard_type_id] == 0,
             destinations.loc[dict(DiscardTypeID=0)][nm.Fields.fixed_ratio],
             destinations.loc[dict(DiscardTypeID=1)][nm.Fields.fixed_ratio],
@@ -357,7 +357,9 @@ class Model(object):
         final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.discarded_remaining]
 
         # Landfills are a bit different. Not all of it is subject to decay, so get the fixed amount and add it to present through time
-        final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.present] + final_dispositions[nm.Fields.fixed].cumsum(dim=nm.Fields.harvest_year)
+        final_dispositions[nm.Fields.present] = final_dispositions[nm.Fields.present] + final_dispositions[nm.Fields.fixed].cumsum(
+            dim=nm.Fields.harvest_year
+        )
 
         recycled_futures = None
         if len(lineage) <= recurse_limit and lineage[-1] >= first_recycle_year:

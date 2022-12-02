@@ -25,6 +25,7 @@ dependencies=[
 
 # [tool.setuptools]
 # packages = {"hwpccalc"}
+# package-dir = {hwpccalc = "src/hwpccalc"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -34,11 +35,12 @@ where = ["src"]
 line-length = 150
 target-version = ['py310']
 include = '\.pyi?$'
-exclude = """ 
-{
-    __pycache__
-}
-"""
+# exclude = """ 
+# {
+#     __pycache__,
+#     ./.venv*
+# }
+# """
 # 'extend-exclude' excludes files or directories in addition to the defaults
 extend-exclude = "hwpc\\/model_data_xr\\.py"
 

@@ -30,7 +30,8 @@ class MetaModel(singleton.Singleton):
 
             print("Provisioning cluster...")
 
-            MetaModel.cluster = LocalCluster(n_workers=16, threads_per_worker=2, processes=True, memory_limit=None)
+            MetaModel.cluster = LocalCluster(n_workers=16, processes=True, memory_limit=None)
+            # MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
 
             # MetaModel.cluster = FargateCluster(
             #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:worker",

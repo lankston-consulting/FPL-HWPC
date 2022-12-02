@@ -1,17 +1,17 @@
 FROM python:3.10.4 AS builder
 ENV PYTHONBUFFERED 1
 
+RUN pip install --upgrade build pip 
+
 # Set app directory
 ENV PKG_HOME /hwpccalc
 WORKDIR $PKG_HOME
 
-COPY ./src/* src/
-COPY ./pyproject.toml .
-COPY ./setup.py .
+COPY src/ src/
+COPY pyproject.toml .
+COPY setup.py .
 
-RUN pip install --upgrade build pip 
 RUN python -m build
-# RUN pip install .
 
 #########################################################
 
@@ -53,4 +53,4 @@ EXPOSE 8786
 EXPOSE 8787
 EXPOSE 8080
 # ENTRYPOINT ["python", "main.py"]
-ENTRYPOINT ["/tini", "-g", "--", "python"]
+ENTRYPOINT ["/tini", "-g", "--", "python", "main.py"]
