@@ -8,7 +8,10 @@ Dockerfile
 __pycache__
 .pytest_cache
 .github/*
+.venv*
 .venv/*
+.venv-*
+.venv-/*
 .vscode/*
 docs/*
 *_data/*

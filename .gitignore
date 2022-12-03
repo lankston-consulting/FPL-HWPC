@@ -140,11 +140,17 @@ dmypy.json
 .history/
 
 data/*
+default_data/*
+sample_data/*
+test_data/*
 output/*
 results/*
 test_data/*
-x_*
 
 requirements.txt
 hwpc-sa.json
 
+.venv*
+.venv/*
+.venv-*
+.venv-/*

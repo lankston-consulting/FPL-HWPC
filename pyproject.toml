@@ -1,50 +1,79 @@
 [build-system]
-requires = ["setuptools>=45"]
+requires = ["setuptools>=55", "wheel"]
 build-backend = "setuptools.build_meta"
-
-
-[project]
-name = "hwpccalc"
-version = "1.0.0b1"
-dependencies=[
-    "awscli>=1.27.1",
-    "bokeh>=2.4.2",
-    "botocore>=",
-    "boto3[crt]>=1.25.0",
-    "dask[complete]",
-    "dask-cloudprovider[aws]",
-    "distributed>=2.0",
-    "lz4",
-    "numpy>=1.18",
-    "pandas>=1.0",
-    "plotly",
-    "python-dotenv",
-    "pyarrow>=1.0",
-    "pytz",
-    "s3fs>=0.4.0",
-    "scipy",
-    "xarray",
-]
-
-[tool.black]
-line-length = 150
-target-version = ['py38']
-include = '\.pyi?$'
-# 'extend-exclude' excludes files or directories in addition to the defaults
-extend-exclude = "hwpc\\/model_data_xr\\.py"
 
 # [build-system]
 # requires = ["poetry-core"]
 # build-backend = "poetry.core.masonry.api"
 
+[project]
+name = "hwpccalc"
+version = "1.0.2b"
+dependencies=[
+    "aiobotocore",
+    "bokeh==2.4.3",
+    "boto3[crt]",
+    "dask[distributed]",
+    "dask-cloudprovider[aws]",
+    "distributed",
+    "lz4",
+    "python-dotenv",
+    "scipy",
+    "tornado==6.1",
+    "xarray",
+]
+
+# [tool.setuptools]
+# packages = {"hwpccalc"}
+# package-dir = {hwpccalc = "src/hwpccalc"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+[tool.black]
+line-length = 150
+target-version = ['py310']
+include = '\.pyi?$'
+# exclude = """ 
+# {
+#     __pycache__,
+#     ./.venv*
+# }
+# """
+# 'extend-exclude' excludes files or directories in addition to the defaults
+extend-exclude = "hwpc\\/model_data_xr\\.py"
+
 # [tool.poetry]
-# name = "poetry-demo"
-# version = "0.1.0"
-# description = ""
-# authors = ["Sébastien Eustace <sebastien@eustace.io>"]
+# name = "hwpccalc"
+# version = "1.0.1"
+# description = "The Harvested Wood Products Carbon Calculator."
+# authors = ["Robb Lankston <robb@lankstonconsulting.com>"]
 # readme = "README.md"
-# packages = [{include = "poetry_demo"}]
+# packages = [{include = "hwpccalc"}]
 
 # [tool.poetry.dependencies]
-# python = "3.8"
+# python = "^3.10"
+# bokeh = "^2.4"
+# boto3 = {extras = ["crt"], version = "^1.26"}
+# dask = {extras = ["distributed"], version = "2022.11"}
+# dask-cloudprovider = {extras = ["aws"], version = "*"}
+# distributed = "*"
+# lz4 = "^4"
+# python-dotenv = "*"
+# scipy = "*"
+# xarray = ">=2022.11"
 
+# [tool.poetry.group.dev]
+# optional = true
+
+# [tool.poetry.group.dev.dependencies]
+# build = "*"
+# wheel = "*"
+# awscli = "*"
+
+# [tool.poetry.group.test]
+# optional = true
+
+# [tool.poetry.group.test.dependencies]
+# plotly = "*"

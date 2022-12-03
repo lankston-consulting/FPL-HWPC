@@ -1,28 +1,56 @@
-FROM python:3.10 AS builder
-COPY . .
-RUN pip install --upgrade pip
-RUN pip install --upgrade build
+FROM python:3.10.4 AS builder
+ENV PYTHONBUFFERED 1
+
+RUN pip install --upgrade build pip 
+
+# Set app directory
+ENV PKG_HOME /hwpccalc
+WORKDIR $PKG_HOME
+
+COPY src/ src/
+COPY pyproject.toml .
+COPY setup.py .
+
 RUN python -m build
 
+#########################################################
 
-FROM python:3.10 AS base
-COPY --from=builder /dist/*.whl .
+FROM python:3.10.4 AS base
+ENV PYTHONBUFFERED 1
+
+RUN pip install --upgrade pip wheel
+
+COPY ./requirements.txt .
+RUN pip install -r requirements.txt
+
+ENV PKG_HOME /hwpccalc
+COPY --from=builder $PKG_HOME/dist/hwpccalc-*.whl .
 RUN pip install --no-cache-dir hwpccalc-*.whl
-# RUN pip freeze > requirements.txt
-# RUN pip install -r requirements.txt
-COPY ./src/ ./src/
+
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+
 COPY .env .env
 
- 
+#########################################################
+
 FROM base AS worker
+ENV PYTHONBUFFERED 1
+
 EXPOSE 8786
 EXPOSE 8787
-ENTRYPOINT ["tini", "-g", "--"]
+ENTRYPOINT ["/tini", "-g", "--"]
 
+#########################################################
 
 FROM base AS client
-# COPY ./dist/hwpccalc-0.0.4-py3-none-any.whl ./hwpccalc-0.0.4-py3-none-any.whl
-# RUN pip install --no-cache-dir ./hwpccalc-0.0.4-py3-none-any.whl
+ENV PYTHONBUFFERED 1
+
+# Set app directory
+COPY ./src/hwpccalc/main.py main.py
 EXPOSE 8786
 EXPOSE 8787
-ENTRYPOINT ["python", "src/hwpccalc/main.py"]
+EXPOSE 8080
+# ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["/tini", "-g", "--", "python", "main.py"]
