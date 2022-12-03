@@ -150,3 +150,7 @@ test_data/*
 requirements.txt
 hwpc-sa.json
 
+.venv*
+.venv/*
+.venv-*
+.venv-/*

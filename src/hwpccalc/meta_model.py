@@ -40,10 +40,11 @@ class MetaModel(singleton.Singleton):
             #     worker_cpu=1024,
             #     worker_nthreads=2,
             #     worker_mem=2048,
-            #     n_workers=2,
+            #     n_workers=16,
             # )
 
             # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
+            # MetaModel.cluster.adapt(minimum=16, maximum=32, wait_count=60)
 
             print("Cluster provisioned.")
 
@@ -118,54 +119,47 @@ class MetaModel(singleton.Singleton):
                 print("===========================")
 
             try:
-                m = MetaModel.make_results(ds_all, prefix="comb", save=True)
+                MetaModel.make_results(ds_all, prefix="comb", save=True)
             except Exception as e:
                 print("ds_all_comb:", e)
 
             if ds_rec is not None:
                 try:
-                    m = MetaModel.make_results(ds_rec, prefix="rec", save=True)
+                    MetaModel.make_results(ds_rec, prefix="rec", save=True)
                 except Exception as e:
                     print("ds_rec:", e)
                 try:
-                    ms = MetaModel.make_results(ds_all, ds_rec, save=True)
+                    MetaModel.make_results(ds_all, ds_rec, save=True)
                 except Exception as e:
                     print("ds_all:", e)
             else:
                 # If there's no ds_rec, that either means there's no recycling, OR there hasn't
                 # been any recycling so far (this run), OR ?
                 try:
-                    ms = MetaModel.make_results(ds_all, save=True)
+                    MetaModel.make_results(ds_all, save=True)
                 except Exception as e:
                     print("ds_all:", e)
 
             for y in year_ds_col_all:
                 try:
-                    m = MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
+                    MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
                 except Exception as e:
                     print(str(y), "ds_all_comb:", e)
 
-                if ds_rec is not None and y in list(year_ds_col_rec.keys()):  # No recycling in the first year # Colton TODO this doesn't need ds_rec
+                if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
                     try:
-                        m = MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
+                        MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
                     except Exception as e:
                         print(str(y), "ds_rec:", e)
                     try:
-                        ms = MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
+                        MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
                     except Exception as e:
                         print(str(y), "ds_all:", e)
-                # if ds_rec is None:
-                #     try:
-                #         ms = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
-                #     except Exception as e:
-                #         print(str(y), "ds_all:", e)
                 else:
                     try:
-                        ms = MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
+                        MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
                     except Exception as e:
                         print(str(y), "ds_all:", e)
-                # else:
-                #     ms = MetaModel.make_results(year_ds_col_all[y], xr.zeros_like(year_ds_col_all[y]), prefix=str(y), save=True)
 
             with Lock("plock"):
                 print("===========================")
