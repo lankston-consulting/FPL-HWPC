@@ -63,8 +63,8 @@ class Model(object):
 
             client = get_client()
             m = Model.run
-            p = y * len(k) + sum(k)
-            future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=p)
+            # p = y * len(k) + sum(k)
+            future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k)  # , priority=p)
             year_model_col.append(future)
             client.log_event("New Year Group", "Lineage: " + str(k))
 

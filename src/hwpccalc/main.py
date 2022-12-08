@@ -7,6 +7,7 @@ from hwpccalc.utils import email
 
 
 def run(args):
+    """Main entrypoint for the HPWC simulation."""
 
     path = args.path
     name = args.name
