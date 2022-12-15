@@ -13,7 +13,7 @@ from hwpccalc.utils import pickler, s3_helper
 pd.options.mode.chained_assignment = None
 
 _debug_start_year = 1900
-_debug_end_year = 2030
+_debug_end_year = 2050
 
 CDN_PATH = "https://d2yxltrtv1a9pi.cloudfront.net/"
 

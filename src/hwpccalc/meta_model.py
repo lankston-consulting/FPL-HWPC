@@ -30,7 +30,7 @@ class MetaModel(singleton.Singleton):
 
             print("Provisioning cluster...")
 
-            MetaModel.cluster = LocalCluster(n_workers=16, processes=True, memory_limit=None)
+            MetaModel.cluster = LocalCluster(n_workers=24, processes=True, memory_limit=None)
             # MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
 
             # MetaModel.cluster = FargateCluster(
@@ -119,12 +119,14 @@ class MetaModel(singleton.Singleton):
                 print("===========================")
 
             try:
+                ds_all = MetaModel.convert_to_carbon(ds_all, md)
                 MetaModel.make_results(ds_all, prefix="comb", save=True)
             except Exception as e:
                 print("ds_all_comb:", e)
 
             if ds_rec is not None:
                 try:
+                    ds_rec = MetaModel.convert_to_carbon(ds_rec, md)
                     MetaModel.make_results(ds_rec, prefix="rec", save=True)
                 except Exception as e:
                     print("ds_rec:", e)
@@ -142,12 +144,14 @@ class MetaModel(singleton.Singleton):
 
             for y in year_ds_col_all:
                 try:
+                    year_ds_col_all[y] = MetaModel.convert_to_carbon(year_ds_col_all[y], md)
                     MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
                 except Exception as e:
                     print(str(y), "ds_all_comb:", e)
 
                 if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
                     try:
+                        year_ds_col_rec[y] = MetaModel.convert_to_carbon(year_ds_col_rec[y], md)
                         MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
                     except Exception as e:
                         print(str(y), "ds_rec:", e)
@@ -171,6 +175,22 @@ class MetaModel(singleton.Singleton):
             # traceback.print_exc()
             raise e
         return
+
+    @staticmethod
+    def convert_to_carbon(src_ds, md):
+        src_ds[nm.Fields.end_use_products] = src_ds[nm.Fields.end_use_products] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.end_use_available] = src_ds[nm.Fields.end_use_available] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.products_in_use] = src_ds[nm.Fields.products_in_use] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.discarded_products] = src_ds[nm.Fields.discarded_products] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.discarded_dispositions] = src_ds[nm.Fields.discarded_dispositions] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.can_decay] = src_ds[nm.Fields.can_decay] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.fixed] = src_ds[nm.Fields.fixed] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.discarded_remaining] = src_ds[nm.Fields.discarded_remaining] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.could_decay] = src_ds[nm.Fields.could_decay] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.emitted] = src_ds[nm.Fields.emitted] * src_ds[nm.Fields.conversion_factor]
+        src_ds[nm.Fields.present] = src_ds[nm.Fields.present] * src_ds[nm.Fields.conversion_factor]
+
+        return src_ds
 
     @staticmethod
     def aggregate_results(src_ds, new_ds):
