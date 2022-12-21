@@ -69,23 +69,27 @@ def lambda_handler(event, context):
     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
     try:
         response = s3.get_object(Bucket=bucket, Key=key)
-        # print("CONTENT TYPE: " + response['ContentType'])
-        # print(response["Body"].read().decode(encoding='UTF-8'))
+    except Exception as e:
+        print(e)
+        print(f"Error communicating with S3, {bucket}")
+        raise e
+
+    try:
         json_data = json.load(response["Body"])
+    except Exception as e:
+        print(e)
+        print(f"Error decoding JSON")
+        raise e
         
-        # print(json_data)
-        # print(json_data["scenario_name"])
-        # print(json_data["user_string"])
+    try:
         name = json_data["scenario_name"]
         user_string = "hwpc-user-inputs/" + json_data["user_string"]
         # Uncomment this when we are going live with HWPC-Web
         runCalculatorTask(name, user_string)
-        return 
-        
     except Exception as e:
         print(e)
-        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
+        print(f"Error launching CALCULATOR task")
         raise e
-    
+         
 
     
