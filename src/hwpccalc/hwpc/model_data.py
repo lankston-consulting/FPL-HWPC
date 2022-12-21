@@ -1,15 +1,21 @@
 import json
 import traceback
+from io import BytesIO
 
 import numpy as np
 import pandas as pd
+import requests
 import xarray as xr
+
 from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import pickler, s3_helper
 
 pd.options.mode.chained_assignment = None
 
-_debug_year = 1900
+_debug_start_year = 1900
+_debug_end_year = 2050
+
+CDN_PATH = "https://d2yxltrtv1a9pi.cloudfront.net/"
 
 
 class ModelData(pickler.Pickler):
@@ -46,19 +52,23 @@ class ModelData(pickler.Pickler):
                 if k == "inputs":
                     for l in j[k]:
                         if (j[k][l]) == "Default Data":
-                            default_csv = s3_helper.S3Helper.download_file("hwpc", "default-data/" + l)
-                            with open(default_csv.name) as csv:
-                                self.data[l.replace(".csv", "")] = pd.read_csv(csv)
+                            # default_csv = s3_helper.S3Helper.download_file("hwpc", "default-data/" + l)
+                            # with open(BytesIO(default_csv), "rb") as csv:
+                            #     self.data[l.replace(".csv", "")] = pd.read(csv)
+                            r = requests.get(CDN_PATH + "default-data/" + l)
+                            if r.status_code != 200:
+                                raise PermissionError()
+                            default_csv = r.content
+                            self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(default_csv))
                         else:
-                            user_csv = s3_helper.S3Helper.download_file("hwpc", path_override + "/" + l)
-                            with open(user_csv.name) as csv:
-                                self.data[l.replace(".csv", "")] = pd.read_csv(csv)
-                            # self.data[]
-                # no_csv = k.replace(".csv", "")
-                # p = j[k]
-                # if no_csv == nm.Tables.harvest:
-                #     ks = {nm.Fields.harvest_year: "int16"}
-                # self.data[no_csv] = pd.read_csv(p)
+                            # user_csv = s3_helper.S3Helper.download_file("hwpc", path_override + "/" + l)
+                            # with open(BytesIO(user_csv), "rb") as csv:
+                            #     self.data[l.replace(".csv", "")] = pd.read_csv(csv)
+                            r = requests.get(CDN_PATH + path_override + "/" + l)
+                            if r.status_code != 200:
+                                raise PermissionError()
+                            user_csv = r.content
+                            self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(user_csv))
         return
 
     def prep_data(self) -> None:
@@ -82,7 +92,8 @@ class ModelData(pickler.Pickler):
         dx = df.to_xarray()
 
         # Limit data here for testing
-        dx = dx.where(dx.coords[nm.Fields.harvest_year] >= _debug_year, drop=True)
+        dx = dx.where(dx.coords[nm.Fields.harvest_year] >= _debug_start_year, drop=True)
+        dx = dx.where(dx.coords[nm.Fields.harvest_year] <= _debug_end_year, drop=True)
 
         self.data[nm.Tables.harvest] = dx
 

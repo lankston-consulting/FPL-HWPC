@@ -1,3 +1,7 @@
+#########################################################
+# The first image built is a sandbox build environment
+# for the hwpccalc Python package.
+
 FROM python:3.10.4 AS builder
 ENV PYTHONBUFFERED 1
 
@@ -14,6 +18,9 @@ COPY setup.py .
 RUN python -m build
 
 #########################################################
+# Create a base image to be used by production containers,
+# but start with a clean Python image. Get the built wheel
+# from the builder sandbox.
 
 FROM python:3.10.4 AS base
 ENV PYTHONBUFFERED 1
@@ -34,6 +41,8 @@ RUN chmod +x /tini
 COPY .env .env
 
 #########################################################
+# The production worker image. This should be tagged as 
+# hwpc-calc:worker* when pushed to ECR
 
 FROM base AS worker
 ENV PYTHONBUFFERED 1
@@ -43,6 +52,9 @@ EXPOSE 8787
 ENTRYPOINT ["/tini", "-g", "--"]
 
 #########################################################
+# The production client (hwpc-calc) image. Almost identical to
+# the worker, but this executes the hwpc-calc loop and 
+# collects results from SaaI launched tasks
 
 FROM base AS client
 ENV PYTHONBUFFERED 1
