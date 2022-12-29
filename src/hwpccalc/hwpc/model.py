@@ -10,7 +10,7 @@ from hwpccalc.hwpc.names import Names as nm
 from scipy.stats import chi2, expon
 
 recurse_limit = 1
-first_recycle_year = 1970  # TODO make this dynamic
+first_recycle_year = 2015  # TODO make this dynamic
 
 
 class Model(object):
