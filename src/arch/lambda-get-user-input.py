@@ -76,8 +76,7 @@ def lambda_handler(event, context):
         raise e
 
     try:
-        content = response["Body"].read()
-        json_data = json.loads(content)
+        json_data = json.load(response["Body"])
     except Exception as e:
         print(e)
         print("Response:", response)
