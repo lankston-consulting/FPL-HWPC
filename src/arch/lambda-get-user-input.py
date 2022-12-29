@@ -64,6 +64,7 @@ def runCalculatorTask(name, user_string):
     
     
 def lambda_handler(event, context):
+    print("event:", event)
     # Get the object from the event and show its content type
     bucket = event['Records'][0]['s3']['bucket']['name']
     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
@@ -75,9 +76,12 @@ def lambda_handler(event, context):
         raise e
 
     try:
-        json_data = json.load(response["Body"])
+        content = response["Body"].read()
+        json_data = json.loads(content)
     except Exception as e:
         print(e)
+        print("Response:", response)
+        print("Body:", response["Body"])
         print(f"Error decoding JSON")
         raise e
         
