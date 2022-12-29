@@ -26,6 +26,7 @@ class ModelData(pickler.Pickler):
         self.decay_function = None
 
         if "path" in kwargs:
+            print(kwargs["path"])
             self.load_data(path_override=kwargs["path"])
         else:
             self.load_data(path_override=nm.Output.input_path)
