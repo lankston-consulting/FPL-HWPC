@@ -33,6 +33,8 @@ def run(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
+    print("Client has been started. Beginning execution.")
+
     parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
     parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default="hwpc-user-inputs/lambda-test-3-15-12-2022T23:59:27")
     parser.add_argument("-n", "--name", help="User provided name of simulation run.", default="lambda-test-3")
