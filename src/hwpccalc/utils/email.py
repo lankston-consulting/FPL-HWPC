@@ -38,7 +38,11 @@ class Email(object):
             + names.Names.Output.scenario_info["user_string"]
             + "&q="
             + names.Names.Output.scenario_info["scenario_name"]
-            + "'>https://www.hwpcarbon.com/output?p="+names.Names.Output.scenario_info["user_string"]+"&q="+names.Names.Output.scenario_info["scenario_name"]+"</a>"
+            + "'>https://www.hwpcarbon.com/output?p="
+            + names.Names.Output.scenario_info["user_string"]
+            + "&q="
+            + names.Names.Output.scenario_info["scenario_name"]
+            + "</a>"
         )
 
         # The email body for recipients with non-HTML email clients.
