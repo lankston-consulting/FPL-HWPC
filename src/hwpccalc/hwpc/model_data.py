@@ -70,8 +70,6 @@ class ModelData(pickler.Pickler):
                             #     raise PermissionError()
                             # user_csv = r.content
                             # self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(user_csv))
-        print(self.data)
-        print(b)
         return
 
     def prep_data(self) -> None:
