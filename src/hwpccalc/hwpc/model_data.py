@@ -15,11 +15,15 @@ pd.options.mode.chained_assignment = None
 
 load_dotenv()
 
-_debug_mode = bool(os.getenv("DEBUGGING"))
+_debug_mode_raw = os.getenv("DEBUGGING")
+_debug_mode = False
+
+if _debug_mode_raw.lower().find('t') >= 0 or _debug_mode_raw.lower().find('1') >= 0:
+    _debug_mode = True
 
 if _debug_mode:
-    _debug_start_year = 2010
-    _debug_end_year = 2011
+    _debug_start_year = 1900
+    _debug_end_year = 2050
 else:
     _debug_start_year = 1850
     _debug_end_year = 2050

@@ -9,12 +9,14 @@ from io import BytesIO
 import xarray as xr
 from dask.distributed import Client, LocalCluster, Lock, as_completed
 from dask_cloudprovider.aws import FargateCluster
+from dotenv import load_dotenv
 
 from hwpccalc.hwpc import model, model_data
 from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import email, singleton
 from hwpccalc.utils.s3_helper import S3Helper
 
+load_dotenv()
 
 class MetaModel(singleton.Singleton):
     """ """
@@ -28,31 +30,44 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.start = timeit.default_timer()
 
-            print("Provisioning cluster...")
+            print("Provisioning cluster.")
 
-            MetaModel.cluster = LocalCluster(n_workers=24, processes=True, memory_limit=None)
-            # MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
+            use_aws_raw = os.getenv("DASK_USE_AWS")
+            use_aws = False
 
-            # MetaModel.cluster = FargateCluster(
-            #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:worker",
-            #     scheduler_cpu=2048,
-            #     scheduler_mem=4096,
-            #     worker_cpu=1024,
-            #     worker_nthreads=2,
-            #     worker_mem=2048,
-            #     n_workers=16,
-            # )
+            if use_aws_raw.lower().find('t') >= 0 or use_aws_raw.lower().find('1') >= 0:
+                use_aws = True
+            n_wrk = int(os.getenv("DASK_N_WORKERS"))
 
-            # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
-            # MetaModel.cluster.adapt(minimum=16, maximum=32, wait_count=60)
 
-            print("Cluster provisioned.")
+            if use_aws:
+                sch_cpu = int(os.getenv("DASK_SCEDULER_CPU"))
+                sch_mem = int(os.getenv("DASK_SCEDULER_MEM"))
+                wrk_cpu = int(os.getenv("DASK_WORKER_CPU"))
+                wrk_mem = int(os.getenv("DASK_WORKER_MEM"))
 
+                MetaModel.cluster = FargateCluster(
+                    image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:worker",
+                    scheduler_cpu=sch_cpu,
+                    scheduler_mem=sch_mem,
+                    worker_cpu=wrk_cpu,
+                    worker_mem=wrk_mem,
+                    n_workers=n_wrk,
+                )
+
+                # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
+                # MetaModel.cluster.adapt(minimum=16, maximum=32, wait_count=60)
+            else:
+                # MetaModel.cluster = LocalCluster(n_workers=24, processes=True, memory_limit=None)
+                MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True)
+
+            
             MetaModel.client = Client(MetaModel.cluster)
 
-            print("Client attached.")
-
             MetaModel.lock = Lock("plock")
+            with MetaModel.lock:
+                print("Cluster provisioned and Client attached.")
+
 
             print(MetaModel.client)
 

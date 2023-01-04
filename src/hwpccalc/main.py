@@ -87,8 +87,8 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
 
     if _debug_mode:
-        parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default=_debug_default_path)
-        parser.add_argument("-n", "--name", help="User provided name of simulation run.", default=_debug_default_name)
+        parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default=f"hwpc-user-inputs/{_debug_default_path}")
+        parser.add_argument("-n", "--name", help="User provided name of simulation run.", default=f"{_debug_default_name}")
     else:
         parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", required=True)
         parser.add_argument("-n", "--name", help="User provided name of simulation run.", required=True)
