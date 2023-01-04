@@ -1,4 +1,5 @@
 import math
+import os
 import timeit
 import traceback
 
@@ -11,8 +12,8 @@ import hwpccalc.config
 from hwpccalc.hwpc.model_data import ModelData
 from hwpccalc.hwpc.names import Names as nm
 
-recurse_limit = 1
-first_recycle_year = 1970  # TODO make this dynamic
+recurse_limit = int(os.getenv("HWPC__RECURSE_LIMIT"))
+first_recycle_year = int(os.getenv("HWPC__FIRST_RECYCLE_YEAR"))
 
 _debug_mode = hwpccalc.config._debug_mode
 

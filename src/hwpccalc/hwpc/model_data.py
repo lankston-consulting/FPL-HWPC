@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import requests
 import xarray as xr
-from dotenv import load_dotenv
 
 import hwpccalc.config
 from hwpccalc.hwpc.names import Names as nm
@@ -14,18 +13,22 @@ from hwpccalc.utils import pickler, s3_helper
 
 pd.options.mode.chained_assignment = None
 
-load_dotenv()
-
 _debug_mode = hwpccalc.config._debug_mode
 
 if _debug_mode:
-    _debug_start_year = 1900
-    _debug_end_year = 2050
+    _debug_start_year = int(os.getenv("HWPC__DEBUG__START_YEAR"))
+    _debug_end_year = int(os.getenv("HWPC__DEBUG__END_YEAR"))
 else:
     _debug_start_year = 1850
     _debug_end_year = 2050
 
-CDN_PATH = os.getenv("CDN_URI")
+use_s3_raw = os.getenv("HWPC__PURE_S3")
+USE_S3 = True
+
+CDN_PATH = os.getenv("HWPC__CDN_URI")
+
+if use_s3_raw.lower().find("f") >= 0 or use_s3_raw.lower().find("0") >= 0 or CDN_PATH is not None:
+    USE_S3 = False
 
 
 int_16_str = "int16"
@@ -65,23 +68,27 @@ class ModelData(pickler.Pickler):
                 if k == "inputs":
                     for l in j[k]:
                         if (j[k][l]) == "Default Data":
-                            # default_csv = s3_helper.S3Helper.download_file("hwpc", "default-data/" + l)
-                            # with open(BytesIO(default_csv), "rb") as csv:
-                            #     self.data[l.replace(".csv", "")] = pd.read(csv)
-                            r = requests.get(CDN_PATH + "default-data/" + l)
-                            if r.status_code != 200:
-                                raise PermissionError()
-                            default_csv = r.content
-                            self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(default_csv))
+                            if USE_S3:
+                                default_csv = s3_helper.S3Helper.download_file("hwpc", "default-data/" + l)
+                                with open(BytesIO(default_csv), "rb") as csv:
+                                    self.data[l.replace(".csv", "")] = pd.read(csv)
+                            else:
+                                r = requests.get(CDN_PATH + "default-data/" + l)
+                                if r.status_code != 200:
+                                    raise PermissionError()
+                                default_csv = r.content
+                                self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(default_csv))
                         else:
-                            # user_csv = s3_helper.S3Helper.download_file("hwpc", path_override + "/" + l)
-                            # with open(BytesIO(user_csv), "rb") as csv:
-                            #     self.data[l.replace(".csv", "")] = pd.read_csv(csv)
-                            r = requests.get(CDN_PATH + path_override + "/" + l)
-                            if r.status_code != 200:
-                                raise PermissionError()
-                            user_csv = r.content
-                            self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(user_csv))
+                            if USE_S3:
+                                user_csv = s3_helper.S3Helper.download_file("hwpc", path_override + "/" + l)
+                                with open(BytesIO(user_csv), "rb") as csv:
+                                    self.data[l.replace(".csv", "")] = pd.read_csv(csv)
+                            else:
+                                r = requests.get(CDN_PATH + path_override + "/" + l)
+                                if r.status_code != 200:
+                                    raise PermissionError()
+                                user_csv = r.content
+                                self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(user_csv))
         return
 
     def prep_data(self) -> None:

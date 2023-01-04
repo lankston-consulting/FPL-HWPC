@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hwpccalc"
-version = "1.0.2b1"
+version = "1.0.5b1"
 dependencies=[
     "aiobotocore",
     "bokeh==2.4.3",

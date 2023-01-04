@@ -7,6 +7,7 @@ import zipfile
 from io import BytesIO
 
 import xarray as xr
+import dask.config
 from dask.distributed import Client, LocalCluster, Lock, as_completed, fire_and_forget
 from dask_cloudprovider.aws import FargateCluster
 from dotenv import load_dotenv
@@ -48,6 +49,8 @@ class MetaModel(singleton.Singleton):
         if MetaModel._instance is None:
             super().__new__(cls, args, kwargs)
 
+            dask.config.set({"distributed.comm.timeouts.connect": "100s", "distributed.comm.timeouts.tcp": "100s"})
+
             MetaModel.start = timeit.default_timer()
 
             print("Provisioning cluster.")
@@ -85,9 +88,9 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.lock = Lock("plock", client=MetaModel.client)
 
-            # with Lock("plock"):
-            print("Cluster provisioned and Client attached.")
-            print(MetaModel.client)
+            with Lock("plock"):
+                print("Cluster provisioned and Client attached.")
+                print(MetaModel.client)
 
         return cls._instance
 
@@ -97,8 +100,8 @@ class MetaModel(singleton.Singleton):
         md = model_data.ModelData(path=nm.Output.input_path)
         harvest = md.data[nm.Tables.harvest]
 
-        # with Lock("plock"):
-        print("Starting simluation.")
+        with Lock("plock"):
+            print("Starting simluation.")
 
         final_futures = model.Model.model_factory(model_data_path=nm.Output.input_path, harvest_init=harvest)
         mod_jobs = as_completed(final_futures)
@@ -108,117 +111,113 @@ class MetaModel(singleton.Singleton):
         ds_all = None
         ds_rec = None
 
-        # with Lock("plock"):
-        print("Futures created.")
+        with Lock("plock"):
+            print("Futures created.")
 
         task_count = len(final_futures)
         # agg_jobs = as_completed([])
 
-        try:
-            for f in mod_jobs:
-                r, r_futures = f.result()
-                if r_futures is not None:
-                    task_count += len(r_futures)
+        for f in mod_jobs:
+            r, r_futures = f.result()
+            if r_futures is not None:
+                task_count += len(r_futures)
 
-                ykey = r.lineage[0]
+            ykey = r.lineage[0]
 
-                if ykey in year_ds_col_all:
-                    year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
-                else:
-                    year_ds_col_all[ykey] = r
-
-                if ds_all is None:
-                    ds_all = r
-                else:
-                    ds_all = MetaModel.aggregate_results(ds_all, r)
-
-                # Save the recycled materials on their own for reporting
-                if len(r.lineage) > 1:
-                    if ykey in year_ds_col_rec:
-                        year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
-                    else:
-                        year_ds_col_rec[ykey] = r
-
-                    if ds_rec is None:
-                        ds_rec = r
-                    else:
-                        ds_rec = MetaModel.aggregate_results(ds_rec, r)
-
-                if r_futures:
-                    mod_jobs.update(r_futures)
-
-                # f.release()  # This function is not actually documented, but it seems to be needed
-                # del f
-
-            ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
-
-            with Lock("plock"):
-                print("===========================")
-                print("Model run time:", f"{(timeit.default_timer() - MetaModel.start) / 60}", "minutes")
-                print("Total tasks completed:", f"{task_count}")
-                print("===========================")
-
-            try:
-                MetaModel.make_results(ds_all, prefix="comb", save=True)
-                # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, ds_all, prefix="comb", save=True))
-            except Exception as e:
-                print("ds_all_comb:", e)
-
-            if ds_rec is not None:
-                try:
-                    MetaModel.make_results(ds_rec, prefix="rec", save=True)
-                    # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, ds_rec, prefix="rec", save=True))
-                except Exception as e:
-                    print("ds_rec:", e)
-                try:
-                    MetaModel.make_results(ds_all, ds_rec, save=True)
-                    # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, ds_all, ds_rec, save=True))
-                except Exception as e:
-                    print("ds_all:", e)
+            if ykey in year_ds_col_all:
+                year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
             else:
-                # If there's no ds_rec, that either means there's no recycling, OR there hasn't
-                # been any recycling so far (this run), OR ?
-                try:
-                    MetaModel.make_results(ds_all, save=True)
-                    # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, ds_all, save=True))
-                except Exception as e:
-                    print("ds_all:", e)
+                year_ds_col_all[ykey] = r
 
-            for y in year_ds_col_all:
-                try:
-                    MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
-                    # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, year_ds_col_all[y], prefix=str(y) + "_comb", save=True))
-                except Exception as e:
-                    print(str(y), "ds_all_comb:", e)
+            if ds_all is None:
+                ds_all = r
+            else:
+                ds_all = MetaModel.aggregate_results(ds_all, r)
 
-                if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
-                    try:
-                        MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
-                        # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, year_ds_col_rec[y], prefix=str(y) + "_rec", save=True))
-                    except Exception as e:
-                        print(str(y), "ds_rec:", e)
-                    try:
-                        MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
-                        # fire_and_forget(
-                        #     MetaModel.client.submit(MetaModel.make_results, year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
-                        # )
-                    except Exception as e:
-                        print(str(y), "ds_all:", e)
+            # Save the recycled materials on their own for reporting
+            if len(r.lineage) > 1:
+                if ykey in year_ds_col_rec:
+                    year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
                 else:
-                    try:
-                        MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
-                        # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, year_ds_col_all[y], prefix=str(y), save=True))
-                    except Exception as e:
-                        print(str(y), "ds_all:", e)
+                    year_ds_col_rec[ykey] = r
 
-            with Lock("plock"):
-                print("===========================")
-                print("Final run time", f"{(timeit.default_timer() - MetaModel.start) / 60} minutes")
-                print("===========================")
+                if ds_rec is None:
+                    ds_rec = r
+                else:
+                    ds_rec = MetaModel.aggregate_results(ds_rec, r)
 
+            if r_futures:
+                mod_jobs.update(r_futures)
+
+            f.release()  # This function is not actually documented, but it seems to be needed
+            del f
+
+        ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
+
+        with Lock("plock"):
+            print("===========================")
+            print("Model run time:", f"{(timeit.default_timer() - MetaModel.start) / 60}", "minutes")
+            print("Total tasks completed:", f"{task_count}")
+            print("===========================")
+
+        try:
+            MetaModel.make_results(ds_all, prefix="comb", save=True)
+            # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, ds_all, prefix="comb", save=True))
         except Exception as e:
-            print(e)
-            raise e
+            print("ds_all_comb:", e)
+
+        if ds_rec is not None:
+            try:
+                MetaModel.make_results(ds_rec, prefix="rec", save=True)
+                # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, ds_rec, prefix="rec", save=True))
+            except Exception as e:
+                print("ds_rec:", e)
+            try:
+                MetaModel.make_results(ds_all, ds_rec, save=True)
+                # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, ds_all, ds_rec, save=True))
+            except Exception as e:
+                print("ds_all:", e)
+        else:
+            # If there's no ds_rec, that either means there's no recycling, OR there hasn't
+            # been any recycling so far (this run), OR ?
+            try:
+                MetaModel.make_results(ds_all, save=True)
+                # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, ds_all, save=True))
+            except Exception as e:
+                print("ds_all:", e)
+
+        for y in year_ds_col_all:
+            try:
+                MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
+                # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, year_ds_col_all[y], prefix=str(y) + "_comb", save=True))
+            except Exception as e:
+                print(str(y), "ds_all_comb:", e)
+
+            if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
+                try:
+                    MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
+                    # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, year_ds_col_rec[y], prefix=str(y) + "_rec", save=True))
+                except Exception as e:
+                    print(str(y), "ds_rec:", e)
+                try:
+                    MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
+                    # fire_and_forget(
+                    #     MetaModel.client.submit(MetaModel.make_results, year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
+                    # )
+                except Exception as e:
+                    print(str(y), "ds_all:", e)
+            else:
+                try:
+                    MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
+                    # fire_and_forget(MetaModel.client.submit(MetaModel.make_results, year_ds_col_all[y], prefix=str(y), save=True))
+                except Exception as e:
+                    print(str(y), "ds_all:", e)
+
+        with Lock("plock"):
+            print("===========================")
+            print("Final run time", f"{(timeit.default_timer() - MetaModel.start) / 60} minutes")
+            print("===========================")
+
         return
 
     @staticmethod

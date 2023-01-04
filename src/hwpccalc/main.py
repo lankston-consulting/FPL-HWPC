@@ -3,18 +3,15 @@ import os
 import sys
 import traceback
 
-from dotenv import load_dotenv
-
 import hwpccalc.config
 import hwpccalc.meta_model
 from hwpccalc.hwpc import names
 from hwpccalc.utils import email
 
-load_dotenv()
 
 _debug_mode = hwpccalc.config._debug_mode
-_debug_default_path = "t2023-01-03-01-2023T12:23:02"
-_debug_default_name = "t2023-01"
+_debug_default_path = os.getenv("HWPC__DEBUG__PATH")
+_debug_default_name = os.getenv("HWPC__DEBUG__NAME")
 
 
 def run(args: argparse.Namespace) -> int:
@@ -104,3 +101,5 @@ if __name__ == "__main__":
         run(args)
     except Exception as ex:
         _handle_exception("Uncaught error in HWPC-CALC", ex)
+    finally:
+        sys.exit(0)
