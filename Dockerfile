@@ -43,6 +43,8 @@ COPY .env .env
 #########################################################
 # The production worker image. This should be tagged as 
 # hwpc-calc:worker* when pushed to ECR
+# ARG is still needed to use cached builds
+ARG PY_VERSION=3.10.4
 FROM base AS worker
 ENV PYTHONBUFFERED 1
 
@@ -54,6 +56,8 @@ ENTRYPOINT ["/tini", "-g", "--"]
 # The production client (hwpc-calc) image. Almost identical to
 # the worker, but this executes the hwpc-calc loop and 
 # collects results from SaaI launched tasks
+# ARG is still needed to use cached builds
+ARG PY_VERSION=3.10.4
 FROM base AS client
 ENV PYTHONBUFFERED 1
 

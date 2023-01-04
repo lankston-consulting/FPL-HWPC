@@ -12,14 +12,14 @@ from hwpccalc.utils import email
 
 load_dotenv()
 
-_debug_mode = bool(os.getenv("DEBUGGING"))
+_debug_mode = hwpccalc.config._debug_mode
 _debug_default_path = "t2023-01-03-01-2023T12:23:02"
 _debug_default_name = "t2023-01"
 
 
 def run(args: argparse.Namespace) -> int:
     """Main entrypoint for the HPWC simulation.
-    
+
     Args:
         args: A set of parsed arguments from argparse.
 
@@ -75,7 +75,12 @@ def _handle_exception(msg: str, ex: Exception):
     """
     print(msg)
     print(ex)
-    print(traceback.print_exception(ex))
+    try:
+        print(traceback.print_exception(ex))
+    except TypeError as te:
+        # Passing "ex" to traceback.print_exception was introduced in Python 3.10.
+        # Use old method if it fails.
+        print(traceback.print_exception(value=ex))
     sys.exit(1)
 
 

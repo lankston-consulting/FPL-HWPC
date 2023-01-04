@@ -8,6 +8,7 @@ import requests
 import xarray as xr
 from dotenv import load_dotenv
 
+import hwpccalc.config
 from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import pickler, s3_helper
 
@@ -15,11 +16,7 @@ pd.options.mode.chained_assignment = None
 
 load_dotenv()
 
-_debug_mode_raw = os.getenv("DEBUGGING")
-_debug_mode = False
-
-if _debug_mode_raw.lower().find('t') >= 0 or _debug_mode_raw.lower().find('1') >= 0:
-    _debug_mode = True
+_debug_mode = hwpccalc.config._debug_mode
 
 if _debug_mode:
     _debug_start_year = 1900
@@ -56,8 +53,7 @@ class ModelData(pickler.Pickler):
         return
 
     def load_data(self, path_override=None) -> None:
-        """Read data into pandas DataFrames
-        """
+        """Read data into pandas DataFrames"""
         json_file = s3_helper.S3Helper.download_file("hwpc", path_override + "/user_input.json")
 
         with open(json_file.name) as f:
