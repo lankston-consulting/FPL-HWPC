@@ -1,11 +1,18 @@
 import json
+import os
 import urllib.parse
+
 import boto3
+from dotenv import load_dotenv
 
 print("Loading function")
 
 s3 = boto3.client("s3")
 
+load_dotenv()
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 def runCalculatorTask(name, user_string):
     print(name)
@@ -40,8 +47,8 @@ def runCalculatorTask(name, user_string):
                         name,
                     ],
                     "environment": [
-                        {"name": "AWS_ACCESS_KEY_ID", "value": "AKIATNIWM26NC25T4ZUU"},
-                        {"name": "AWS_SECRET_ACCESS_KEY", "value": "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"},
+                        {"name": "AWS_ACCESS_KEY_ID", "value": AWS_ACCESS_KEY_ID},
+                        {"name": "AWS_SECRET_ACCESS_KEY", "value": AWS_SECRET_ACCESS_KEY},
                         {"name": "S3_INPUT_BUCKET", "value": "hwpc"},
                         {"name": "S3_OUTPUT_BUCKET", "value": "hwpc_output"},
                     ],
