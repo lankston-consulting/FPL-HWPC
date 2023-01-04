@@ -119,14 +119,14 @@ class MetaModel(singleton.Singleton):
                 print("===========================")
 
             try:
-                ds_all = MetaModel.convert_to_carbon(ds_all, md)
+                # ds_all = MetaModel.convert_to_carbon(ds_all, md)
                 MetaModel.make_results(ds_all, prefix="comb", save=True)
             except Exception as e:
                 print("ds_all_comb:", e)
 
             if ds_rec is not None:
                 try:
-                    ds_rec = MetaModel.convert_to_carbon(ds_rec, md)
+                    # ds_rec = MetaModel.convert_to_carbon(ds_rec, md)
                     MetaModel.make_results(ds_rec, prefix="rec", save=True)
                 except Exception as e:
                     print("ds_rec:", e)
@@ -144,14 +144,14 @@ class MetaModel(singleton.Singleton):
 
             for y in year_ds_col_all:
                 try:
-                    year_ds_col_all[y] = MetaModel.convert_to_carbon(year_ds_col_all[y], md)
+                    # year_ds_col_all[y] = MetaModel.convert_to_carbon(year_ds_col_all[y], md)
                     MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
                 except Exception as e:
                     print(str(y), "ds_all_comb:", e)
 
                 if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
                     try:
-                        year_ds_col_rec[y] = MetaModel.convert_to_carbon(year_ds_col_rec[y], md)
+                        # year_ds_col_rec[y] = MetaModel.convert_to_carbon(year_ds_col_rec[y], md)
                         MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
                     except Exception as e:
                         print(str(y), "ds_rec:", e)
