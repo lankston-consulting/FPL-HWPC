@@ -81,8 +81,8 @@ class MetaModel(singleton.Singleton):
                 # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
                 # MetaModel.cluster.adapt(minimum=16, maximum=32, wait_count=60)
             else:
-                # MetaModel.cluster = LocalCluster(n_workers=24, processes=True, memory_limit=None)
-                MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True)
+                MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True, memory_limit=None)
+                # MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True)
                 # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="120s")
 
             MetaModel.client = Client(

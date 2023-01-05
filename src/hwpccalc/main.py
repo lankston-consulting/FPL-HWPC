@@ -44,7 +44,7 @@ def run(args: argparse.Namespace) -> int:
 
     try:
         if _debug_mode:
-            print(f"http://localhost:8080/output?p={_debug_default_path}&q={_debug_default_name}")
+            print(f"http://localhost:8080/output?p={path}&q={name}")
         else:
             email.Email().send_email(
                 email_address=user_info["email_address"], user_string=user_info["user_string"], scenario_name=user_info["scenario_name"]

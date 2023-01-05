@@ -8,5 +8,5 @@ load_dotenv()
 _debug_mode_raw = os.getenv("HWPC__DEBUG__MODE")
 _debug_mode = False
 
-if _debug_mode_raw.lower().find("t") >= 0 or _debug_mode_raw.lower().find("1") >= 0:
+if _debug_mode_raw is not None and (_debug_mode_raw.lower().find("y") >= 0 or _debug_mode_raw.lower().find("t") >= 0 or _debug_mode_raw.lower().find("1") >= 0):
     _debug_mode = True
