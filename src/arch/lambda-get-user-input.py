@@ -34,7 +34,7 @@ def runCalculatorTask(name, user_string):
                 "securityGroups": [
                     "sg-013bca134dc371041",
                 ],
-                "assignPublicIp": "ENABLED",
+                "assignPublicIp": "ENABLED", # DISABLE FOR DEPLOY
             }
         },
         overrides={
