@@ -93,6 +93,7 @@ class MetaModel(singleton.Singleton):
             MetaModel.lock = Lock("plock", client=MetaModel.client)
 
             input_path = kwargs["input_path"]
+            print("Meta Model:", input_path)
             output_path = input_path.replace("inputs", "outputs")
             run_name = kwargs["run_name"]
 

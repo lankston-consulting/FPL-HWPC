@@ -24,6 +24,7 @@ def run(args: argparse.Namespace) -> int:
         0 or 1, corresponding to exit codes.
     """
     path = args.path
+    print(path)
     name = args.name
 
     names.Names()
