@@ -40,20 +40,44 @@ float_64_str = "float64"
 
 
 class ModelData(pickler.Pickler):
+    """TODO Description
+
+    Attributes:
+        data (dict):
+            describe
+        ids (xr.Dataset):
+            describe
+        region (str):
+            ?
+        decay_function (str):
+            describe
+        input_path (str):
+            describe
+        output_path (dict):
+            describe
+        scenario_info (dict):
+            describe
+    """
+
     def __init__(self, *args, **kwargs) -> None:
         self.data = dict()
         self.ids = None
         self.region = None
         self.decay_function = None
 
-        if "path" in kwargs:
-            self.load_data(path_override=kwargs["path"])
-        else:
-            self.load_data(path_override=nm.Output.input_path)
+        self.run_name = kwargs["run_name"]
+        self.input_path = kwargs["input_path"]
+        self.output_path = kwargs["output_path"]
 
+        self.scenario_info = None  # Defined in load_data
+
+        self.load_data(path_override=self.input_path)
         self.prep_data()
 
         return
+
+    def factory(run_name, input_path, output_path):
+        return ModelData(run_name=run_name, input_path=input_path, output_path=output_path)
 
     def load_data(self, path_override=None) -> None:
         """Read data into pandas DataFrames"""
@@ -61,7 +85,7 @@ class ModelData(pickler.Pickler):
 
         with open(json_file.name) as f:
             j = json.load(f)
-            nm.Output.scenario_info = j
+            self.scenario_info = j  # NOTE!
             self.region = j["region"]["name"]
             self.decay_function = j["decay_function"]
             for k in j:

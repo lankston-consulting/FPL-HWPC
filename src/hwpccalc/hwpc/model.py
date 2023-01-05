@@ -66,9 +66,6 @@ class Model(object):
                 harvest = harvest.assign_attrs({"lineage": k})
                 year_recycled = None
 
-            client = get_client()
-            m = Model.run
-
             # The priortization uses actual year values as bit positions... this will only work
             # for 2 or 3 recursions max, otherwise the number will be way too big for an int
             if len(k) < recurse_limit + 1:
@@ -90,7 +87,25 @@ class Model(object):
             #     big_future = client.scatter(big_data)     # good
             #     future = client.submit(func, big_future)  # good
 
-            future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=p)
+            client = get_client()
+
+            remote_model_data_path = client.scatter(model_data_path)
+            remote_harvest = client.scatter(harvest)
+            remote_year_recycled = client.scatter(year_recycled)
+            remote_k = client.scatter(k)
+
+            # future = client.submit(Model.run, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=p)
+            # NOTE 2023-01-04 looks like the latest version of dask changed bokeh, so using a tuple key breaks visualization?
+            future = client.submit(
+                Model.run,
+                model_data_path=remote_model_data_path,
+                harvests=remote_harvest,
+                recycled=remote_year_recycled,
+                lineage=remote_k,
+                key=k,
+                priority=p,
+            )
+
             year_model_col.append(future)
             client.log_event("New Year Group", "Lineage: " + str(k))
 
@@ -105,7 +120,8 @@ class Model(object):
         #     with Lock("plock"):  # This takes a TON of CPU time just blocking. Not worth it except for debugging
         #         print("Lineage:", lineage)
 
-        md = ModelData(path=model_data_path)
+        # md = ModelData(path=model_data_path)
+        md = client.get_dataset("modeldata")
 
         if recycled is None:
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
@@ -141,7 +157,7 @@ class Model(object):
             fill_value=0,
         )
 
-        loss = 1 - float(nm.Output.scenario_info[nm.Fields.loss_factor])
+        loss = 1 - float(md.scenario_info[nm.Fields.loss_factor])
         end_use[nm.Fields.end_use_available] = xr.where(
             end_use[nm.Fields.discard_type_id] == 0, end_use[nm.Fields.end_use_products], end_use[nm.Fields.end_use_products] * loss
         )

@@ -29,30 +29,26 @@ def run(args: argparse.Namespace) -> int:
     names.Names()
     names.Names.Tables()
     names.Names.Fields()
-    names.Names.Output()
-
-    names.Names.Output.input_path = path
-    names.Names.Output.output_path = path.replace("inputs", "outputs")
-    names.Names.Output.run_name = name
 
     try:
-        me = hwpccalc.meta_model.MetaModel()
+        me = hwpccalc.meta_model.MetaModel(input_path=path, run_name=name)
     except Exception as last_ex:
         _handle_exception("Exception instantiating MetaModel.", last_ex)
 
     try:
-        me.run_simulation()
+        user_info = me.run_simulation()
     except Exception as last_ex:
         _handle_exception("Exception running simulation.", last_ex)
 
     print("model finished.")
 
     try:
-        if not _debug_mode:
-            mail = email.Email()
-            mail.send_email()
-        else:
+        if _debug_mode:
             print(f"http://localhost:8080/output?p={_debug_default_path}&q={_debug_default_name}")
+        else:
+            email.Email().send_email(
+                email_address=user_info["email_address"], user_string=user_info["user_string"], scenario_name=user_info["scenario_name"]
+            )
     except Exception as last_ex:
         _handle_exception("Exception sending notification email to user.", last_ex)
 
@@ -84,7 +80,7 @@ def _handle_exception(msg: str, ex: Exception):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    print("Client has been started. Beginning execution.")
+    print("Container has been started. Beginning execution.")
 
     parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
 
@@ -100,6 +96,6 @@ if __name__ == "__main__":
     try:
         run(args)
     except Exception as ex:
-        _handle_exception("Uncaught error in HWPC-CALC", ex)
+        _handle_exception("Uncaught error in hwpc-calc", ex)
     finally:
         sys.exit(0)

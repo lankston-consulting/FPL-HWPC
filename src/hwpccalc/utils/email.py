@@ -3,7 +3,8 @@ import os
 # import base64
 import boto3
 from botocore.exceptions import ClientError
-from hwpccalc.hwpc import names
+
+from hwpccalc.hwpc import model_data
 
 
 class Email(object):
@@ -13,15 +14,15 @@ class Email(object):
     #     print(json)
 
     @staticmethod
-    def send_email():
+    def send_email(email_address="", user_string="", scenario_name=""):
         # Replace sender@example.com with your "From" address.
         # This address must be verified with Amazon SES.
         SENDER = "contact@lankstonconsulting.com"
 
         # Replace recipient@example.com with a "To" address. If your account
         # is still in the sandbox, this address must be verified.
-        print(names.Names.Output.scenario_info["email"])
-        RECIPIENT = names.Names.Output.scenario_info["email"]
+        print(email_address)
+        RECIPIENT = email_address
 
         # Specify a configuration set. If you do not want to use a configuration
         # set, comment the following variable, and the
@@ -35,13 +36,13 @@ class Email(object):
         SUBJECT = "HWPCarbon Results"
         link_url = (
             "<a href='https://www.hwpcarbon.com/output?p="
-            + names.Names.Output.scenario_info["user_string"]
+            + user_string
             + "&q="
-            + names.Names.Output.scenario_info["scenario_name"]
+            + scenario_name
             + "'>https://www.hwpcarbon.com/output?p="
-            + names.Names.Output.scenario_info["user_string"]
+            + user_string
             + "&q="
-            + names.Names.Output.scenario_info["scenario_name"]
+            + scenario_name
             + "</a>"
         )
 
@@ -108,29 +109,3 @@ class Email(object):
         else:
             print("Email sent! Message ID:"),
             print(response["MessageId"])
-
-
-#     def send_email(self, user_email):
-
-#         message = Mail(
-#             from_email="contact@lankstonconsulting.com",
-#             to_emails=user_email,
-#             subject="Hwpcarbon Run Results",
-#             html_content="<p>Thank you user, your Hwpcarbon simulation is complete and is ready to be downloaded. To recieve your files, click the link below.</p><br>"
-#             + "<a href ="
-#             + "https://storage.googleapis.com/hwpcarbon-data/"
-#             + nm.Output.output_path
-#             + "/results/"
-#             + nm.Output.run_name
-#             + ".zip>Download</a><br>"
-#             + "<p>Your link will remain active for 30 days, please make sure to save your data before then, as the download cannot be repeated once the time is up.</p>",
-#         )
-
-#         try:
-#             sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
-#             response = sg.send(message)
-#             print(response.status_code)
-#             print(response.body)
-#             print(response.headers)
-#         except Exception as e:
-#             print(e.message)
