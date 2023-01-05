@@ -7,52 +7,105 @@ import zipfile
 from io import BytesIO
 
 import xarray as xr
-from dask.distributed import Client, LocalCluster, Lock, as_completed
+import dask.config
+from dask.distributed import Client, LocalCluster, Lock, as_completed, fire_and_forget, get_client, wait
 from dask_cloudprovider.aws import FargateCluster
+from dotenv import load_dotenv
 
 from hwpccalc.hwpc import model, model_data
 from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import email, singleton
 from hwpccalc.utils.s3_helper import S3Helper
 
+load_dotenv()
+
 
 class MetaModel(singleton.Singleton):
-    """ """
+    """MetaModel is designed to be a singleton, so instance variables are set
+    up here for scheduling, tracking, and resolving model runs.
+    However, singletons aren't as useful on distirbuted environments, so this
+    isn't strictly necessary any more.
+
+    Attributes:
+        start (timeit._Timer):
+            The time MetaModel gets instantiated
+        cluster (dask.distributed.LocalCluster):
+            A dask cluster defined and provisioned at run time
+        client (dask.Client):
+            The dask client to attach to the cluster
+        lock (dask.distributed.Lock):
+            A syncroneous lock for printing output, mostly for debugging to guarantee
+            print output order.
+        _instance (MetaModel):
+            The singleton object holder, inhereted.
+    """
 
     def __new__(cls, *args, **kwargs):
         """MetaModel is designed to be a singleton, so instance variables are set
         up here for scheduling, tracking, and resolving model runs.
+        However, singletons aren't as useful on distirbuted environments, so this
+        isn't strictly necessary any more.
         """
         if MetaModel._instance is None:
             super().__new__(cls, args, kwargs)
 
+            dask.config.set({"distributed.comm.timeouts.connect": "600s", "distributed.comm.timeouts.tcp": "600s"})
+
             MetaModel.start = timeit.default_timer()
 
-            print("Provisioning cluster...")
+            print("Provisioning cluster.")
 
-            MetaModel.cluster = LocalCluster(n_workers=24, processes=True, memory_limit=None)
-            # MetaModel.cluster = LocalCluster(n_workers=16, processes=True)
+            use_aws_raw = os.getenv("DASK_USE_AWS")
+            use_aws = False
 
-            # MetaModel.cluster = FargateCluster(
-            #     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:worker",
-            #     scheduler_cpu=2048,
-            #     scheduler_mem=4096,
-            #     worker_cpu=1024,
-            #     worker_nthreads=2,
-            #     worker_mem=2048,
-            #     n_workers=16,
-            # )
+            if use_aws_raw.lower().find("t") >= 0 or use_aws_raw.lower().find("1") >= 0:
+                use_aws = True
 
-            # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
-            # MetaModel.cluster.adapt(minimum=16, maximum=32, wait_count=60)
+            n_wrk = int(os.getenv("DASK_N_WORKERS"))
 
-            print("Cluster provisioned.")
+            if use_aws:
+                sch_cpu = int(os.getenv("DASK_SCEDULER_CPU"))
+                sch_mem = int(os.getenv("DASK_SCEDULER_MEM"))
+                wrk_cpu = int(os.getenv("DASK_WORKER_CPU"))
+                wrk_mem = int(os.getenv("DASK_WORKER_MEM"))
 
-            MetaModel.client = Client(MetaModel.cluster)
+                MetaModel.cluster = FargateCluster(
+                    image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:worker",
+                    scheduler_cpu=sch_cpu,
+                    scheduler_mem=sch_mem,
+                    worker_cpu=wrk_cpu,
+                    worker_mem=wrk_mem,
+                    n_workers=n_wrk,
+                )
 
-            print("Client attached.")
+                # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
+                # MetaModel.cluster.adapt(minimum=16, maximum=32, wait_count=60)
+            else:
+                # MetaModel.cluster = LocalCluster(n_workers=24, processes=True, memory_limit=None)
+                MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True)
+                # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="120s")
 
-            MetaModel.lock = Lock("plock")
+            MetaModel.client = Client(
+                # MetaModel.cluster, serializers=["dask", "cloudpickle", "pickle"], deserializers=["dask", "cloudpickle", "pickle"]
+                MetaModel.cluster,
+            )
+
+            MetaModel.lock = Lock("plock", client=MetaModel.client)
+
+            input_path = kwargs["input_path"]
+            output_path = input_path.replace("inputs", "outputs")
+            run_name = kwargs["run_name"]
+
+            md = model_data.ModelData(
+                run_name=run_name,
+                input_path=input_path,
+                output_path=output_path,
+            )
+
+            MetaModel.client.publish_dataset(modeldata=md)
+
+            with Lock("plock"):
+                print("Cluster provisioned and Client attached.")
 
             print(MetaModel.client)
 
@@ -61,13 +114,16 @@ class MetaModel(singleton.Singleton):
     def run_simulation(self):
         """ """
         sim_start = timeit.default_timer()
-        md = model_data.ModelData(path=nm.Output.input_path)
+        # md = model_data.ModelData(path=nm.Output.input_path)
+        # md = MetaModel.client.get_dataset("modeldata", default=model_data.ModelData(path=nm.Scenario.input_path))
+        md = MetaModel.client.get_dataset("modeldata")
         harvest = md.data[nm.Tables.harvest]
 
-        print("Starting simluation.")
+        with Lock("plock"):
+            print("Starting simluation.")
 
-        final_futures = model.Model.model_factory(model_data_path=nm.Output.input_path, harvest_init=harvest)
-        ac = as_completed(final_futures)
+        final_futures = model.Model.model_factory(model_data_path=md.input_path, harvest_init=harvest)
+        mod_jobs = as_completed(final_futures)
         year_ds_col_all = dict()
         year_ds_col_rec = dict()
 
@@ -77,120 +133,148 @@ class MetaModel(singleton.Singleton):
         with Lock("plock"):
             print("Futures created.")
 
+        task_count = len(final_futures)
+
+        # agg_jobs = as_completed([])
+
+        for f in mod_jobs:
+            r, r_futures = f.result()
+
+            if r_futures is not None:
+                task_count += len(r_futures)
+
+            ykey = r.lineage[0]
+
+            if ykey in year_ds_col_all:
+                year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
+            else:
+                year_ds_col_all[ykey] = r
+
+            if ds_all is None:
+                ds_all = r
+            else:
+                ds_all = MetaModel.aggregate_results(ds_all, r)
+
+            # Save the recycled materials on their own for reporting
+            if len(r.lineage) > 1:
+                if ykey in year_ds_col_rec:
+                    year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
+                else:
+                    year_ds_col_rec[ykey] = r
+
+                if ds_rec is None:
+                    ds_rec = r
+                else:
+                    ds_rec = MetaModel.aggregate_results(ds_rec, r)
+
+            if r_futures:
+                mod_jobs.update(r_futures)
+
+            f.release()
+            # del f
+
+        ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
+
+        with Lock("plock"):
+            print("===========================")
+            print("Model run time:", f"{(timeit.default_timer() - MetaModel.start) / 60}", "minutes")
+            print("Total tasks completed:", f"{task_count}")
+            print("===========================")
+
+        remote_ds_all = MetaModel.client.scatter(ds_all)
+
+        # fire_and_forget make_results?
+        res_jobs = list()
+
         try:
-            for f in ac:
-                r, r_futures = f.result()
+            # MetaModel.make_results(ds_all, prefix="comb", save=True)
+            future = MetaModel.client.submit(MetaModel.make_results, remote_ds_all, prefix="comb", save=True)
+            res_jobs.append(future)
+        except Exception as e:
+            print("ds_all_comb:", e)
+            # raise e
 
-                ykey = r.lineage[0]
+        if ds_rec is not None:
+            remote_ds_rec = MetaModel.client.scatter(ds_rec)
+            try:
+                # MetaModel.make_results(ds_rec, prefix="rec", save=True)
+                future = MetaModel.client.submit(MetaModel.make_results, remote_ds_rec, prefix="rec", save=True)
+                res_jobs.append(future)
+            except Exception as e:
+                print("ds_rec:", e)
+                # raise e
+            try:
+                # MetaModel.make_results(ds_all, ds_rec, save=True)
+                future = MetaModel.client.submit(MetaModel.make_results, remote_ds_all, remote_ds_rec, save=True)
+                res_jobs.append(future)
+            except Exception as e:
+                print("ds_all:", e)
+                # raise e
+        else:
+            # If there's no ds_rec, that either means there's no recycling, OR there hasn't
+            # been any recycling so far (this run), OR ?
+            try:
+                # MetaModel.make_results(remote_ds_all, save=True)
+                future = MetaModel.client.submit(MetaModel.make_results, remote_ds_all, save=True)
+                res_jobs.append(future)
+            except Exception as e:
+                print("ds_all:", e)
+                # raise e
 
-                if ykey in year_ds_col_all:
-                    year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
-                else:
-                    year_ds_col_all[ykey] = r
-
-                if ds_all is None:
-                    ds_all = r
-                else:
-                    ds_all = MetaModel.aggregate_results(ds_all, r)
-
-                # Save the recycled materials on their own for reporting
-                if len(r.lineage) > 1:
-                    if ykey in year_ds_col_rec:
-                        year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
-                    else:
-                        year_ds_col_rec[ykey] = r
-
-                    if ds_rec is None:
-                        ds_rec = r
-                    else:
-                        ds_rec = MetaModel.aggregate_results(ds_rec, r)
-
-                if r_futures:
-                    ac.update(r_futures)
-
-                f.release()  # This function is not actually documented, but it seems to be needed
-                del f
-
-            ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
-
-            with Lock("plock"):
-                print("===========================")
-                print("Model run time", f"{(timeit.default_timer() - MetaModel.start) / 60} minutes")
-                print("===========================")
+        for y in year_ds_col_all:
+            remote_year_ds_col_all = MetaModel.client.scatter(year_ds_col_all[y])
 
             try:
-                ds_all = MetaModel.convert_to_carbon(ds_all, md)
-                MetaModel.make_results(ds_all, prefix="comb", save=True)
+                # MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
+                future = MetaModel.client.submit(MetaModel.make_results, remote_year_ds_col_all, prefix=str(y) + "_comb", save=True)
+                res_jobs.append(future)
             except Exception as e:
-                print("ds_all_comb:", e)
+                print(str(y), "ds_all_comb:", e)
+                # raise e
 
-            if ds_rec is not None:
+            if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
+                remote_year_ds_col_rec = MetaModel.client.scatter(year_ds_col_rec[y])
                 try:
-                    ds_rec = MetaModel.convert_to_carbon(ds_rec, md)
-                    MetaModel.make_results(ds_rec, prefix="rec", save=True)
+                    # MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
+                    future = MetaModel.client.submit(MetaModel.make_results, remote_year_ds_col_rec, prefix=str(y) + "_rec", save=True)
+                    res_jobs.append(future)
                 except Exception as e:
-                    print("ds_rec:", e)
+                    print(str(y), "ds_rec:", e)
+                    # raise e
                 try:
-                    MetaModel.make_results(ds_all, ds_rec, save=True)
+                    # MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
+                    future = MetaModel.client.submit(MetaModel.make_results, remote_year_ds_col_all, remote_year_ds_col_rec, prefix=str(y), save=True)
+                    res_jobs.append(future)
                 except Exception as e:
-                    print("ds_all:", e)
+                    print(str(y), "ds_all:", e)
+                    # raise e
             else:
-                # If there's no ds_rec, that either means there's no recycling, OR there hasn't
-                # been any recycling so far (this run), OR ?
                 try:
-                    MetaModel.make_results(ds_all, save=True)
+                    # MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
+                    future = MetaModel.client.submit(MetaModel.make_results, remote_year_ds_col_all, prefix=str(y), save=True)
+                    res_jobs.append(future)
                 except Exception as e:
-                    print("ds_all:", e)
+                    print(str(y), "ds_all:", e)
+                    # raise e
 
-            for y in year_ds_col_all:
-                try:
-                    year_ds_col_all[y] = MetaModel.convert_to_carbon(year_ds_col_all[y], md)
-                    MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
-                except Exception as e:
-                    print(str(y), "ds_all_comb:", e)
+        with Lock("plock"):
+            print("Waiting on result jobs.")
 
-                if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
-                    try:
-                        year_ds_col_rec[y] = MetaModel.convert_to_carbon(year_ds_col_rec[y], md)
-                        MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
-                    except Exception as e:
-                        print(str(y), "ds_rec:", e)
-                    try:
-                        MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
-                    except Exception as e:
-                        print(str(y), "ds_all:", e)
-                else:
-                    try:
-                        MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
-                    except Exception as e:
-                        print(str(y), "ds_all:", e)
+        wait(res_jobs)
 
-            with Lock("plock"):
-                print("===========================")
-                print("Final run time", f"{(timeit.default_timer() - MetaModel.start) / 60} minutes")
-                print("===========================")
+        with Lock("plock"):
+            print("===========================")
+            print("Final run time", f"{(timeit.default_timer() - MetaModel.start) / 60} minutes")
+            print("===========================")
 
-        except Exception as e:
-            print(e)
-            # traceback.print_exc()
-            raise e
-        return
+        # We need a couple things for the email that gets sent, after the cluster might be closed.
+        ret_dict = {
+            "email_address": md.scenario_info["email"],
+            "user_string": md.scenario_info["user_string"],
+            "scenario_name": md.scenario_info["scenario_name"],
+        }
 
-    @staticmethod
-    def convert_to_carbon(src_ds, md):
-        src_ds[nm.Fields.end_use_products] = src_ds[nm.Fields.end_use_products] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.end_use_available] = src_ds[nm.Fields.end_use_available] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.products_in_use] = src_ds[nm.Fields.products_in_use] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.discarded_products] = src_ds[nm.Fields.discarded_products] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.discarded_dispositions] = src_ds[nm.Fields.discarded_dispositions] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.can_decay] = src_ds[nm.Fields.can_decay] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.fixed] = src_ds[nm.Fields.fixed] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.discarded_remaining] = src_ds[nm.Fields.discarded_remaining] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.could_decay] = src_ds[nm.Fields.could_decay] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.emitted] = src_ds[nm.Fields.emitted] * src_ds[nm.Fields.conversion_factor]
-        src_ds[nm.Fields.present] = src_ds[nm.Fields.present] * src_ds[nm.Fields.conversion_factor]
-
-        return src_ds
+        return ret_dict
 
     @staticmethod
     def aggregate_results(src_ds, new_ds):
@@ -223,6 +307,9 @@ class MetaModel(singleton.Singleton):
 
     @staticmethod
     def make_results(ds: xr.Dataset, rec_ds: xr.Dataset = None, prefix: str = "", save=False):
+
+        client = get_client()
+        md = client.get_dataset("modeldata")
 
         C = nm.Fields.c
         MGC = nm.Fields.mgc
@@ -561,6 +648,6 @@ class MetaModel(singleton.Singleton):
 
             zip.close()
             zip_buffer.seek(0)
-            S3Helper.upload_file(zip_buffer, "hwpc-output", nm.Output.output_path + "/results/" + prefix + nm.Output.run_name + ".zip")
+            S3Helper.upload_file(zip_buffer, "hwpc-output", md.output_path + "/results/" + prefix + md.run_name + ".zip")
 
         return

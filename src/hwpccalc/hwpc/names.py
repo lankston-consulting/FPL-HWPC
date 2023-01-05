@@ -156,9 +156,3 @@ class Names(singleton.Singleton):
 
         def eemitted(name):
             return name + "_" + Names.Fields.emitted
-
-    class Output(singleton.Singleton):
-        input_path = ""
-        output_path = ""
-        run_name = ""
-        scenario_info = ""

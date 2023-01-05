@@ -8,18 +8,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hwpccalc"
-version = "1.0.2b1"
+version = "1.0.5b1"
 dependencies=[
-    "aiobotocore",
-    "bokeh==2.4.3",
+    "bokeh<3",
     "boto3[crt]",
-    "dask[distributed]",
-    "dask-cloudprovider[aws]",
-    "distributed",
+    "dask",
+    "dask-cloudprovider[aws]>2020",
+    "distributed", 
     "lz4",
     "python-dotenv",
+    "requests",
     "scipy",
-    "tornado==6.1",
     "xarray",
 ]
 
