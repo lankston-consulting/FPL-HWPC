@@ -6,18 +6,18 @@ import traceback
 import zipfile
 from io import BytesIO
 
-import xarray as xr
 import dask.config
-from dask.distributed import Client, LocalCluster, Lock, as_completed, fire_and_forget, get_client, wait
+import dask.delayed
+import xarray as xr
+from dask.distributed import (Client, LocalCluster, Lock, as_completed,
+                              get_client, wait)
 from dask_cloudprovider.aws import FargateCluster
-from dotenv import load_dotenv
 
+import hwpccalc.config
 from hwpccalc.hwpc import model, model_data
 from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import email, singleton
 from hwpccalc.utils.s3_helper import S3Helper
-
-load_dotenv()
 
 
 class MetaModel(singleton.Singleton):
@@ -49,7 +49,7 @@ class MetaModel(singleton.Singleton):
         if MetaModel._instance is None:
             super().__new__(cls, args, kwargs)
 
-            dask.config.set({"distributed.comm.timeouts.connect": "600s", "distributed.comm.timeouts.tcp": "600s"})
+            # dask.config.set({"distributed.comm.timeouts.connect": "600s", "distributed.comm.timeouts.tcp": "600s"})
 
             MetaModel.start = timeit.default_timer()
 
@@ -69,6 +69,10 @@ class MetaModel(singleton.Singleton):
                 wrk_cpu = int(os.getenv("DASK_WORKER_CPU"))
                 wrk_mem = int(os.getenv("DASK_WORKER_MEM"))
 
+                # img = os.getenv("AWS_CONTAINER_IMG")
+                cluster_arn = os.getenv("AWS_CLUSTER_ARN")
+                task_security_group = os.getenv("AWS_SECURITY_GROUP")
+
                 MetaModel.cluster = FargateCluster(
                     image="234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:worker",
                     scheduler_cpu=sch_cpu,
@@ -76,9 +80,12 @@ class MetaModel(singleton.Singleton):
                     worker_cpu=wrk_cpu,
                     worker_mem=wrk_mem,
                     n_workers=n_wrk,
+                    cluster_arn=cluster_arn,
+                    security_groups=[task_security_group],
+                    environment=os.environ,
                 )
 
-                # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
+                MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
             else:
                 MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True, memory_limit=None)
                 # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="120s")
@@ -144,33 +151,38 @@ class MetaModel(singleton.Singleton):
 
             ykey = r.lineage[0]
 
+            remote_r = MetaModel.client.scatter(r)
+
             if ykey in year_ds_col_all:
-                year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
+                year_ds_col_all[ykey] = dask.delayed(MetaModel.aggregate_results)(year_ds_col_all[ykey], remote_r)
             else:
-                year_ds_col_all[ykey] = r
+                year_ds_col_all[ykey] = remote_r
 
             if ds_all is None:
-                ds_all = r
+                ds_all = remote_r
             else:
-                ds_all = MetaModel.aggregate_results(ds_all, r)
+                ds_all = dask.delayed(MetaModel.aggregate_results)(ds_all, remote_r)
 
             # Save the recycled materials on their own for reporting
             if len(r.lineage) > 1:
                 if ykey in year_ds_col_rec:
-                    year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
+                    year_ds_col_rec[ykey] = dask.delayed(MetaModel.aggregate_results)(year_ds_col_rec[ykey], remote_r)
                 else:
-                    year_ds_col_rec[ykey] = r
+                    year_ds_col_rec[ykey] = remote_r
 
                 if ds_rec is None:
-                    ds_rec = r
+                    ds_rec = remote_r
                 else:
-                    ds_rec = MetaModel.aggregate_results(ds_rec, r)
+                    ds_rec = dask.delayed(MetaModel.aggregate_results)(ds_rec, remote_r)
 
             if r_futures:
                 mod_jobs.update(r_futures)
 
             # f.release()
             # del f
+
+        if "Delayed" in str(ds_all):
+            ds_all = ds_all.compute()
 
         ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
 
@@ -194,6 +206,10 @@ class MetaModel(singleton.Singleton):
             # raise e
 
         if ds_rec is not None:
+            if "Delayed" in str(ds_rec):
+                ds_rec = ds_rec.compute()
+            else:
+                ds_rec = ds_rec.result()
             remote_ds_rec = MetaModel.client.scatter(ds_rec)
             try:
                 # MetaModel.make_results(ds_rec, prefix="rec", save=True)
@@ -221,7 +237,11 @@ class MetaModel(singleton.Singleton):
                 # raise e
 
         for y in year_ds_col_all:
-            remote_year_ds_col_all = MetaModel.client.scatter(year_ds_col_all[y])
+            if y < max(year_ds_col_all):
+                year_ds_all = year_ds_col_all[y].compute()
+            else:
+                year_ds_all = year_ds_col_all[y].result()
+            remote_year_ds_col_all = MetaModel.client.scatter(year_ds_all)
 
             try:
                 # MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
@@ -232,7 +252,11 @@ class MetaModel(singleton.Singleton):
                 # raise e
 
             if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
-                remote_year_ds_col_rec = MetaModel.client.scatter(year_ds_col_rec[y])
+                if y < max(year_ds_col_rec):
+                    year_ds_rec = year_ds_col_rec[y].compute()
+                else:
+                    year_ds_rec = year_ds_col_rec[y].result()
+                remote_year_ds_col_rec = MetaModel.client.scatter(year_ds_rec)
                 try:
                     # MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
                     future = MetaModel.client.submit(MetaModel.make_results, remote_year_ds_col_rec, prefix=str(y) + "_rec", save=True)

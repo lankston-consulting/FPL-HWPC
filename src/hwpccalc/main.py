@@ -38,6 +38,7 @@ def run(args: argparse.Namespace) -> int:
     try:
         user_info = me.run_simulation()
     except Exception as last_ex:
+        traceback.print_exc()
         _handle_exception("Exception running simulation.", last_ex)
 
     print("model finished.")
@@ -69,7 +70,8 @@ def _handle_exception(msg: str, ex: Exception):
     print("msg:", msg)
     print("ex:", ex)
     # try:
-    #     print(traceback.print_exception(ex))
+    print("traceback follows:")
+    traceback.print_exc()
     # except TypeError as te:
     #     # Passing "ex" to traceback.print_exception was introduced in Python 3.10.
     #     # Use old method if it fails.

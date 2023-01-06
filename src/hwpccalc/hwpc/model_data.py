@@ -27,7 +27,7 @@ USE_S3 = True
 
 CDN_PATH = os.getenv("HWPC__CDN_URI")
 
-if use_s3_raw.lower().find("f") >= 0 or use_s3_raw.lower().find("0") >= 0 or CDN_PATH is not None:
+if CDN_PATH is not None and (use_s3_raw.lower().find("f") >= 0 or use_s3_raw.lower().find("0") >= 0):
     USE_S3 = False
 
 

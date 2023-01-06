@@ -61,7 +61,7 @@ ENTRYPOINT ["/tini", "-g", "--", "./entrypoint.sh"]
 # the worker, but this executes the hwpc-calc loop and 
 # collects results from SaaI launched tasks
 # ARG is still needed to use cached builds
-# ARG PY_VERSION=3.10.4
+ARG PY_VERSION=3.10.4
 FROM base AS client
 ENV PYTHONBUFFERED 1
 
