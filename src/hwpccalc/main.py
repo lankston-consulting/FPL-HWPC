@@ -24,7 +24,6 @@ def run(args: argparse.Namespace) -> int:
         0 or 1, corresponding to exit codes.
     """
     path = args.path
-    print(path)
     name = args.name
 
     names.Names()
@@ -67,14 +66,15 @@ def _handle_exception(msg: str, ex: Exception):
     Returns:
         Does not return, exits the program.
     """
-    print(msg)
-    print(ex)
-    try:
-        print(traceback.print_exception(ex))
-    except TypeError as te:
-        # Passing "ex" to traceback.print_exception was introduced in Python 3.10.
-        # Use old method if it fails.
-        print(traceback.print_exception(value=ex))
+    print("msg:", msg)
+    print("ex:", ex)
+    # try:
+    #     print(traceback.print_exception(ex))
+    # except TypeError as te:
+    #     # Passing "ex" to traceback.print_exception was introduced in Python 3.10.
+    #     # Use old method if it fails.
+    #     print(traceback.print_exception(value=ex))
+    print("Sending SIGEXIT (1)")
     sys.exit(1)
 
 
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
 
     if _debug_mode:
-        parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default=f"hwpc-user-inputs/{_debug_default_path}")
+        parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default=f"{_debug_default_path}")
         parser.add_argument("-n", "--name", help="User provided name of simulation run.", default=f"{_debug_default_name}")
     else:
         parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", required=True)

@@ -91,7 +91,10 @@ class Model(object):
 
             remote_model_data_path = client.scatter(model_data_path)
             remote_harvest = client.scatter(harvest)
-            remote_year_recycled = client.scatter(year_recycled)
+            if year_recycled is None:
+                remote_year_recycled = None
+            else:
+                remote_year_recycled = client.scatter(year_recycled)
             remote_k = client.scatter(k)
 
             # future = client.submit(Model.run, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=p)

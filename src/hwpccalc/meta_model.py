@@ -55,15 +55,15 @@ class MetaModel(singleton.Singleton):
 
             print("Provisioning cluster.")
 
-            use_aws_raw = os.getenv("DASK_USE_AWS")
-            use_aws = False
+            use_fargate_raw = os.getenv("DASK_USE_FARGATE")
+            use_fargate = False
 
-            if use_aws_raw.lower().find("t") >= 0 or use_aws_raw.lower().find("1") >= 0:
-                use_aws = True
+            if use_fargate_raw.lower().find("t") >= 0 or use_fargate_raw.lower().find("1") >= 0:
+                use_fargate = True
 
             n_wrk = int(os.getenv("DASK_N_WORKERS"))
 
-            if use_aws:
+            if use_fargate:
                 sch_cpu = int(os.getenv("DASK_SCEDULER_CPU"))
                 sch_mem = int(os.getenv("DASK_SCEDULER_MEM"))
                 wrk_cpu = int(os.getenv("DASK_WORKER_CPU"))
@@ -169,7 +169,7 @@ class MetaModel(singleton.Singleton):
             if r_futures:
                 mod_jobs.update(r_futures)
 
-            f.release()
+            # f.release()
             # del f
 
         ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
@@ -333,7 +333,7 @@ class MetaModel(singleton.Singleton):
                 nm.Fields.emitted,
                 nm.Fields.present,
             ]
-        ].sum(dim=["EndUseID", "DiscardDestinationID"])
+        ].sum(dim=[nm.Fields.end_use_id, nm.Fields.discard_destination_id])
         final = xr.merge([final_e, final_d])
 
         annual_harvest_and_timber = ds[[nm.Fields.ccf, nm.Fields.end_use_products]].sum(dim=nm.Fields.end_use_id)

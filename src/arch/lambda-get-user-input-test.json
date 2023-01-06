@@ -27,7 +27,7 @@
             "arn": "arn:aws:s3:::hwpc"
           },
           "object": {
-            "key": "hwpc-user-inputs/lambda-test-json-run-03-01-2023T15%3A54%3A10/user_input.json",
+            "key": "hwpc-user-inputs/t2023-01-03-01-2023T12%3A23%3A02/user_input.json",
             "size": 1024,
             "eTag": "0123456789abcdef0123456789abcdef",
             "sequencer": "0A1B2C3D4E5F678901"

@@ -64,13 +64,11 @@ class ModelData(pickler.Pickler):
         self.ids = None
         self.region = None
         self.decay_function = None
-        print("kwargs:", kwargs)
         self.run_name = kwargs["run_name"]
         self.input_path = "hwpc-user-inputs/" + kwargs["input_path"]
-        print(self.input_path)
-        self.output_path = "hwpc-user_outputs/" + kwargs["output_path"]
+        self.output_path = "hwpc-user-outputs/" + kwargs["output_path"]
 
-        self.scenario_info = None  # Defined in load_data
+        self.scenario_info = None  # Defined in load_data, put here for clarity
 
         self.load_data(path_override=self.input_path)
         self.prep_data()
