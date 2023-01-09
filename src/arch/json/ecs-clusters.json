@@ -1,0 +1,5 @@
+{
+    "clusterArns": [
+        "arn:aws:ecs:us-west-2:234659567514:cluster/hwpc-web-fargate-cluster",
+    ]
+}

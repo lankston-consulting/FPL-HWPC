@@ -13,9 +13,9 @@ from hwpccalc.hwpc.model_data import ModelData
 from hwpccalc.hwpc.names import Names as nm
 
 recurse_limit = int(os.getenv("HWPC__RECURSE_LIMIT"))
-print("model:recurse_limit", recurse_limit)
+# print("model:recurse_limit", recurse_limit)
 first_recycle_year = int(os.getenv("HWPC__FIRST_RECYCLE_YEAR"))
-print("model:first_recycle_year", first_recycle_year)
+# print("model:first_recycle_year", first_recycle_year)
 
 # _debug_mode = hwpccalc.config._debug_mode
 

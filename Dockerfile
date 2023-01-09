@@ -46,14 +46,15 @@ COPY .env .env
 # The production worker image. This should be tagged as 
 # hwpc-calc:worker* when pushed to ECR
 # ARG is still needed to use cached builds
-# ARG PY_VERSION=3.10.4
+ARG PY_VERSION=3.10.4
 FROM base AS worker
 ENV PYTHONBUFFERED 1
 
 COPY ./entrypoint.sh .
 
-EXPOSE 8786
-EXPOSE 8787
+# EXPOSE 8786
+# EXPOSE 8787
+
 ENTRYPOINT ["/tini", "-g", "--", "./entrypoint.sh"]
 
 #########################################################

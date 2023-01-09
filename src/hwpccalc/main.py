@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import os
 import sys
 import traceback
@@ -14,7 +15,9 @@ _debug_default_path = os.getenv("HWPC__DEBUG__PATH")
 _debug_default_name = os.getenv("HWPC__DEBUG__NAME")
 
 
-def run(args: argparse.Namespace) -> int:
+
+@staticmethod
+async def main(args: argparse.Namespace) -> int:
     """Main entrypoint for the HPWC simulation.
 
     Args:
@@ -36,7 +39,7 @@ def run(args: argparse.Namespace) -> int:
         _handle_exception("Exception instantiating MetaModel.", last_ex)
 
     try:
-        user_info = me.run_simulation()
+        user_info = await me.run_simulation()
     except Exception as last_ex:
         traceback.print_exc()
         _handle_exception("Exception running simulation.", last_ex)
@@ -97,7 +100,7 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
 
     try:
-        run(args)
+        asyncio.run(main(args))
     except Exception as ex:
         _handle_exception("Uncaught error in hwpc-calc", ex)
     finally:
