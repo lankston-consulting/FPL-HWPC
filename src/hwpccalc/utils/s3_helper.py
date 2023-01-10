@@ -5,9 +5,8 @@ import tempfile
 
 import boto3
 from botocore.exceptions import ClientError
-from dotenv import load_dotenv
 
-load_dotenv()
+import hwpccalc.config
 
 
 class S3Helper(object):

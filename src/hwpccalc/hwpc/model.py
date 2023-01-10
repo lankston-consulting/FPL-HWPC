@@ -1,16 +1,23 @@
 import math
+import os
 import timeit
 import traceback
 
 import numpy as np
 import xarray as xr
 from dask.distributed import Lock, get_client
-from hwpccalc.hwpc.model_data import ModelData
-from hwpccalc.hwpc.names import Names as nm
 from scipy.stats import chi2, expon
 
-recurse_limit = 1
-first_recycle_year = 1970  # TODO make this dynamic
+import hwpccalc.config
+from hwpccalc.hwpc.model_data import ModelData
+from hwpccalc.hwpc.names import Names as nm
+
+recurse_limit = int(os.getenv("HWPC__RECURSE_LIMIT"))
+# print("model:recurse_limit", recurse_limit)
+first_recycle_year = int(os.getenv("HWPC__FIRST_RECYCLE_YEAR"))
+# print("model:first_recycle_year", first_recycle_year)
+
+# _debug_mode = hwpccalc.config._debug_mode
 
 
 class Model(object):
@@ -61,10 +68,51 @@ class Model(object):
                 harvest = harvest.assign_attrs({"lineage": k})
                 year_recycled = None
 
+            # The priortization uses actual year values as bit positions... this will only work
+            # for 2 or 3 recursions max, otherwise the number will be way too big for an int
+            if len(k) < recurse_limit + 1:
+                # Make a padded list with the key, expanding it to the number of recursions we're doing
+                pk = [k[_] if _ < len(k) else 0 for _ in range(recurse_limit + 1)]
+            else:
+                pk = k
+
+            # Now create a number of 0 padded years
+            pk = [f"{_:04d}" for _ in pk]
+            # Make it one big number string
+            p = "".join(pk)
+            # Cast to int
+            # print("model:p", p)
+            p = int(p)
+
+            # with client.scatter to reduce scheduler burden and
+            # keep data on workers
+            #     future = client.submit(func, big_data)    # bad
+            #     big_future = client.scatter(big_data)     # good
+            #     future = client.submit(func, big_future)  # good
+
             client = get_client()
-            m = Model.run
-            # p = y * len(k) + sum(k)
-            future = client.submit(m, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k)  # , priority=p)
+
+            remote_model_data_path = client.scatter(model_data_path)
+            remote_harvest = client.scatter(harvest)
+            if year_recycled is None:
+                remote_year_recycled = None
+            else:
+                remote_year_recycled = client.scatter(year_recycled)
+            remote_k = client.scatter(k)
+
+            # future = client.submit(Model.run, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=p)
+            # NOTE 2023-01-04 looks like the latest version of dask changed bokeh, so using a tuple key breaks visualization?
+            future = client.submit(
+                Model.run,
+                model_data_path=remote_model_data_path,
+                harvests=remote_harvest,
+                recycled=remote_year_recycled,
+                lineage=remote_k,
+                key=k,
+                priority=p,
+                retries=1,
+            )
+
             year_model_col.append(future)
             client.log_event("New Year Group", "Lineage: " + str(k))
 
@@ -74,10 +122,13 @@ class Model(object):
     def run(model_data_path: str = None, harvests: xr.Dataset = None, recycled: xr.Dataset = None, lineage: tuple = None):
         """Model entrypoint. The model object..."""
         client = get_client()
-        # with Lock("plock"): # This takes a TON of CPU time just blocking. Not worth it except for debugging
-        #     print("Lineage:", lineage)
 
-        md = ModelData(path=model_data_path)
+        # if _debug_mode:
+        #     with Lock("plock"):  # This takes a TON of CPU time just blocking. Not worth it except for debugging
+        #         print("Lineage:", lineage)
+
+        # md = ModelData(path=model_data_path)
+        md = client.get_dataset("modeldata")
 
         if recycled is None:
             working_table = harvests.merge(md.ids, join="left", fill_value=0)
@@ -113,7 +164,7 @@ class Model(object):
             fill_value=0,
         )
 
-        loss = 1 - float(nm.Output.scenario_info[nm.Fields.loss_factor])
+        loss = 1 - float(md.scenario_info[nm.Fields.loss_factor])
         end_use[nm.Fields.end_use_available] = xr.where(
             end_use[nm.Fields.discard_type_id] == 0, end_use[nm.Fields.end_use_products], end_use[nm.Fields.end_use_products] * loss
         )

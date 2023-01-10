@@ -1,7 +1,0 @@
-{
-    "clusterArns": [
-        "arn:aws:ecs:us-west-2:234659567514:cluster/dask-a8355cf1-c",
-        "arn:aws:ecs:us-west-2:234659567514:cluster/hwpc-web-fargate-cluster",
-        "arn:aws:ecs:us-west-2:234659567514:cluster/Calc-Fargate-Cluster"
-    ]
-}
