@@ -508,10 +508,10 @@ resource "aws_iam_role" "s3_demo_role" {
   inline_policy {
   }
 
-  managed_policy_arns  = [aws_iam_policy.arn_aws_iam__234659567514_policy_service_role_awslambdas3executionrole_fc6a086b_8130_486f_8c18_dd0d65011a1c.id, aws_iam_policy.arn_aws_iam__234659567514_policy_service_role_awslambdabasicexecutionrole_accd95e3_9f91_4f08_9ba9_233d317599a4.id]
+  managed_policy_arns  = [aws_iam_policy.arn_aws_iam__234659567514_policy_service_role_awslambdas3executionrole_fc6a086b_8130_486f_8c18_dd0d65011a1c.id, "arn:aws:iam::234659567514:policy/service-role/AWSLambdaBasicExecutionRole-accd95e3-9f91-4f08-9ba9-233d317599a4"]
   max_session_duration = 3600
   name                 = "s3_demo_role"
-  path                 = "/service-role/"
+  path                 = aws_iam_policy.arn_aws_iam__234659567514_policy_service_role_awslambdabasicexecutionrole_accd95e3_9f91_4f08_9ba9_233d317599a4.path
 }
 
 resource "aws_iam_role" "ses_lambda" {

@@ -13,14 +13,14 @@ resource "aws_cloudfront_distribution" "e146szegwxp2gu" {
   http_version    = "http2and3"
   is_ipv6_enabled = true
   logging_config {
-    bucket = aws_s3_bucket.hwpc.bucket_domain_name
+    bucket = "hwpc.s3.amazonaws.com"
     prefix = "cloudfront-logs/"
   }
 
   origin {
     connection_attempts = 3
     connection_timeout  = 10
-    domain_name         = "hwpc.s3.us-west-2.amazonaws.com"
+    domain_name         = aws_s3_bucket.hwpc.bucket_regional_domain_name
     origin_id           = "hwpc.s3.us-west-2.amazonaws.com"
   }
 

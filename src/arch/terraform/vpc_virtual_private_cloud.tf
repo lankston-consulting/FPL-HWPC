@@ -141,7 +141,7 @@ resource "aws_security_group" "sg_0d9a8b466f28c7f25" {
 }
 
 resource "aws_subnet" "subnet_00c7b79155a9bbab8" {
-  availability_zone                   = "us-west-2c"
+  availability_zone_id                = "usw2-az3"
   cidr_block                          = "172.31.0.0/20"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"

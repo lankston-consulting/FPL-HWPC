@@ -40,6 +40,6 @@ resource "aws_ecs_service" "hwpc_web_fargate_cluster_hwpc_web_service_1" {
   platform_version    = "LATEST"
   propagate_tags      = "NONE"
   scheduling_strategy = "REPLICA"
-  task_definition     = "hwpcweb:4"
+  task_definition     = "hwpcweb:5"
 }
 

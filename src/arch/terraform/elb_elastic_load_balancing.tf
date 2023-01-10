@@ -12,14 +12,14 @@ resource "aws_alb" "arn_aws_elasticloadbalancing_us_west_2_234659567514_loadbala
   name                             = "hwpc-web-load-balancer"
   security_groups                  = [aws_security_group.sg_0022db799b846e775.id]
   subnet_mapping {
-    subnet_id = "subnet-0a67a553e8d4a6e46"
+    subnet_id = aws_subnet.subnet_0a67a553e8d4a6e46.id
   }
 
   subnet_mapping {
-    subnet_id = "subnet-0d21162897dfdc2ad"
+    subnet_id = aws_subnet.subnet_0d21162897dfdc2ad.id
   }
 
-  subnets = [aws_subnet.subnet_0d21162897dfdc2ad.id, aws_subnet.subnet_0a67a553e8d4a6e46.id]
+  subnets = ["subnet-0d21162897dfdc2ad", "subnet-0a67a553e8d4a6e46"]
 }
 
 resource "aws_alb_listener" "arn_aws_elasticloadbalancing_us_west_2_234659567514_listener_app_hwpc_web_load_balancer_477dd0231f613c7d_22cde81b9668be6c" {
@@ -89,7 +89,7 @@ resource "aws_alb_listener_rule" "arn_aws_elasticloadbalancing_us_west_2_2346595
 }
 
 resource "aws_alb_target_group" "arn_aws_elasticloadbalancing_us_west_2_234659567514_targetgroup_hwpc_web_fargate_tg_59c5cc26133b5efa" {
-  deregistration_delay = aws_autoscaling_group.lc_web_auto_scaling.health_check_grace_period
+  deregistration_delay = "300"
   health_check {
     enabled             = true
     healthy_threshold   = 5
@@ -116,15 +116,15 @@ resource "aws_alb_target_group" "arn_aws_elasticloadbalancing_us_west_2_23465956
   vpc_id      = aws_vpc.vpc_0012250a7646d8885.id
 }
 
-resource "aws_alb_target_group_attachment" "FcRnQ" {
+resource "aws_alb_target_group_attachment" "ShCBz" {
   port             = 443
   target_group_arn = aws_alb_target_group.arn_aws_elasticloadbalancing_us_west_2_234659567514_targetgroup_hwpc_web_fargate_tg_59c5cc26133b5efa.id
   target_id        = "172.31.44.193"
 }
 
-resource "aws_alb_target_group_attachment" "jejah" {
+resource "aws_alb_target_group_attachment" "UpOLa" {
   port             = 80
   target_group_arn = aws_alb_target_group.arn_aws_elasticloadbalancing_us_west_2_234659567514_targetgroup_hwpc_web_fargate_tg_59c5cc26133b5efa.id
-  target_id        = "172.31.38.127"
+  target_id        = "172.31.24.139"
 }
 
