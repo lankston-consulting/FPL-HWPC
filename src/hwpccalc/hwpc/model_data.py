@@ -66,9 +66,9 @@ class ModelData(pickler.Pickler):
         self.decay_function = None
         print("kwargs:", kwargs)
         self.run_name = kwargs["run_name"]
-        self.input_path = "hwpc-user-inputs/" + kwargs["input_path"]
+        self.input_path = kwargs["input_path"]
         print(self.input_path)
-        self.output_path = "hwpc-user_outputs/" + kwargs["output_path"]
+        self.output_path = kwargs["output_path"]
 
         self.scenario_info = None  # Defined in load_data
 

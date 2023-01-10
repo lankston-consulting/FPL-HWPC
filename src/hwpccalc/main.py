@@ -26,6 +26,7 @@ def run(args: argparse.Namespace) -> int:
     path = args.path
     print(path)
     name = args.name
+    print(name)
 
     names.Names()
     names.Names.Tables()

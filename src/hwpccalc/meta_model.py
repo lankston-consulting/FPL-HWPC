@@ -92,8 +92,7 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.lock = Lock("plock", client=MetaModel.client)
 
-            input_path = kwargs["input_path"]
-            print("Meta Model:", input_path)
+            input_path = "hwpc-user-inputs/"+kwargs["input_path"]
             output_path = input_path.replace("inputs", "outputs")
             run_name = kwargs["run_name"]
 
@@ -464,19 +463,21 @@ class MetaModel(singleton.Singleton):
             )
         emitted_all = xr.Dataset(
             {
-                CO2(E(nm.Fields.fuel)): fuel_carbon_emitted,
-                CO2(E(nm.Fields.composted)): compost_emitted,
+              
                 CO2(E(nm.Fields.dumps)): carbon_emitted_dumps,
                 CO2(E(nm.Fields.landfills)): carbon_emitted_landfills,
+                CO2(E(nm.Fields.fuel)): fuel_carbon_emitted,
+                CO2(E(nm.Fields.composted)): compost_emitted,
             }
         )
         if rec_ds:
             carbon_present_distinct_swds = xr.Dataset(
                 {
-                    MGC(P(nm.Fields.dumps)): carbon_present_dumps,
-                    MGC(P(nm.Fields.landfills)): carbon_present_landfills,
                     "new_" + MGC(nm.Fields.products_in_use): end_use_in_use_nr,
                     "reused_" + MGC(nm.Fields.products_in_use): end_use_in_use_r,
+                    MGC(P(nm.Fields.dumps)): carbon_present_dumps,
+                    MGC(P(nm.Fields.landfills)): carbon_present_landfills,
+                    
                 }
             )
         else:
