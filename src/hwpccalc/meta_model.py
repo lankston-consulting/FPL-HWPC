@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 import tempfile
@@ -8,14 +9,14 @@ from io import BytesIO
 
 import dask.config
 import xarray as xr
-from dask.distributed import (Client, LocalCluster, Lock, as_completed,
-                              get_client, wait)
+import dask.delayed
+from dask.distributed import Client, LocalCluster, Lock, as_completed, get_client, wait
 from dask_cloudprovider.aws import FargateCluster
 
 import hwpccalc.config
 from hwpccalc.hwpc import model, model_data
 from hwpccalc.hwpc.names import Names as nm
-from hwpccalc.utils import email, singleton
+from hwpccalc.utils import singleton
 from hwpccalc.utils.s3_helper import S3Helper
 
 
@@ -82,20 +83,34 @@ class MetaModel(singleton.Singleton):
                     cluster_arn=cluster_arn,
                     security_groups=[task_security_group],
                     environment={
-                        "AWS_CONTAINER_IMG": img,
-                        "AWS_CLUSTER_ARN": cluster_arn,
-                        "AWS_SECURITY_GROUP": task_security_group,
-                        "HWPC__PURE_S3": os.getenv("HWPC__PURE_S3"),
-                        "HWPC__CDN_URI": os.getenv("HWPC__CDN_URI"),
-                        "HWPC__RECURSE_LIMIT": os.getenv("HWPC__RECURSE_LIMIT"),
-                        "HWPC__FIRST_RECYCLE_YEAR": os.getenv("HWPC__FIRST_RECYCLE_YEAR")},
+                        # "HWPC__PURE_S3": os.getenv("HWPC__PURE_S3"),
+                        # "HWPC__CDN_URI": os.getenv("HWPC__CDN_URI"),
+                        # "HWPC__FIRST_RECYCLE_YEAR": os.getenv("HWPC__FIRST_RECYCLE_YEAR"),
+                        # "HWPC__RECURSE_LIMIT": os.getenv("HWPC__RECURSE_LIMIT"),
+                        # "HWPC__DEBUG__MODE": os.getenv("HWPC__DEBUG__MODE"),
+                        # "HWPC__DEBUG__START_YEAR": os.getenv("HWPC__DEBUG__START_YEAR"),
+                        # "HWPC__DEBUG__END_YEAR": os.getenv("HWPC__DEBUG__END_YEAR"),
+                        # "HWPC__DEBUG__PATH": os.getenv("HWPC__DEBUG__PATH"),
+                        # "HWPC__DEBUG__NAME": os.getenv("HWPC__DEBUG__NAME"),
+                        # "AWS_CONTAINER_IMG": img,
+                        # "AWS_CLUSTER_ARN": cluster_arn,
+                        # "AWS_SECURITY_GROUP": task_security_group,
+                        # "DASK_USE_FARGATE": os.getenv("DASK_USE_FARGATE"),
+                        # "DASK_SCEDULER_CPU": os.getenv("DASK_SCEDULER_CPU"),
+                        # "DASK_SCEDULER_MEM": os.getenv("DASK_SCEDULER_MEM"),
+                        # "DASK_WORKER_CPU": os.getenv("DASK_WORKER_CPU"),
+                        # "DASK_WORKER_MEM": os.getenv("DASK_WORKER_MEM"),
+                        # "DASK_N_WORKERS": os.getenv("DASK_N_WORKERS"),
+                        os.environ
+                    },
                     cloudwatch_logs_group="/ecs/dask",
                 )
 
                 # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
             else:
                 MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True, memory_limit=None)
-                # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="120s")
+                # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="100")
+                MetaModel.cluster.adapt(minimum=8, maximum=24)
 
             MetaModel.client = Client(
                 # MetaModel.cluster, serializers=["dask", "cloudpickle", "pickle"], deserializers=["dask", "cloudpickle", "pickle"]
@@ -117,7 +132,7 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.client.publish_dataset(modeldata=md)
 
-            with Lock("plock"):
+            with Lock("plock", client=MetaModel.client):
                 print("Cluster provisioned and Client attached.")
 
             print(MetaModel.client)
@@ -156,74 +171,48 @@ class MetaModel(singleton.Singleton):
         year_ds_col_all_remotes = dict()
         year_ds_col_rec_remotes = dict()
 
-        async with Client(MetaModel.cluster, asynchronous=True) as async_client:  
+        # async with Client(MetaModel.cluster, asynchronous=True) as async_client:
 
-            for f in mod_jobs:
-                r, r_futures = f.result()
+        for f in mod_jobs:
+            r, r_futures = f.result()
 
-                if r_futures is not None:
-                    task_count += len(r_futures)
+            if r_futures is not None:
+                task_count += len(r_futures)
 
-                ykey = r.lineage[0]
+            ykey = r.lineage[0]
 
-                remote_r = async_client.scatter(r)
+            remote_r = client.scatter(r)
 
-                if ykey in year_ds_col_all:
-                    if year_ds_col_all_remotes[ykey] is not None:
-                        result = await year_ds_col_all_remotes[ykey]
-                        result_remote = async_client.scatter(result)
-                        future = async_client.submit(MetaModel.aggregate_results, result_remote, remote_r)
-                    else:
-                        future = async_client.submit(MetaModel.aggregate_results, year_ds_col_all[ykey], remote_r)
-                    year_ds_col_all_remotes[ykey] = future
+            if ykey in year_ds_col_all:
+                year_ds_col_all[ykey] = dask.delayed(MetaModel.aggregate_results)(year_ds_col_all[ykey], remote_r)
+            else:
+                year_ds_col_all[ykey] = remote_r
+
+            if ds_all is None:
+                ds_all = remote_r
+            else:
+                ds_all = dask.delayed(MetaModel.aggregate_results)(ds_all, remote_r)
+
+            # Save the recycled materials on their own for reporting
+            if len(r.lineage) > 1:
+                if ykey in year_ds_col_rec:
+                    year_ds_col_rec[ykey] = dask.delayed(MetaModel.aggregate_results)(year_ds_col_rec[ykey], remote_r)
                 else:
-                    year_ds_col_all[ykey] = remote_r
-                    year_ds_col_all_remotes[ykey] = None
+                    year_ds_col_rec[ykey] = remote_r
 
-                if ds_all is None:
-                    ds_all = remote_r
+                if ds_rec is None:
+                    ds_rec = remote_r
                 else:
-                    if ds_all_future is not None:
-                        result = await ds_all_future
-                        result_remote = async_client.scatter(result)
-                        future = async_client.submit(MetaModel.aggregate_results, result_remote, remote_r)
-                    else:
-                        future = async_client.submit(MetaModel.aggregate_results, ds_all, remote_r)
-                    ds_all_future = future
+                    ds_rec = dask.delayed(MetaModel.aggregate_results)(ds_rec, remote_r)
 
-                # Save the recycled materials on their own for reporting
-                if len(r.lineage) > 1:
-                    if ykey in year_ds_col_rec:
-                        if year_ds_col_rec_remotes[ykey] is not None:
-                            result = await year_ds_col_rec_remotes[ykey]
-                            result_remote = async_client.scatter(result)
-                            future = async_client.submit(MetaModel.aggregate_results, result_remote, remote_r)
-                        else:
-                            future = async_client.submit(MetaModel.aggregate_results, year_ds_col_rec[ykey], remote_r)
-                        year_ds_col_rec_remotes[ykey] = future
-                    else:
-                        year_ds_col_rec[ykey] = remote_r
-                        year_ds_col_rec_remotes[ykey] = None
+            if r_futures:
+                mod_jobs.update(r_futures)
 
-                    if ds_rec is None:
-                        ds_rec = remote_r
-                    else:
-                        if ds_rec_future is not None:
-                            result = await ds_rec_future
-                            result_remote = async_client.scatter(result)
-                            future = async_client.submit(MetaModel.aggregate_results, result_remote, remote_r)
-                        else:
-                            future = async_client.submit(MetaModel.aggregate_results, ds_rec, remote_r)
-                        ds_rec_future = future
+            # f.release()
+            # del f
 
-                if r_futures:
-                    mod_jobs.update(r_futures)
-
-                # f.release()
-                # del f
-
-            
-            ds_all = await ds_all_future
+        if "Delayed" in str(ds_all):
+            ds_all = ds_all.compute()
 
         ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
 
@@ -247,7 +236,10 @@ class MetaModel(singleton.Singleton):
             # raise e
 
         if ds_rec is not None:
-            ds_rec = ds_rec_future.result()
+            if "Delayed" in str(ds_rec):
+                ds_rec = ds_rec.compute()
+            else:
+                ds_rec = ds_rec.result()
             remote_ds_rec = client.scatter(ds_rec)
             try:
                 # MetaModel.make_results(ds_rec, prefix="rec", save=True)
@@ -274,8 +266,13 @@ class MetaModel(singleton.Singleton):
                 print("ds_all:", e)
                 # raise e
 
+        # del remote_ds_all
+
         for y in year_ds_col_all:
-            year_ds_all = year_ds_col_all_remotes[y].result()
+            if y < max(year_ds_col_all):
+                year_ds_all = year_ds_col_all[y].compute()
+            else:
+                year_ds_all = year_ds_col_all[y].result()
             remote_year_ds_col_all = client.scatter(year_ds_all)
 
             try:
@@ -287,7 +284,10 @@ class MetaModel(singleton.Singleton):
                 # raise e
 
             if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
-                year_ds_rec = year_ds_col_rec_remotes[y].result()
+                if y < max(year_ds_col_rec):
+                    year_ds_rec = year_ds_col_rec[y].compute()
+                else:
+                    year_ds_rec = year_ds_col_rec[y].result()
                 remote_year_ds_col_rec = client.scatter(year_ds_rec)
                 try:
                     # MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)

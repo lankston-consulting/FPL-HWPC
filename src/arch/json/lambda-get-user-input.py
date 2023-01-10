@@ -8,9 +8,6 @@ print("Loading function")
 
 s3 = boto3.client("s3")
 
-# AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-# AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-
 
 def runCalculatorTask(name, user_string):
     print("runCalculatorTask:name", name)
@@ -47,8 +44,6 @@ def runCalculatorTask(name, user_string):
                         name,
                     ],
                     "environment": [
-                        {"name": "AWS_ACCESS_KEY_ID", "value": "X"},
-                        {"name": "AWS_SECRET_ACCESS_KEY", "value": "X"},
                         {"name": "S3_INPUT_BUCKET", "value": os.getenv("S3_INPUT_BUCKET")},
                         {"name": "S3_OUTPUT_BUCKET", "value": os.getenv("S3_OUTPUT_BUCKET")},
                         {"name": "AWS_CLUSTER_ARN", "value": os.getenv("AWS_CLUSTER_ARN")},

@@ -15,7 +15,6 @@ _debug_default_path = os.getenv("HWPC__DEBUG__PATH")
 _debug_default_name = os.getenv("HWPC__DEBUG__NAME")
 
 
-
 @staticmethod
 async def main(args: argparse.Namespace) -> int:
     """Main entrypoint for the HPWC simulation.
@@ -48,7 +47,8 @@ async def main(args: argparse.Namespace) -> int:
 
     try:
         if _debug_mode:
-            print(f"http://localhost:8080/output?p={path}&q={name}")
+            print(f"http://localhost/output?p={path}&q={name}")
+            print(f"http://www.hwpcarbon.com/output?p={path}&q={name}")
         else:
             email.Email().send_email(
                 email_address=user_info["email_address"], user_string=user_info["user_string"], scenario_name=user_info["scenario_name"]
