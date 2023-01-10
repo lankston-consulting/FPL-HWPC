@@ -13,9 +13,11 @@ from hwpccalc.hwpc.model_data import ModelData
 from hwpccalc.hwpc.names import Names as nm
 
 recurse_limit = int(os.getenv("HWPC__RECURSE_LIMIT"))
+# print("model:recurse_limit", recurse_limit)
 first_recycle_year = int(os.getenv("HWPC__FIRST_RECYCLE_YEAR"))
+# print("model:first_recycle_year", first_recycle_year)
 
-_debug_mode = hwpccalc.config._debug_mode
+# _debug_mode = hwpccalc.config._debug_mode
 
 
 class Model(object):
@@ -79,6 +81,7 @@ class Model(object):
             # Make it one big number string
             p = "".join(pk)
             # Cast to int
+            # print("model:p", p)
             p = int(p)
 
             # with client.scatter to reduce scheduler burden and
@@ -91,7 +94,10 @@ class Model(object):
 
             remote_model_data_path = client.scatter(model_data_path)
             remote_harvest = client.scatter(harvest)
-            remote_year_recycled = client.scatter(year_recycled)
+            if year_recycled is None:
+                remote_year_recycled = None
+            else:
+                remote_year_recycled = client.scatter(year_recycled)
             remote_k = client.scatter(k)
 
             # future = client.submit(Model.run, model_data_path=model_data_path, harvests=harvest, recycled=year_recycled, lineage=k, key=k, priority=p)
@@ -104,6 +110,7 @@ class Model(object):
                 lineage=remote_k,
                 key=k,
                 priority=p,
+                retries=1,
             )
 
             year_model_col.append(future)

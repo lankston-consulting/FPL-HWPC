@@ -40,20 +40,21 @@ ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 
-COPY .env .env
+COPY .envprod .env
 
 #########################################################
 # The production worker image. This should be tagged as 
 # hwpc-calc:worker* when pushed to ECR
 # ARG is still needed to use cached builds
-# ARG PY_VERSION=3.10.4
+ARG PY_VERSION=3.10.4
 FROM base AS worker
 ENV PYTHONBUFFERED 1
 
 COPY ./entrypoint.sh .
 
-EXPOSE 8786
-EXPOSE 8787
+# EXPOSE 8786
+# EXPOSE 8787
+
 ENTRYPOINT ["/tini", "-g", "--", "./entrypoint.sh"]
 
 #########################################################
@@ -61,7 +62,7 @@ ENTRYPOINT ["/tini", "-g", "--", "./entrypoint.sh"]
 # the worker, but this executes the hwpc-calc loop and 
 # collects results from SaaI launched tasks
 # ARG is still needed to use cached builds
-# ARG PY_VERSION=3.10.4
+ARG PY_VERSION=3.10.4
 FROM base AS client
 ENV PYTHONBUFFERED 1
 

@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import os
 import sys
 import traceback
@@ -14,7 +15,8 @@ _debug_default_path = os.getenv("HWPC__DEBUG__PATH")
 _debug_default_name = os.getenv("HWPC__DEBUG__NAME")
 
 
-def run(args: argparse.Namespace) -> int:
+@staticmethod
+async def main(args: argparse.Namespace) -> int:
     """Main entrypoint for the HPWC simulation.
 
     Args:
@@ -24,9 +26,7 @@ def run(args: argparse.Namespace) -> int:
         0 or 1, corresponding to exit codes.
     """
     path = args.path
-    print(path)
     name = args.name
-    print(name)
 
     names.Names()
     names.Names.Tables()
@@ -38,15 +38,17 @@ def run(args: argparse.Namespace) -> int:
         _handle_exception("Exception instantiating MetaModel.", last_ex)
 
     try:
-        user_info = me.run_simulation()
+        user_info = await me.run_simulation()
     except Exception as last_ex:
+        traceback.print_exc()
         _handle_exception("Exception running simulation.", last_ex)
 
     print("model finished.")
 
     try:
         if _debug_mode:
-            print(f"http://localhost:8080/output?p={path}&q={name}")
+            print(f"http://localhost/output?p={path}&q={name}")
+            print(f"http://www.hwpcarbon.com/output?p={path}&q={name}")
         else:
             email.Email().send_email(
                 email_address=user_info["email_address"], user_string=user_info["user_string"], scenario_name=user_info["scenario_name"]
@@ -68,14 +70,16 @@ def _handle_exception(msg: str, ex: Exception):
     Returns:
         Does not return, exits the program.
     """
-    print(msg)
-    print(ex)
-    try:
-        print(traceback.print_exception(ex))
-    except TypeError as te:
-        # Passing "ex" to traceback.print_exception was introduced in Python 3.10.
-        # Use old method if it fails.
-        print(traceback.print_exception(value=ex))
+    print("msg:", msg)
+    print("ex:", ex)
+    # try:
+    print("traceback follows:")
+    traceback.print_exc()
+    # except TypeError as te:
+    #     # Passing "ex" to traceback.print_exception was introduced in Python 3.10.
+    #     # Use old method if it fails.
+    #     print(traceback.print_exception(value=ex))
+    print("Sending SIGEXIT (1)")
     sys.exit(1)
 
 
@@ -87,7 +91,7 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
 
     if _debug_mode:
-        parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default=f"hwpc-user-inputs/{_debug_default_path}")
+        parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default=f"{_debug_default_path}")
         parser.add_argument("-n", "--name", help="User provided name of simulation run.", default=f"{_debug_default_name}")
     else:
         parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", required=True)
@@ -96,7 +100,7 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
 
     try:
-        run(args)
+        asyncio.run(main(args))
     except Exception as ex:
         _handle_exception("Uncaught error in hwpc-calc", ex)
     finally:
