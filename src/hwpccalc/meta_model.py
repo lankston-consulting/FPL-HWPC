@@ -82,7 +82,8 @@ class MetaModel(singleton.Singleton):
                     n_workers=n_wrk,
                     cluster_arn=cluster_arn,
                     security_groups=[task_security_group],
-                    environment={
+                    environment=dict(os.environ),
+                    #{
                         # "HWPC__PURE_S3": os.getenv("HWPC__PURE_S3"),
                         # "HWPC__CDN_URI": os.getenv("HWPC__CDN_URI"),
                         # "HWPC__FIRST_RECYCLE_YEAR": os.getenv("HWPC__FIRST_RECYCLE_YEAR"),
@@ -101,8 +102,7 @@ class MetaModel(singleton.Singleton):
                         # "DASK_WORKER_CPU": os.getenv("DASK_WORKER_CPU"),
                         # "DASK_WORKER_MEM": os.getenv("DASK_WORKER_MEM"),
                         # "DASK_N_WORKERS": os.getenv("DASK_N_WORKERS"),
-                        os.environ
-                    },
+                    # }
                     cloudwatch_logs_group="/ecs/dask",
                 )
 
@@ -119,7 +119,7 @@ class MetaModel(singleton.Singleton):
 
             MetaModel.lock = Lock("plock", client=MetaModel.client)
 
-            input_path = "hwpc-user-inputs/"+kwargs["input_path"]
+            input_path = kwargs["input_path"]
             output_path = input_path.replace("inputs", "outputs")
             run_name = kwargs["run_name"]
 
@@ -180,29 +180,30 @@ class MetaModel(singleton.Singleton):
 
             ykey = r.lineage[0]
 
-            remote_r = client.scatter(r)
+            # remote_r = client.scatter(r)
 
             if ykey in year_ds_col_all:
-                year_ds_col_all[ykey] = dask.delayed(MetaModel.aggregate_results)(year_ds_col_all[ykey], remote_r)
+                # year_ds_col_all[ykey] = dask.delayed(MetaModel.aggregate_results)(year_ds_col_all[ykey], remote_r)
+                year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
             else:
-                year_ds_col_all[ykey] = remote_r
+                year_ds_col_all[ykey] = r
 
             if ds_all is None:
-                ds_all = remote_r
+                ds_all = r
             else:
-                ds_all = dask.delayed(MetaModel.aggregate_results)(ds_all, remote_r)
+                ds_all = MetaModel.aggregate_results(ds_all, r)
 
             # Save the recycled materials on their own for reporting
             if len(r.lineage) > 1:
                 if ykey in year_ds_col_rec:
-                    year_ds_col_rec[ykey] = dask.delayed(MetaModel.aggregate_results)(year_ds_col_rec[ykey], remote_r)
+                    year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
                 else:
-                    year_ds_col_rec[ykey] = remote_r
+                    year_ds_col_rec[ykey] = r
 
                 if ds_rec is None:
-                    ds_rec = remote_r
+                    ds_rec = r
                 else:
-                    ds_rec = dask.delayed(MetaModel.aggregate_results)(ds_rec, remote_r)
+                    ds_rec = MetaModel.aggregate_results(ds_rec, r)
 
             if r_futures:
                 mod_jobs.update(r_futures)
@@ -235,10 +236,10 @@ class MetaModel(singleton.Singleton):
             # raise e
 
         if ds_rec is not None:
-            if "Delayed" in str(ds_rec):
-                ds_rec = ds_rec.compute()
-            else:
-                ds_rec = ds_rec.result()
+            # if "Delayed" in str(ds_rec):
+            #     ds_rec = ds_rec.compute()
+            # else:
+            #     ds_rec = ds_rec.result()
             remote_ds_rec = client.scatter(ds_rec)
             try:
                 # MetaModel.make_results(ds_rec, prefix="rec", save=True)
@@ -268,10 +269,11 @@ class MetaModel(singleton.Singleton):
         # del remote_ds_all
 
         for y in year_ds_col_all:
-            if y < max(year_ds_col_all):
-                year_ds_all = year_ds_col_all[y].compute()
-            else:
-                year_ds_all = year_ds_col_all[y].result()
+            # if y < max(year_ds_col_all):
+            #     year_ds_all = year_ds_col_all[y].compute()
+            # else:
+            #     year_ds_all = year_ds_col_all[y].result()
+            year_ds_all = year_ds_col_all[y]
             remote_year_ds_col_all = client.scatter(year_ds_all)
 
             try:
@@ -283,10 +285,11 @@ class MetaModel(singleton.Singleton):
                 # raise e
 
             if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
-                if y < max(year_ds_col_rec):
-                    year_ds_rec = year_ds_col_rec[y].compute()
-                else:
-                    year_ds_rec = year_ds_col_rec[y].result()
+                # if y < max(year_ds_col_rec):
+                #     year_ds_rec = year_ds_col_rec[y].compute()
+                # else:
+                #     year_ds_rec = year_ds_col_rec[y].result()
+                year_ds_rec = year_ds_col_rec[y]
                 remote_year_ds_col_rec = client.scatter(year_ds_rec)
                 try:
                     # MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)

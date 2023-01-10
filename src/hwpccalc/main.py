@@ -27,7 +27,6 @@ async def main(args: argparse.Namespace) -> int:
     """
     path = args.path
     name = args.name
-    print(name)
 
     names.Names()
     names.Names.Tables()
