@@ -1,5 +1,5 @@
 import json
-import traceback
+import os
 from io import BytesIO
 
 import numpy as np
@@ -7,69 +7,111 @@ import pandas as pd
 import requests
 import xarray as xr
 
+import hwpccalc.config
 from hwpccalc.hwpc.names import Names as nm
 from hwpccalc.utils import pickler, s3_helper
 
 pd.options.mode.chained_assignment = None
 
-_debug_start_year = 1900
-_debug_end_year = 2050
+_debug_mode = hwpccalc.config._debug_mode
 
-CDN_PATH = "https://d2yxltrtv1a9pi.cloudfront.net/"
+if _debug_mode:
+    _debug_start_year = int(os.getenv("HWPC__DEBUG__START_YEAR"))
+    _debug_end_year = int(os.getenv("HWPC__DEBUG__END_YEAR"))
+else:
+    _debug_start_year = 1850
+    _debug_end_year = 2050
+
+use_s3_raw = os.getenv("HWPC__PURE_S3")
+USE_S3 = True
+
+CDN_PATH = os.getenv("HWPC__CDN_URI")
+
+if CDN_PATH is not None and (use_s3_raw.lower().find("f") >= 0 or use_s3_raw.lower().find("0") >= 0):
+    USE_S3 = False
+
+
+int_16_str = "int16"
+int_32_str = "int32"
+int_64_str = "int64"
+
+float_32_str = "float32"
+float_64_str = "float64"
 
 
 class ModelData(pickler.Pickler):
+    """TODO Description
+
+    Attributes:
+        data (dict):
+            describe
+        ids (xr.Dataset):
+            describe
+        region (str):
+            ?
+        decay_function (str):
+            describe
+        input_path (str):
+            describe
+        output_path (dict):
+            describe
+        scenario_info (dict):
+            describe
+    """
+
     def __init__(self, *args, **kwargs) -> None:
         self.data = dict()
         self.ids = None
         self.region = None
         self.decay_function = None
+        self.run_name = kwargs["run_name"]
+        self.input_path = "hwpc-user-inputs/" + kwargs["input_path"]
+        self.output_path = "hwpc-user-outputs/" + kwargs["output_path"]
 
-        if "path" in kwargs:
-            print(kwargs["path"])
-            self.load_data(path_override=kwargs["path"])
-        else:
-            self.load_data(path_override=nm.Output.input_path)
+        self.scenario_info = None  # Defined in load_data, put here for clarity
 
+        self.load_data(path_override=self.input_path)
         self.prep_data()
 
         return
 
-    def load_data(self, path_override=None) -> None:
-        """Read data into pandas DataFrames
-        TODO Right now this just looks at default data
-        """
-        # if path_override is None:
-        #     path = "data/inputs.json"
+    def factory(run_name, input_path, output_path):
+        return ModelData(run_name=run_name, input_path=input_path, output_path=output_path)
 
+    def load_data(self, path_override=None) -> None:
+        """Read data into pandas DataFrames"""
         json_file = s3_helper.S3Helper.download_file("hwpc", path_override + "/user_input.json")
 
         with open(json_file.name) as f:
             j = json.load(f)
-            nm.Output.scenario_info = j
+            self.scenario_info = j  # NOTE!
             self.region = j["region"]["name"]
             self.decay_function = j["decay_function"]
             for k in j:
                 if k == "inputs":
                     for l in j[k]:
                         if (j[k][l]) == "Default Data":
-                            # default_csv = s3_helper.S3Helper.download_file("hwpc", "default-data/" + l)
-                            # with open(BytesIO(default_csv), "rb") as csv:
-                            #     self.data[l.replace(".csv", "")] = pd.read(csv)
-                            r = requests.get(CDN_PATH + "default-data/" + l)
-                            if r.status_code != 200:
-                                raise PermissionError()
-                            default_csv = r.content
-                            self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(default_csv))
+                            if USE_S3:
+                                default_csv = s3_helper.S3Helper.download_file("hwpc", "default-data/" + l)
+                                with open(BytesIO(default_csv), "rb") as csv:
+                                    self.data[l.replace(".csv", "")] = pd.read(csv)
+                            else:
+                                r = requests.get(CDN_PATH + "default-data/" + l)
+                                if r.status_code != 200:
+                                    raise PermissionError()
+                                default_csv = r.content
+                                self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(default_csv))
                         else:
-                            # user_csv = s3_helper.S3Helper.download_file("hwpc", path_override + "/" + l)
-                            # with open(BytesIO(user_csv), "rb") as csv:
-                            #     self.data[l.replace(".csv", "")] = pd.read_csv(csv)
-                            r = requests.get(CDN_PATH + path_override + "/" + l)
-                            if r.status_code != 200:
-                                raise PermissionError()
-                            user_csv = r.content
-                            self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(user_csv))
+                            if USE_S3:
+                                user_csv = s3_helper.S3Helper.download_file("hwpc", path_override + "/" + l)
+                                with open(BytesIO(user_csv), "rb") as csv:
+                                    self.data[l.replace(".csv", "")] = pd.read_csv(csv)
+                            else:
+                                r = requests.get(CDN_PATH + path_override + "/" + l)
+                                if r.status_code != 200:
+                                    raise PermissionError()
+                                user_csv = r.content
+                                self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(user_csv))
         return
 
     def prep_data(self) -> None:
@@ -79,8 +121,8 @@ class ModelData(pickler.Pickler):
         TODO lots of repeated code here... could probably improve this
         """
         df = self.data[nm.Tables.harvest]
-        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
-        df[nm.Fields.ccf] = df[nm.Fields.ccf].astype("float64")
+        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype(int_16_str)
+        df[nm.Fields.ccf] = df[nm.Fields.ccf].astype(float_64_str)
         # Add a year to account for the model shift
         max_year = df[nm.Fields.harvest_year].max() + 1
         mf = pd.DataFrame([[max_year, 0.0]], columns=df.columns)
@@ -105,11 +147,11 @@ class ModelData(pickler.Pickler):
         df = self.data[nm.Tables.timber_products_ratios]
         # Just in case the year was read as a string, parse to numeric
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year], downcast="integer")
-        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
-        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype("int16")
+        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype(int_16_str)
+        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype(int_16_str)
         if nm.Fields.ratio in df.columns:
             df = df.rename(columns={nm.Fields.ratio: nm.Fields.timber_product_ratio})
-        df[nm.Fields.timber_product_ratio] = df[nm.Fields.timber_product_ratio].astype("float64")
+        df[nm.Fields.timber_product_ratio] = df[nm.Fields.timber_product_ratio].astype(float_64_str)
         tr = df
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.timber_product_id])
         # df = df.loc[filtr, :]
@@ -117,7 +159,7 @@ class ModelData(pickler.Pickler):
         self.data[nm.Tables.timber_products_ratios] = dx
 
         df = self.data[nm.Tables.timber_products]
-        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype("int16")
+        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype(int_16_str)
         df = df.set_index([nm.Fields.timber_product_id])
         dx = df.to_xarray()
         self.data[nm.Tables.timber_products] = dx
@@ -132,11 +174,11 @@ class ModelData(pickler.Pickler):
             self.data[nm.Tables.primary_product_ratios] = df[df[nm.Fields.region_id] == region_match]
             df = df[df[nm.Fields.region_id] == region_match]
         df[nm.Fields.harvest_year] = pd.to_numeric(df[nm.Fields.harvest_year])
-        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("int16")
-        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
+        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype(int_16_str)
+        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype(int_16_str)
         if nm.Fields.ratio in df.columns:
             df = df.rename(columns={nm.Fields.ratio: nm.Fields.primary_product_ratio})
-        df[nm.Fields.primary_product_ratio] = df[nm.Fields.primary_product_ratio].astype("float64")
+        df[nm.Fields.primary_product_ratio] = df[nm.Fields.primary_product_ratio].astype(float_64_str)
         pr = df
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.primary_product_id])
         # df = df.loc[filtr, :]
@@ -144,20 +186,20 @@ class ModelData(pickler.Pickler):
         self.data[nm.Tables.primary_product_ratios] = dx
 
         df = self.data[nm.Tables.primary_products]
-        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("int16")
-        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype("int16")
-        df[nm.Fields.conversion_factor] = df[nm.Fields.conversion_factor].astype("float64")
-        df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype("int16")
-        df[nm.Fields.fuel] = df[nm.Fields.fuel].astype("int16")
+        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype(int_16_str)
+        df[nm.Fields.timber_product_id] = df[nm.Fields.timber_product_id].astype(int_16_str)
+        df[nm.Fields.conversion_factor] = df[nm.Fields.conversion_factor].astype(float_64_str)
+        df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype(int_16_str)
+        df[nm.Fields.fuel] = df[nm.Fields.fuel].astype(int_16_str)
         pp = df
         df = df.set_index([nm.Fields.primary_product_id])
         dx = df.to_xarray()
         self.data[nm.Tables.primary_products] = dx
 
         df = self.data[nm.Tables.end_use_product_ratios]
-        df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype("int16")
-        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
-        df[nm.Fields.end_use_ratio] = df[nm.Fields.end_use_ratio].astype("float64")
+        df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype(int_16_str)
+        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype(int_16_str)
+        df[nm.Fields.end_use_ratio] = df[nm.Fields.end_use_ratio].astype(float_64_str)
         er = df
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.end_use_id])
 
@@ -177,42 +219,45 @@ class ModelData(pickler.Pickler):
         )
         final[nm.Fields.primary_product_ratio_direct] = final[nm.Fields.timber_product_ratio] * final[nm.Fields.primary_product_ratio]
         final[nm.Fields.end_use_ratio_direct] = (
-            final[nm.Fields.timber_product_ratio] * final[nm.Fields.primary_product_ratio] * final[nm.Fields.end_use_ratio]
+            final[nm.Fields.timber_product_ratio]
+            * final[nm.Fields.primary_product_ratio]
+            * final[nm.Fields.end_use_ratio]
+            * final[nm.Fields.conversion_factor]
         )
-        final[nm.Fields.timber_product_id] = final[nm.Fields.timber_product_id].astype("int16")
-        final[nm.Fields.primary_product_id] = final[nm.Fields.primary_product_id].astype("int16")
-        final[nm.Fields.end_use_id] = final[nm.Fields.end_use_id].astype("int16")
+        final[nm.Fields.timber_product_id] = final[nm.Fields.timber_product_id].astype(int_16_str)
+        final[nm.Fields.primary_product_id] = final[nm.Fields.primary_product_id].astype(int_16_str)
+        final[nm.Fields.end_use_id] = final[nm.Fields.end_use_id].astype(int_16_str)
         final = final.set_index([nm.Fields.harvest_year, nm.Fields.end_use_id])
         final_x = final.to_xarray()
 
         self.ids = final_x
 
         df = self.data[nm.Tables.end_use_products]
-        df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype("int16")
-        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype("int16")
-        df[nm.Fields.end_use_halflife] = df[nm.Fields.end_use_halflife].astype("float64")
-        df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype("int16")
-        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("int16")
-        df[nm.Fields.fuel] = df[nm.Fields.fuel].astype("int16")
+        df[nm.Fields.end_use_id] = df[nm.Fields.end_use_id].astype(int_16_str)
+        df[nm.Fields.primary_product_id] = df[nm.Fields.primary_product_id].astype(int_16_str)
+        df[nm.Fields.end_use_halflife] = df[nm.Fields.end_use_halflife].astype(float_64_str)
+        df[nm.Fields.ratio_group] = df[nm.Fields.ratio_group].astype(int_16_str)
+        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype(int_16_str)
+        df[nm.Fields.fuel] = df[nm.Fields.fuel].astype(int_16_str)
         df = df.set_index([nm.Fields.end_use_id])
         dx = df.to_xarray()
         self.data[nm.Tables.end_use_products] = dx
 
         df = self.data[nm.Tables.discard_destination_ratios]
-        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("int16")
-        df[nm.Fields.discard_destination_id] = df[nm.Fields.discard_destination_id].astype("int16")
-        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype("int16")
-        df[nm.Fields.discard_destination_ratio] = df[nm.Fields.discard_destination_ratio].astype("float64")
+        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype(int_16_str)
+        df[nm.Fields.discard_destination_id] = df[nm.Fields.discard_destination_id].astype(int_16_str)
+        df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype(int_16_str)
+        df[nm.Fields.discard_destination_ratio] = df[nm.Fields.discard_destination_ratio].astype(float_64_str)
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.discard_type_id, nm.Fields.discard_destination_id])
         # df = df.loc[filtr, :]
         dx = df.to_xarray()
         self.data[nm.Tables.discard_destination_ratios] = dx
 
         df = self.data[nm.Tables.discard_destinations]
-        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype("int16")
-        df[nm.Fields.discard_destination_id] = df[nm.Fields.discard_destination_id].astype("int16")
-        df[nm.Fields.fixed_ratio] = df[nm.Fields.fixed_ratio].astype("float64")
-        df[nm.Fields.halflife] = df[nm.Fields.halflife].astype("float64")
+        df[nm.Fields.discard_type_id] = df[nm.Fields.discard_type_id].astype(int_16_str)
+        df[nm.Fields.discard_destination_id] = df[nm.Fields.discard_destination_id].astype(int_16_str)
+        df[nm.Fields.fixed_ratio] = df[nm.Fields.fixed_ratio].astype(float_64_str)
+        df[nm.Fields.halflife] = df[nm.Fields.halflife].astype(float_64_str)
         df = df.set_index([nm.Fields.discard_type_id, nm.Fields.discard_destination_id])
         dx = df.to_xarray()
         self.data[nm.Tables.discard_destinations] = dx
