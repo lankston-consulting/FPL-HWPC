@@ -50,6 +50,8 @@ ARG PY_VERSION=3.10.4
 FROM base AS worker
 ENV PYTHONBUFFERED 1
 
+ENV PKG_HOME /hwpccalc
+WORKDIR $PKG_HOME
 COPY ./entrypoint.sh .
 
 # EXPOSE 8786
