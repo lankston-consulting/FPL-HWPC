@@ -1,17 +1,14 @@
 version: '3'
 
 services:
-    hwpc-worker:
-      build:
-        context: .
-        dockerfile: Dockerfile
-        target: worker
-      args:
-        PY_VERSION=${PY_VERSION}
     hwpc-client:
       build:
         context: .
         dockerfile: Dockerfile
         target: client
-      args:
-        PY_VERSION=${PY_VERSION}
+        args:
+          PY_VERSION: ${PY_VERSION}
+      ports:
+        - 8787:8787
+      env_file:
+        - .env
