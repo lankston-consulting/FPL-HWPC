@@ -106,7 +106,7 @@ class MetaModel(singleton.Singleton):
                     cloudwatch_logs_group="/ecs/dask",
                 )
 
-                # MetaModel.cluster.adapt(minimum=2, maximum=100, wait_count=60, target_duration="60s")
+                MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
             else:
                 MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True, memory_limit=None)
                 # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="100")
