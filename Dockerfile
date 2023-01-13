@@ -54,8 +54,8 @@ ENV PKG_HOME /hwpccalc
 WORKDIR $PKG_HOME
 COPY ./entrypoint.sh .
 
-# EXPOSE 8786
-# EXPOSE 8787
+EXPOSE 8786
+EXPOSE 8787
 
 ENTRYPOINT ["/tini", "-g", "--", "./entrypoint.sh"]
 

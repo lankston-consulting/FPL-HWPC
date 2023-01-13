@@ -110,7 +110,7 @@ class Model(object):
                 lineage=remote_k,
                 key=k,
                 priority=p,
-                retries=1,
+                retries=3,
             )
 
             year_model_col.append(future)

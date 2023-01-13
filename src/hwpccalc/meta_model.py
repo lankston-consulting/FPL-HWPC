@@ -82,38 +82,37 @@ class MetaModel(singleton.Singleton):
                     n_workers=n_wrk,
                     cluster_arn=cluster_arn,
                     security_groups=[task_security_group],
-                    environment=dict(os.environ),
-                    # {
-                    # "HWPC__PURE_S3": os.getenv("HWPC__PURE_S3"),
-                    # "HWPC__CDN_URI": os.getenv("HWPC__CDN_URI"),
-                    # "HWPC__FIRST_RECYCLE_YEAR": os.getenv("HWPC__FIRST_RECYCLE_YEAR"),
-                    # "HWPC__RECURSE_LIMIT": os.getenv("HWPC__RECURSE_LIMIT"),
-                    # "HWPC__DEBUG__MODE": os.getenv("HWPC__DEBUG__MODE"),
-                    # "HWPC__DEBUG__START_YEAR": os.getenv("HWPC__DEBUG__START_YEAR"),
-                    # "HWPC__DEBUG__END_YEAR": os.getenv("HWPC__DEBUG__END_YEAR"),
-                    # "HWPC__DEBUG__PATH": os.getenv("HWPC__DEBUG__PATH"),
-                    # "HWPC__DEBUG__NAME": os.getenv("HWPC__DEBUG__NAME"),
-                    # "AWS_CONTAINER_IMG": img,
-                    # "AWS_CLUSTER_ARN": cluster_arn,
-                    # "AWS_SECURITY_GROUP": task_security_group,
-                    # "DASK_USE_FARGATE": os.getenv("DASK_USE_FARGATE"),
-                    # "DASK_SCEDULER_CPU": os.getenv("DASK_SCEDULER_CPU"),
-                    # "DASK_SCEDULER_MEM": os.getenv("DASK_SCEDULER_MEM"),
-                    # "DASK_WORKER_CPU": os.getenv("DASK_WORKER_CPU"),
-                    # "DASK_WORKER_MEM": os.getenv("DASK_WORKER_MEM"),
-                    # "DASK_N_WORKERS": os.getenv("DASK_N_WORKERS"),
-                    # }
+                    environment={
+                        "HWPC__PURE_S3": os.getenv("HWPC__PURE_S3"),
+                        "HWPC__CDN_URI": os.getenv("HWPC__CDN_URI"),
+                        "HWPC__FIRST_RECYCLE_YEAR": os.getenv("HWPC__FIRST_RECYCLE_YEAR"),
+                        "HWPC__RECURSE_LIMIT": os.getenv("HWPC__RECURSE_LIMIT"),
+                        # "HWPC__DEBUG__MODE": os.getenv("HWPC__DEBUG__MODE"),
+                        # "HWPC__DEBUG__START_YEAR": os.getenv("HWPC__DEBUG__START_YEAR"),
+                        # "HWPC__DEBUG__END_YEAR": os.getenv("HWPC__DEBUG__END_YEAR"),
+                        # "HWPC__DEBUG__PATH": os.getenv("HWPC__DEBUG__PATH"),
+                        # "HWPC__DEBUG__NAME": os.getenv("HWPC__DEBUG__NAME"),
+                        "AWS_CONTAINER_IMG": img,
+                        "AWS_CLUSTER_ARN": cluster_arn,
+                        "AWS_SECURITY_GROUP": task_security_group,
+                        "DASK_USE_FARGATE": os.getenv("DASK_USE_FARGATE"),
+                        "DASK_SCEDULER_CPU": os.getenv("DASK_SCEDULER_CPU"),
+                        "DASK_SCEDULER_MEM": os.getenv("DASK_SCEDULER_MEM"),
+                        "DASK_WORKER_CPU": os.getenv("DASK_WORKER_CPU"),
+                        "DASK_WORKER_MEM": os.getenv("DASK_WORKER_MEM"),
+                        "DASK_N_WORKERS": os.getenv("DASK_N_WORKERS"),
+                    },
+                    # dict(os.environ), # THIS DOES NOT WORK. Do NOT USE THIS.
                     cloudwatch_logs_group="/ecs/dask",
                 )
 
-                # MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
+                # MetaModel.cluster.adapt(minimum=2, maximum=100, wait_count=60, target_duration="60s")
             else:
                 MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True, memory_limit=None)
                 # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="100")
                 MetaModel.cluster.adapt(minimum=8, maximum=24)
 
             MetaModel.client = Client(
-                # MetaModel.cluster, serializers=["dask", "cloudpickle", "pickle"], deserializers=["dask", "cloudpickle", "pickle"]
                 MetaModel.cluster,
             )
 
