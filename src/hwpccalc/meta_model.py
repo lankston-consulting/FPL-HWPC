@@ -8,8 +8,8 @@ import zipfile
 from io import BytesIO
 
 import dask.config
-import xarray as xr
 import dask.delayed
+import xarray as xr
 from dask.distributed import Client, LocalCluster, Lock, as_completed, get_client, wait
 from dask_cloudprovider.aws import FargateCluster
 
@@ -72,7 +72,7 @@ class MetaModel(singleton.Singleton):
 
             print("Provisioning cluster.")
 
-            use_fargate_raw = os.getenv("DASK_USE_FARGATE")
+            use_fargate_raw = os.getenv("DASK_USE_FARGATE", "0")
             use_fargate = False
 
             if use_fargate_raw.lower().find("t") >= 0 or use_fargate_raw.lower().find("1") >= 0:
@@ -82,57 +82,46 @@ class MetaModel(singleton.Singleton):
             # n_wrk = int(num_years * 1.25)
 
             if use_fargate:
-                sch_cpu = int(os.getenv("DASK_SCEDULER_CPU"))
-                sch_mem = int(os.getenv("DASK_SCEDULER_MEM"))
-                wrk_cpu = int(os.getenv("DASK_WORKER_CPU"))
-                wrk_mem = int(os.getenv("DASK_WORKER_MEM"))
-
-                img = os.getenv("AWS_CONTAINER_IMG", "234659567514.dkr.ecr.us-west-2.amazonaws.com/hwpc-calc:worker")
-                cluster_arn = os.getenv("AWS_CLUSTER_ARN")
+                
                 task_security_group = os.getenv("AWS_SECURITY_GROUP")
+                subnet = os.getenv("AWS_SUBNET_ID")
+                vpc = os.getenv("AWS_VPC_ID") # default "vpc-05d3a2828669df55e"
+
+                arn_prefix = "arn:aws:"
+                aws_region = os.getenv("AWS_DEFAULT_REGION", "us-west-2")
+                aws_project = os.getenv("AWS_PROJECT", "234659567514")
+
+                cluster_arn = arn_prefix + "ecs:" + aws_region + ":" + aws_project + ":cluster/" + os.getenv("AWS_CLUSTER_ARN")
+                scheduler_arn = arn_prefix + "ecs:" + aws_region + ":" + aws_project + ":task-definition/" + os.getenv("AWS_SCHEDULER_ARN", "hwpc-dask-scheduler")
+                worker_arn = arn_prefix + "ecs:" + aws_region + ":" + aws_project + ":task-definition/" + os.getenv("AWS_WORKER_ARN", "hwpc-dask-worker")
 
                 MetaModel.cluster = FargateCluster(
-                    image=img,
-                    scheduler_cpu=sch_cpu,
-                    scheduler_mem=sch_mem,
-                    worker_cpu=wrk_cpu,
-                    worker_mem=wrk_mem,
-                    n_workers=n_wrk,
                     cluster_arn=cluster_arn,
                     security_groups=[task_security_group],
+                    # subnets=[subnet],
+                    # vpc=vpc,
+                    # fargate_use_private_ip=False,
+                    n_workers=n_wrk,
+                    scheduler_task_definition_arn=scheduler_arn,
+                    worker_task_definition_arn=worker_arn,
                     environment={
                         "HWPC__PURE_S3": os.getenv("HWPC__PURE_S3"),
                         "HWPC__CDN_URI": os.getenv("HWPC__CDN_URI"),
                         "HWPC__FIRST_RECYCLE_YEAR": os.getenv("HWPC__FIRST_RECYCLE_YEAR"),
                         "HWPC__RECURSE_LIMIT": os.getenv("HWPC__RECURSE_LIMIT"),
-                        # "HWPC__DEBUG__MODE": os.getenv("HWPC__DEBUG__MODE"),
-                        # "HWPC__DEBUG__START_YEAR": os.getenv("HWPC__DEBUG__START_YEAR"),
-                        # "HWPC__DEBUG__END_YEAR": os.getenv("HWPC__DEBUG__END_YEAR"),
-                        # "HWPC__DEBUG__PATH": os.getenv("HWPC__DEBUG__PATH"),
-                        # "HWPC__DEBUG__NAME": os.getenv("HWPC__DEBUG__NAME"),
-                        "AWS_CONTAINER_IMG": img,
-                        "AWS_CLUSTER_ARN": cluster_arn,
-                        "AWS_SECURITY_GROUP": task_security_group,
-                        "DASK_USE_FARGATE": os.getenv("DASK_USE_FARGATE"),
-                        "DASK_SCEDULER_CPU": os.getenv("DASK_SCEDULER_CPU"),
-                        "DASK_SCEDULER_MEM": os.getenv("DASK_SCEDULER_MEM"),
-                        "DASK_WORKER_CPU": os.getenv("DASK_WORKER_CPU"),
-                        "DASK_WORKER_MEM": os.getenv("DASK_WORKER_MEM"),
-                        "DASK_N_WORKERS": os.getenv("DASK_N_WORKERS"),
                     },
                     # dict(os.environ), # THIS DOES NOT WORK. Do NOT USE THIS.
-                    cloudwatch_logs_group="/ecs/dask",
                 )
 
                 MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
             else:
                 MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True, memory_limit=None)
                 # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="100")
-                # MetaModel.cluster.adapt(minimum=8, maximum=18)
 
             MetaModel.client = Client(
                 MetaModel.cluster,
-                asynchronous=True,
+                # timeout="60s",
+                # asynchronous=True,
             )
 
             MetaModel.lock = Lock("plock", client=MetaModel.client)
