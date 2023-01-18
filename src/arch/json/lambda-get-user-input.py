@@ -9,11 +9,11 @@ print("Loading function")
 s3 = boto3.client("s3")
 
 
-def runCalculatorTask(name, user_string):
-    print("runCalculatorTask:name", name)
+def run_calculator_task(name, user_string):
+    print("run_calculator_task:name", name)
     user_string = user_string.replace("hwpc-user-inputs/", "")
     user_string = user_string.replace("/user_input.json", "")
-    print("runCalculatorTask:user_string", user_string)
+    print("run_calculator_task:user_string", user_string)
     # run a ECS fargate task
     client = boto3.client("ecs")
     response = client.run_task(
@@ -25,10 +25,10 @@ def runCalculatorTask(name, user_string):
         networkConfiguration={
             "awsvpcConfiguration": {
                 "subnets": [
-                    "subnet-0a67a553e8d4a6e46",
+                    "subnet-0094a0131c8b734cc",
                 ],
                 "securityGroups": [
-                    "sg-013bca134dc371041",
+                    "sg-086431530d4a3804d",
                 ],
                 "assignPublicIp": "ENABLED",
             }
@@ -45,18 +45,13 @@ def runCalculatorTask(name, user_string):
                     ],
                     "environment": [
                         {"name": "AWS_CLUSTER_ARN", "value": os.getenv("AWS_CLUSTER_ARN")},
-                        {"name": "AWS_CONTAINER_IMAGE", "value": os.getenv("AWS_CONTAINER_IMAGE")},
                         {"name": "AWS_SECURITY_GROUP", "value": os.getenv("AWS_SECURITY_GROUP")},
+                        {"name": "AWS_SUBNET_ID", "value": os.getenv("AWS_SUBNET_ID")},
+                        {"name": "AWS_VPC_ID", "value": os.getenv("AWS_VPC_ID")},
                         {"name": "DASK_N_WORKERS", "value": os.getenv("DASK_N_WORKERS")},
-                        {"name": "DASK_SCEDULER_CPU", "value": os.getenv("DASK_SCEDULER_CPU")},
-                        {"name": "DASK_SCEDULER_MEM", "value": os.getenv("DASK_SCEDULER_MEM")},
-                        {"name": "DASK_WORKER_CPU", "value": os.getenv("DASK_WORKER_CPU")},
-                        {"name": "DASK_WORKER_MEM", "value": os.getenv("DASK_WORKER_MEM")},
-                        {"name": "DASK_USE_FARGATE", "value": os.getenv("DASK_USE_FARGATE")},
-                        {"name": "HWPC__CDN_URI", "value": os.getenv("HWPC__CDN_URI")},
-                        {"name": "HWPC__DEBUG__MODE", "value": os.getenv("HWPC__DEBUG__MODE")},
-                        {"name": "HWPC__FIRST_RECYCLE_YEAR", "value": os.getenv("HWPC__FIRST_RECYCLE_YEAR")},
                         {"name": "HWPC__PURE_S3", "value": os.getenv("HWPC__PURE_S3")},
+                        {"name": "HWPC__CDN_URI", "value": os.getenv("HWPC__CDN_URI")},
+                        {"name": "HWPC__FIRST_RECYCLE_YEAR", "value": os.getenv("HWPC__FIRST_RECYCLE_YEAR")},
                         {"name": "HWPC__RECURSE_LIMIT", "value": os.getenv("HWPC__RECURSE_LIMIT")},
                         {"name": "S3_INPUT_BUCKET", "value": os.getenv("S3_INPUT_BUCKET")},
                         {"name": "S3_OUTPUT_BUCKET", "value": os.getenv("S3_OUTPUT_BUCKET")},
@@ -93,8 +88,7 @@ def lambda_handler(event, context):
     try:
         name = json_data["scenario_name"]
         user_string = json_data["user_string"]
-        # Uncomment this when we are going live with HWPC-Web
-        runCalculatorTask(name, user_string)
+        run_calculator_task(name, user_string)
     except Exception as e:
         print(e)
         print(f"Error launching CALCULATOR task")

@@ -11,8 +11,10 @@ from hwpccalc.utils import email
 
 
 _debug_mode = hwpccalc.config._debug_mode
-_debug_default_path = os.getenv("HWPC__DEBUG__PATH")
-_debug_default_name = os.getenv("HWPC__DEBUG__NAME")
+
+if _debug_mode:
+    _debug_default_path = os.getenv("HWPC__DEBUG__PATH")
+    _debug_default_name = os.getenv("HWPC__DEBUG__NAME")
 
 
 @staticmethod

@@ -13,11 +13,7 @@ from hwpccalc.hwpc.model_data import ModelData
 from hwpccalc.hwpc.names import Names as nm
 
 recurse_limit = int(os.getenv("HWPC__RECURSE_LIMIT"))
-# print("model:recurse_limit", recurse_limit)
 first_recycle_year = int(os.getenv("HWPC__FIRST_RECYCLE_YEAR"))
-# print("model:first_recycle_year", first_recycle_year)
-
-# _debug_mode = hwpccalc.config._debug_mode
 
 
 class Model(object):
@@ -127,7 +123,6 @@ class Model(object):
         #     with Lock("plock"):  # This takes a TON of CPU time just blocking. Not worth it except for debugging
         #         print("Lineage:", lineage)
 
-        # md = ModelData(path=model_data_path)
         md = client.get_dataset("modeldata")
 
         if recycled is None:

@@ -1,0 +1,5 @@
+# ~/.config/dask/cloudprovider.yaml
+
+cloudprovider:
+  ecs:
+    scheduler_mem: 8192

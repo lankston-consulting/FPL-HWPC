@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+from os import environ as envs
 
 from dotenv import find_dotenv, load_dotenv
 
@@ -41,7 +42,7 @@ def validate_env():
     ]
 
     for re in required_envs:
-        if os.getenv(re) is None:
+        if envs[re] is None:
             raise EnvValueError(f'Missing required environment variable. "{re}" is required.')
 
     if _debug_mode:
@@ -53,7 +54,7 @@ def validate_env():
         ]
 
         for de in debug_envs:
-            if os.getenv(de) is None:
+            if envs[de] is None:
                 raise EnvValueError(f'Debug mode requested. "{re}" environment variable is required.')
 
 
