@@ -65,11 +65,6 @@ class MetaModel(singleton.Singleton):
                 output_path=output_path,
             )
 
-            years = md.data[nm.Tables.harvest][nm.Fields.harvest_year]
-            first_year = years.min().item()
-            last_year = years.max().item()
-            num_years = last_year - first_year
-
             print("Provisioning cluster.")
 
             use_fargate_raw = os.getenv("DASK_USE_FARGATE", "0")
@@ -79,7 +74,6 @@ class MetaModel(singleton.Singleton):
                 use_fargate = True
 
             n_wrk = int(os.getenv("DASK_N_WORKERS"))
-            # n_wrk = int(num_years * 1.25)
 
             if use_fargate:
                 
@@ -138,23 +132,16 @@ class MetaModel(singleton.Singleton):
     @staticmethod
     async def run_simulation():
         """ """
-        sim_start = timeit.default_timer()
-
         client = get_client()
         sched_info = client.scheduler_info()
 
         n_wrk = int(os.getenv("DASK_N_WORKERS"))
-        # n_wrk = int(num_years * 1.25)
 
         agg_workers = list(sched_info["workers"].keys())[:-(int(n_wrk * .25))]
         print(agg_workers)
 
         md = client.get_dataset("modeldata")
         harvest = md.data[nm.Tables.harvest]
-        # years = md.data[nm.Tables.harvest][nm.Fields.harvest_year]
-        # first_year = years.min().item()
-        # last_year = years.max().item()
-        # num_years = last_year - first_year
 
         with Lock("plock"):
             print("Starting simluation.")
@@ -173,12 +160,12 @@ class MetaModel(singleton.Singleton):
         task_count = len(final_futures)
 
         agg_jobs = as_completed([])
-        agg_priority = 1000000000000
+        # agg_priority = 1000000000000
 
-        ds_all_future = None
-        ds_rec_future = None
-        year_ds_col_all_remotes = dict()
-        year_ds_col_rec_remotes = dict()
+        # ds_all_future = None
+        # ds_rec_future = None
+        # year_ds_col_all_remotes = dict()
+        # year_ds_col_rec_remotes = dict()
 
         # async with Client(MetaModel.cluster, asynchronous=True) as async_client:
 
@@ -190,78 +177,39 @@ class MetaModel(singleton.Singleton):
 
             ykey = r.lineage[0]
 
-            remote_r = client.scatter(r)
+            # remote_r = client.scatter(r)
 
             if ykey in year_ds_col_all:
-                # year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
-                if year_ds_col_all_remotes[ykey] is None:
-                    future = client.submit(MetaModel.aggregate_results, year_ds_col_all[ykey], remote_r, priority=agg_priority, retries=3, workers=agg_workers)
-                else:
-                    result = year_ds_col_all_remotes[ykey]
-                    result_remote = client.scatter(result)
-                    future = client.submit(MetaModel.aggregate_results, result_remote, remote_r, priority=agg_priority, retries=3, workers=agg_workers)
-                agg_jobs.add(future)
-                year_ds_col_all_remotes[ykey] = future
+                # year_ds_col_all[ykey] = dask.delayed(MetaModel.aggregate_results)(year_ds_col_all[ykey], remote_r)
+                year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
             else:
-                # year_ds_col_all[ykey] = r
-                year_ds_col_all[ykey] = remote_r
-                year_ds_col_all_remotes[ykey] = None
+                year_ds_col_all[ykey] = r
 
             if ds_all is None:
-                # ds_all = r
-                ds_all = remote_r
+                ds_all = r
             else:
-                # ds_all = MetaModel.aggregate_results(ds_all, r)
-                if ds_all_future is None:
-                    future = client.submit(MetaModel.aggregate_results, ds_all, remote_r, priority=agg_priority, retries=3, workers=agg_workers)
-                else:
-                    result = ds_all_future
-                    result_remote = client.scatter(result)
-                    future = client.submit(MetaModel.aggregate_results, result_remote, remote_r, priority=agg_priority, retries=3, workers=agg_workers)
-                agg_jobs.add(future)
-                ds_all_future = future
+                ds_all = MetaModel.aggregate_results(ds_all, r)
 
             # Save the recycled materials on their own for reporting
             if len(r.lineage) > 1:
                 if ykey in year_ds_col_rec:
-                    # year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
-                    if year_ds_col_rec_remotes[ykey] is not None:
-                        result = year_ds_col_rec_remotes[ykey]
-                        result_remote = client.scatter(result)
-                        future = client.submit(MetaModel.aggregate_results, result_remote, remote_r, priority=agg_priority, retries=3, workers=agg_workers)
-                    else:
-                        future = client.submit(MetaModel.aggregate_results, year_ds_col_rec[ykey], remote_r, priority=agg_priority, retries=3, workers=agg_workers)
-                    agg_jobs.add(future)
-                    year_ds_col_rec_remotes[ykey] = future
+                    year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
                 else:
-                    # year_ds_col_rec[ykey] = r
-                    year_ds_col_rec[ykey] = remote_r
-                    year_ds_col_rec_remotes[ykey] = None
+                    year_ds_col_rec[ykey] = r
 
                 if ds_rec is None:
-                    # ds_rec = r
-                    ds_rec = remote_r
+                    ds_rec = r
                 else:
-                    # ds_rec = MetaModel.aggregate_results(ds_rec, r)
-                    if ds_rec_future is not None:
-                        result = ds_rec_future
-                        result_remote = client.scatter(result)
-                        future = client.submit(MetaModel.aggregate_results, result_remote, remote_r, priority=agg_priority, retries=3, workers=agg_workers)
-                    else:
-                        future = client.submit(MetaModel.aggregate_results, ds_rec, remote_r, priority=agg_priority, retries=3, workers=agg_workers)
-                    agg_jobs.add(future)
-                    ds_rec_future = future
+                    ds_rec = MetaModel.aggregate_results(ds_rec, r)
 
             if r_futures:
                 mod_jobs.update(r_futures)
 
+
             # f.release()
             # del f
 
-        # if "Delayed" in str(ds_all):
-        #     ds_all = ds_all.compute(
-        # )
-        ds_all = ds_all_future.result()
+        # ds_all = ds_all_future.result()
         remote_ds_all = client.scatter(ds_all)
 
         wait(agg_jobs)
@@ -269,7 +217,7 @@ class MetaModel(singleton.Singleton):
         with Lock("plock"):
             print("Final future collection")
 
-        ds_all = ds_all_future.result()
+        # ds_all = ds_all_future.result()
         remote_ds_all = client.scatter(ds_all)
 
         ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
@@ -292,15 +240,20 @@ class MetaModel(singleton.Singleton):
             # raise e
 
         if ds_rec is not None:
-            ds_rec = ds_rec_future.result()
+            # if "Delayed" in str(ds_rec):
+            #     ds_rec = ds_rec.compute()
+            # else:
+            #     ds_rec = ds_rec.result()
             remote_ds_rec = client.scatter(ds_rec)
             try:
+                # MetaModel.make_results(ds_rec, prefix="rec", save=True)
                 future = client.submit(MetaModel.make_results, remote_ds_rec, prefix="rec", save=True)
                 res_jobs.append(future)
             except Exception as e:
                 print("ds_rec:", e)
                 # raise e
             try:
+                # MetaModel.make_results(ds_all, ds_rec, save=True)
                 future = client.submit(MetaModel.make_results, remote_ds_all, remote_ds_rec, save=True)
                 res_jobs.append(future)
             except Exception as e:
@@ -317,15 +270,14 @@ class MetaModel(singleton.Singleton):
                 print("ds_all:", e)
                 # raise e
 
-        for y in year_ds_col_all:
-            if y not in year_ds_col_all_remotes:
-                print(f"year_ds_col_all_remotes[{y}] is Missing")
-                continue  # TODO temporary circuit breaker for testing async. I think we're missing some results in the final year
-            if year_ds_col_all_remotes[y] is None:
-                print(f"year_ds_col_all_remotes[{y}] is None")
-                continue  # TODO temporary circuit breaker for testing async. I think we're missing some results in the final year
+        # del remote_ds_all
 
-            year_ds_all = year_ds_col_all_remotes[y].result()
+        for y in year_ds_col_all:
+            # if y < max(year_ds_col_all):
+            #     year_ds_all = year_ds_col_all[y].compute()
+            # else:
+            #     year_ds_all = year_ds_col_all[y].result()
+            year_ds_all = year_ds_col_all[y]
             remote_year_ds_col_all = client.scatter(year_ds_all)
 
             try:
@@ -337,23 +289,21 @@ class MetaModel(singleton.Singleton):
                 # raise e
 
             if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
-                if y not in year_ds_col_rec_remotes:
-                    print(f"year_ds_col_rec_remotes[{y}] is Missing")
-                    continue  # TODO temporary circuit breaker for testing async. I think we're missing some results in the final year
-                if year_ds_col_rec_remotes[y] is None:
-                    print(f"year_ds_col_rec_remotes[{y}] is None")
-                    continue
-
-                year_ds_rec = year_ds_col_rec_remotes[y].result()
+                # if y < max(year_ds_col_rec):
+                #     year_ds_rec = year_ds_col_rec[y].compute()
+                # else:
+                #     year_ds_rec = year_ds_col_rec[y].result()
+                year_ds_rec = year_ds_col_rec[y]
                 remote_year_ds_col_rec = client.scatter(year_ds_rec)
-
                 try:
+                    # MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
                     future = client.submit(MetaModel.make_results, remote_year_ds_col_rec, prefix=str(y) + "_rec", save=True)
                     res_jobs.append(future)
                 except Exception as e:
                     print(str(y), "ds_rec:", e)
                     # raise e
                 try:
+                    # MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
                     future = client.submit(MetaModel.make_results, remote_year_ds_col_all, remote_year_ds_col_rec, prefix=str(y), save=True)
                     res_jobs.append(future)
                 except Exception as e:
@@ -361,6 +311,7 @@ class MetaModel(singleton.Singleton):
                     # raise e
             else:
                 try:
+                    # MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
                     future = client.submit(MetaModel.make_results, remote_year_ds_col_all, prefix=str(y), save=True)
                     res_jobs.append(future)
                 except Exception as e:
@@ -646,7 +597,7 @@ class MetaModel(singleton.Singleton):
         if save:
             zip_buffer = BytesIO()
 
-            zip = zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_STORED, allowZip64=False)
+            result_zip = zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_STORED, allowZip64=False)
             # with tempfile.TemporaryFile() as temp:
             # harvest_data.to_csv(temp)
             # temp.seek(0)
@@ -656,15 +607,15 @@ class MetaModel(singleton.Singleton):
             with tempfile.TemporaryFile() as temp:
                 ds.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "results.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "results.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 final.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "final.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "final.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 annual_harvest_and_timber.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "annual_harvest_and_timber_product_output.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "annual_harvest_and_timber_product_output.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 if rec_ds:
                     cumulative_carbon_stocks[
@@ -677,19 +628,19 @@ class MetaModel(singleton.Singleton):
                 else:
                     cumulative_carbon_stocks[[MGC(CHANGE(nm.Fields.products_in_use)), MGC(CHANGE(nm.Fields.swds))]].to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "annual_net_change_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "annual_net_change_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 burned_without_energy_capture.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "burned_wo_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "burned_wo_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 burned_with_energy_capture.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "burned_w_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "burned_w_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 compost_emitted.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_composted_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_composted_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 if rec_ds:
                     cumulative_carbon_stocks[
@@ -698,70 +649,68 @@ class MetaModel(singleton.Singleton):
                 else:
                     cumulative_carbon_stocks[[MGC(nm.Fields.products_in_use), MGC(nm.Fields.swds)]].to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_cumulative_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_cumulative_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_emitted_dumps.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_dumps_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_dumps_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_present_dumps.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_dumps_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_dumps_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 end_use_in_use.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_end_use_products.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_end_use_products.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 fuel_carbon_emitted.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_fuelwood_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_fuelwood_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_emitted_landfills.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_landfills_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_landfills_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_present_landfills.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_landfills_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_landfills_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
             # Flashy page outputs
             with tempfile.TemporaryFile() as temp:
                 big_four.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "big_four.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "big_four.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 emitted_all.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "emitted_all.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "emitted_all.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_present_distinct_swds.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "carbon_present_distinct_swds.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "carbon_present_distinct_swds.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 carbon_emitted_distinct_swds.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "carbon_emitted_distinct_swds.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "carbon_emitted_distinct_swds.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
             # PDF table outputs
             with tempfile.TemporaryFile() as temp:
                 cumulative_stock_change.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_yearly_net_change.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_yearly_net_change.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 cumulative_selected_stock_change.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_selected_net_change.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_selected_net_change.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 mega_table.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_yearly_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_yearly_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
             with tempfile.TemporaryFile() as temp:
                 mega_selected_table.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                zip.writestr(prefix + "total_selected_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(prefix + "total_selected_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
 
-            zip.close()
+            result_zip.close()
             zip_buffer.seek(0)
             S3Helper.upload_file(zip_buffer, "hwpc-output", md.output_path + "/results/" + prefix + md.run_name + ".zip")
-
-        return
