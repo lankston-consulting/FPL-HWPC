@@ -98,9 +98,9 @@ class MetaModel(singleton.Singleton):
                 MetaModel.cluster = FargateCluster(
                     cluster_arn=cluster_arn,
                     security_groups=[task_security_group],
-                    # subnets=[subnet],
-                    # vpc=vpc,
-                    # fargate_use_private_ip=False,
+                    subnets=[subnet],
+                    vpc=vpc,
+                    fargate_use_private_ip=False,
                     n_workers=n_wrk,
                     scheduler_task_definition_arn=scheduler_arn,
                     worker_task_definition_arn=worker_arn,
@@ -113,7 +113,7 @@ class MetaModel(singleton.Singleton):
                     # dict(os.environ), # THIS DOES NOT WORK. Do NOT USE THIS.
                 )
 
-                MetaModel.cluster.adapt(minimum=32, maximum=72, wait_count=60, target_duration="100s")
+                # MetaModel.cluster.adapt(minimum=4, maximum=48, wait_count=60, target_duration="100s")
             else:
                 MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True, memory_limit=None)
                 # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="100")
@@ -255,8 +255,8 @@ class MetaModel(singleton.Singleton):
             if r_futures:
                 mod_jobs.update(r_futures)
 
-            f.release()
-            del f
+            # f.release()
+            # del f
 
         # if "Delayed" in str(ds_all):
         #     ds_all = ds_all.compute(
