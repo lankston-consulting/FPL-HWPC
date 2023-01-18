@@ -90,6 +90,12 @@ resource "aws_iam_group_policy_attachment" "s3_to_google_drive_arn_aws_iam__aws_
   policy_arn = "arn:aws:iam::aws:policy/IAMFullAccess"
 }
 
+resource "aws_iam_instance_profile" "hwpc_system_role" {
+  name = "hwpc-system-role"
+  path = aws_iam_policy.arn_aws_iam__234659567514_policy_dask_fargate_policy.path
+  role = "hwpc-system-role"
+}
+
 resource "aws_iam_policy" "arn_aws_iam__234659567514_policy_contact_ses_policy" {
   description = "basic SES write permissions for the contact email contact@hwpcarbon.com"
   name        = "contact-ses-policy"
@@ -436,6 +442,18 @@ resource "aws_iam_role" "googledrive_lambdaexecutionrole" {
   path                 = aws_iam_policy.arn_aws_iam__234659567514_policy_dask_fargate_policy.path
 }
 
+resource "aws_iam_role" "hwpc_system_role" {
+  assume_role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
+  description        = "Allows EC2 instances to call AWS services on your behalf."
+  inline_policy {
+  }
+
+  managed_policy_arns  = ["arn:aws:iam::aws:policy/AmazonS3FullAccess", "arn:aws:iam::234659567514:policy/dask-fargate-policy", aws_iam_policy.arn_aws_iam__234659567514_policy_hwpc_sa.id, "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+  max_session_duration = 3600
+  name                 = "hwpc-system-role"
+  path                 = aws_iam_policy.arn_aws_iam__234659567514_policy_dask_fargate_policy.path
+}
+
 resource "aws_iam_role" "hwpc_web_fargate_cluster_execution_role" {
   tags = {
     cluster   = "hwpc-web-fargate-cluster"
@@ -508,10 +526,10 @@ resource "aws_iam_role" "s3_demo_role" {
   inline_policy {
   }
 
-  managed_policy_arns  = [aws_iam_policy.arn_aws_iam__234659567514_policy_service_role_awslambdas3executionrole_fc6a086b_8130_486f_8c18_dd0d65011a1c.id, "arn:aws:iam::234659567514:policy/service-role/AWSLambdaBasicExecutionRole-accd95e3-9f91-4f08-9ba9-233d317599a4"]
+  managed_policy_arns  = [aws_iam_policy.arn_aws_iam__234659567514_policy_service_role_awslambdas3executionrole_fc6a086b_8130_486f_8c18_dd0d65011a1c.id, aws_iam_policy.arn_aws_iam__234659567514_policy_service_role_awslambdabasicexecutionrole_accd95e3_9f91_4f08_9ba9_233d317599a4.id]
   max_session_duration = 3600
   name                 = "s3_demo_role"
-  path                 = aws_iam_policy.arn_aws_iam__234659567514_policy_service_role_awslambdabasicexecutionrole_accd95e3_9f91_4f08_9ba9_233d317599a4.path
+  path                 = "/service-role/"
 }
 
 resource "aws_iam_role" "ses_lambda" {
@@ -658,6 +676,26 @@ resource "aws_iam_role_policy_attachment" "get_user_json_role_zjiw3n1t_arn_aws_i
 resource "aws_iam_role_policy_attachment" "googledrive_lambdaexecutionrole_arn_aws_iam__aws_policy_service_role_awslambdabasicexecutionrole" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   role       = aws_iam_role_policy.googledrive_lambdaexecutionrole_root.role
+}
+
+resource "aws_iam_role_policy_attachment" "hwpc_system_role_arn_aws_iam__234659567514_policy_dask_fargate_policy" {
+  policy_arn = aws_iam_policy.arn_aws_iam__234659567514_policy_dask_fargate_policy.id
+  role       = aws_iam_role.hwpc_system_role.id
+}
+
+resource "aws_iam_role_policy_attachment" "hwpc_system_role_arn_aws_iam__234659567514_policy_hwpc_sa" {
+  policy_arn = aws_iam_policy.arn_aws_iam__234659567514_policy_hwpc_sa.id
+  role       = aws_iam_role.hwpc_system_role.id
+}
+
+resource "aws_iam_role_policy_attachment" "hwpc_system_role_arn_aws_iam__aws_policy_amazons3fullaccess" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+  role       = aws_iam_role.hwpc_system_role.id
+}
+
+resource "aws_iam_role_policy_attachment" "hwpc_system_role_arn_aws_iam__aws_policy_service_role_amazonecstaskexecutionrolepolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  role       = aws_iam_role.hwpc_system_role.id
 }
 
 resource "aws_iam_role_policy_attachment" "hwpc_web_fargate_cluster_execution_role_arn_aws_iam__aws_policy_amazonec2containerregistryreadonly" {
