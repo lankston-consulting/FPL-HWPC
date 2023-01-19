@@ -1,0 +1,27 @@
+{% extends "components/base.html" %}
+
+{% block content %}
+<div id="calc-page">
+    <div style="padding-top: 10rem; margin-bottom: 15rem; padding-bottom: 15rem;">
+        <div tabindex="0" class="calc-config-container">
+
+            <h2 style="font-Size: 2.4rem;">Configure a Simulation</h2>
+            <p><b>Download an Excel macro-enabled workbook that will help create the input data files here. Use the HWP
+                    Ribbon in this notebook to export data in the correct .CSV format for this tool. Do NOT change the
+                    basic
+                    format of any of the worksheets. If you experience difficulties running the HWP model, try a
+                    different
+                    web browser. Google Chrome is suggested.</b></p>
+            <a href="../../static/storage/Templates.xlsx" download><button>Download Excel
+                    Workbook</button></a>
+        </div>
+
+        {% include "components/accordion.html" %}
+
+    </div>
+    {% if error %}
+    <script>
+        alert("{{ error }}");
+    </script>
+    {% endif %}
+    {% endblock content %}
