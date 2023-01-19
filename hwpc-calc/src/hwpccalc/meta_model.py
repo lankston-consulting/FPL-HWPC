@@ -96,8 +96,8 @@ class MetaModel(singleton.Singleton):
                     vpc=vpc,
                     fargate_use_private_ip=False,
                     n_workers=n_wrk,
-                    scheduler_task_definition_arn=scheduler_arn,
-                    worker_task_definition_arn=worker_arn,
+                    # scheduler_task_definition_arn=scheduler_arn,
+                    # worker_task_definition_arn=worker_arn,
                     environment={
                         "HWPC__PURE_S3": os.getenv("HWPC__PURE_S3"),
                         "HWPC__CDN_URI": os.getenv("HWPC__CDN_URI"),
