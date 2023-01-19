@@ -36,7 +36,7 @@ class S3Helper(object):
         # Upload the file
 
         try:
-            response = S3Helper.s3_client.upload_fileobj(file_name, bucket, object_name)
+            S3Helper.s3_client.upload_fileobj(file_name, bucket, object_name)
         except ClientError as e:
             logging.error(e)
             return False
