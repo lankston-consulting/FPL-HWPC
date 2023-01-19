@@ -113,9 +113,7 @@ class MetaModel(singleton.Singleton):
                 # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="100")
 
             MetaModel.client = Client(
-                MetaModel.cluster,
-                # timeout="60s",
-                # asynchronous=True,
+                MetaModel.cluster
             )
 
             MetaModel.lock = Lock("plock", client=MetaModel.client)
@@ -160,14 +158,6 @@ class MetaModel(singleton.Singleton):
         task_count = len(final_futures)
 
         agg_jobs = as_completed([])
-        # agg_priority = 1000000000000
-
-        # ds_all_future = None
-        # ds_rec_future = None
-        # year_ds_col_all_remotes = dict()
-        # year_ds_col_rec_remotes = dict()
-
-        # async with Client(MetaModel.cluster, asynchronous=True) as async_client:
 
         for f in mod_jobs:
             r, r_futures = f.result()
@@ -177,10 +167,8 @@ class MetaModel(singleton.Singleton):
 
             ykey = r.lineage[0]
 
-            # remote_r = client.scatter(r)
 
             if ykey in year_ds_col_all:
-                # year_ds_col_all[ykey] = dask.delayed(MetaModel.aggregate_results)(year_ds_col_all[ykey], remote_r)
                 year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
             else:
                 year_ds_col_all[ykey] = r
@@ -205,11 +193,6 @@ class MetaModel(singleton.Singleton):
             if r_futures:
                 mod_jobs.update(r_futures)
 
-
-            # f.release()
-            # del f
-
-        # ds_all = ds_all_future.result()
         remote_ds_all = client.scatter(ds_all)
 
         wait(agg_jobs)
@@ -217,7 +200,6 @@ class MetaModel(singleton.Singleton):
         with Lock("plock"):
             print("Final future collection")
 
-        # ds_all = ds_all_future.result()
         remote_ds_all = client.scatter(ds_all)
 
         ds_all[nm.Fields.ccf] = harvest[nm.Fields.ccf]
@@ -237,13 +219,9 @@ class MetaModel(singleton.Singleton):
             res_jobs.append(future)
         except Exception as e:
             print("ds_all_comb:", e)
-            # raise e
+ 
 
         if ds_rec is not None:
-            # if "Delayed" in str(ds_rec):
-            #     ds_rec = ds_rec.compute()
-            # else:
-            #     ds_rec = ds_rec.result()
             remote_ds_rec = client.scatter(ds_rec)
             try:
                 # MetaModel.make_results(ds_rec, prefix="rec", save=True)
@@ -251,14 +229,14 @@ class MetaModel(singleton.Singleton):
                 res_jobs.append(future)
             except Exception as e:
                 print("ds_rec:", e)
-                # raise e
+             
             try:
                 # MetaModel.make_results(ds_all, ds_rec, save=True)
                 future = client.submit(MetaModel.make_results, remote_ds_all, remote_ds_rec, save=True)
                 res_jobs.append(future)
             except Exception as e:
                 print("ds_all:", e)
-                # raise e
+         
         else:
             # If there's no ds_rec, that either means there's no recycling, OR there hasn't
             # been any recycling so far (this run), OR ?
@@ -268,15 +246,11 @@ class MetaModel(singleton.Singleton):
                 res_jobs.append(future)
             except Exception as e:
                 print("ds_all:", e)
-                # raise e
+           
 
-        # del remote_ds_all
+       
 
         for y in year_ds_col_all:
-            # if y < max(year_ds_col_all):
-            #     year_ds_all = year_ds_col_all[y].compute()
-            # else:
-            #     year_ds_all = year_ds_col_all[y].result()
             year_ds_all = year_ds_col_all[y]
             remote_year_ds_col_all = client.scatter(year_ds_all)
 
@@ -286,13 +260,9 @@ class MetaModel(singleton.Singleton):
                 res_jobs.append(future)
             except Exception as e:
                 print(str(y), "ds_all_comb:", e)
-                # raise e
 
             if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
-                # if y < max(year_ds_col_rec):
-                #     year_ds_rec = year_ds_col_rec[y].compute()
-                # else:
-                #     year_ds_rec = year_ds_col_rec[y].result()
+              
                 year_ds_rec = year_ds_col_rec[y]
                 remote_year_ds_col_rec = client.scatter(year_ds_rec)
                 try:
@@ -301,14 +271,14 @@ class MetaModel(singleton.Singleton):
                     res_jobs.append(future)
                 except Exception as e:
                     print(str(y), "ds_rec:", e)
-                    # raise e
+                    
                 try:
                     # MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
                     future = client.submit(MetaModel.make_results, remote_year_ds_col_all, remote_year_ds_col_rec, prefix=str(y), save=True)
                     res_jobs.append(future)
                 except Exception as e:
                     print(str(y), "ds_all:", e)
-                    # raise e
+                    
             else:
                 try:
                     # MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
@@ -316,7 +286,7 @@ class MetaModel(singleton.Singleton):
                     res_jobs.append(future)
                 except Exception as e:
                     print(str(y), "ds_all:", e)
-                    # raise e
+                    
 
         with Lock("plock"):
             print("Waiting on result jobs.")
@@ -598,10 +568,6 @@ class MetaModel(singleton.Singleton):
             zip_buffer = BytesIO()
 
             result_zip = zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_STORED, allowZip64=False)
-            # with tempfile.TemporaryFile() as temp:
-            # harvest_data.to_csv(temp)
-            # temp.seek(0)
-            # self.zip.writestr('harvest_data.csv', temp.read(), compress_type=zipfile.ZIP_STORED)
             if len(prefix) > 1:
                 prefix = prefix + "_"
             with tempfile.TemporaryFile() as temp:

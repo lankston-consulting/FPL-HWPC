@@ -73,7 +73,7 @@ class ModelData(pickler.Pickler):
         self.load_data(path_override=self.input_path)
         self.prep_data()
 
-        return
+        
 
     def factory(run_name, input_path, output_path):
         return ModelData(run_name=run_name, input_path=input_path, output_path=output_path)
@@ -112,7 +112,7 @@ class ModelData(pickler.Pickler):
                                     raise PermissionError()
                                 user_csv = r.content
                                 self.data[l.replace(".csv", "")] = pd.read_csv(BytesIO(user_csv))
-        return
+        
 
     def prep_data(self) -> None:
         """TODO This function should do any functions needed to prepare data for use.
@@ -154,7 +154,6 @@ class ModelData(pickler.Pickler):
         df[nm.Fields.timber_product_ratio] = df[nm.Fields.timber_product_ratio].astype(float_64_str)
         tr = df
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.timber_product_id])
-        # df = df.loc[filtr, :]
         dx = df.to_xarray()
         self.data[nm.Tables.timber_products_ratios] = dx
 
@@ -181,7 +180,6 @@ class ModelData(pickler.Pickler):
         df[nm.Fields.primary_product_ratio] = df[nm.Fields.primary_product_ratio].astype(float_64_str)
         pr = df
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.primary_product_id])
-        # df = df.loc[filtr, :]
         dx = df.to_xarray()
         self.data[nm.Tables.primary_product_ratios] = dx
 
@@ -203,7 +201,6 @@ class ModelData(pickler.Pickler):
         er = df
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.end_use_id])
 
-        # df = df.loc[filtr, :]
         dx = df.to_xarray()
         self.data[nm.Tables.end_use_product_ratios] = dx
 
@@ -249,7 +246,6 @@ class ModelData(pickler.Pickler):
         df[nm.Fields.harvest_year] = df[nm.Fields.harvest_year].astype(int_16_str)
         df[nm.Fields.discard_destination_ratio] = df[nm.Fields.discard_destination_ratio].astype(float_64_str)
         df = df.set_index([nm.Fields.harvest_year, nm.Fields.discard_type_id, nm.Fields.discard_destination_id])
-        # df = df.loc[filtr, :]
         dx = df.to_xarray()
         self.data[nm.Tables.discard_destination_ratios] = dx
 
@@ -262,7 +258,7 @@ class ModelData(pickler.Pickler):
         dx = df.to_xarray()
         self.data[nm.Tables.discard_destinations] = dx
 
-        return
+        
 
     def get_region_id(self, region: str) -> int:
         """Get the region ID from a string value.
@@ -318,4 +314,4 @@ class ModelData(pickler.Pickler):
             self.data[nm.Tables.harvest][nm.Fields.mbf] * self.data[nm.Tables.harvest][nm.Fields.conversion_factor]
         )
 
-        return
+       
