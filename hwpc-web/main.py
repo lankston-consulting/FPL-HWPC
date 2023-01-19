@@ -32,7 +32,7 @@ oauth.register(
     client_id=env.get("FSAPPS_CLIENT_ID"),
     client_secret=env.get("FSAPPS_CLIENT_SECRET"),
     response_type="code",
-    redirect_uri="http://localhost:8080/login"
+    redirect_uri="http://localhost:8080/login",
 )
 
 # Routing for html template files
@@ -40,39 +40,37 @@ oauth.register(
 @app.route("/index")
 @app.route("/home", methods=["GET", "POST"])
 def home():
-    return render_template("pages/home.html", session=session.get('user'))
-
-    
+    return render_template("pages/home.html", session=session.get("user"))
 
 
 @app.route("/calculator", methods=["GET"])
 def calculator():
-    return render_template("pages/calculator.html", session=session.get('user'))
+    return render_template("pages/calculator.html", session=session.get("user"))
 
 
 @app.route("/reference", methods=["GET"])
 def test():
-    return render_template("pages/reference.html", session=session.get('user'))
+    return render_template("pages/reference.html", session=session.get("user"))
 
 
 @app.route("/privacy", methods=["GET"])
 def advanced():
-    return render_template("pages/privacy.html", session=session.get('user'))
+    return render_template("pages/privacy.html", session=session.get("user"))
 
 
 @app.route("/terms", methods=["GET"])
 def references():
-    return render_template("pages/terms.html", session=session.get('user'))
+    return render_template("pages/terms.html", session=session.get("user"))
 
 
 @app.route("/contact", methods=["GET"])
 def contact():
-    return render_template("contact.html", session=session.get('user'))
+    return render_template("contact.html", session=session.get("user"))
 
 
 @app.route("/files", methods=["GET"])
 def files():
-    return render_template("files.html", session=session.get('user'))
+    return render_template("files.html", session=session.get("user"))
 
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -307,15 +305,13 @@ def upload():
 
 @app.route("/submit")
 def submit():
-    return render_template("pages/submit.html", session=session.get('user'))
+    return render_template("pages/submit.html", session=session.get("user"))
 
 
 @app.route("/set-official", methods=["GET"])
 def set_official():
     p = request.args.get("p")
-    data_json = S3Helper.download_file(
-        "hwpc", user_data_folder + p + user_json_path
-    )
+    data_json = S3Helper.download_file("hwpc", user_data_folder + p + user_json_path)
     deliver_json = {}
     with open(data_json.name, "r+") as f:
         data = json.load(f)
@@ -325,11 +321,8 @@ def set_official():
     user_file = tempfile.TemporaryFile()
     user_file.write(deliver_json)
     user_file.seek(0)
-    S3Helper.upload_file(
-        user_file, "hwpc", user_data_folder + p + user_json_path
-    )
+    S3Helper.upload_file(user_file, "hwpc", user_data_folder + p + user_json_path)
     user_file.close()
-
 
 
 @app.route("/output", methods=["GET"])
@@ -356,8 +349,8 @@ def output():
                 test = pd.read_csv(csv_string_io, sep=",", header=0)
                 try:
                     test = test.drop(columns="DiscardDestinationID")
-                except Exception as e: 
-                    print('Missing Discard Destination ID: ' + str(e))
+                except Exception as e:
+                    print("Missing Discard Destination ID: " + str(e))
                 test.drop(test.tail(1).index, inplace=True)
                 test = test.loc[:, ~test.columns.str.contains("^Unnamed")]
                 data_dict[file[:-4]] = test.to_csv(index=False)
@@ -375,7 +368,8 @@ def output():
         user_json = json.dumps(user_json.read().decode("utf-8"))
 
         user_zip = S3Helper.read_zipfile(
-            "hwpc-output", user_data_output_folder + p + "/results/" + y + "_" + q + ".zip"
+            "hwpc-output",
+            user_data_output_folder + p + "/results/" + y + "_" + q + ".zip",
         )
 
         for file in user_zip:
@@ -384,9 +378,9 @@ def output():
                 csv_string_io = StringIO(user_zip[file])
                 test = pd.read_csv(csv_string_io, sep=",", header=0)
                 try:
-                    print('Missing Discard Destination ID: ' + str(e))
+                    print("Missing Discard Destination ID: " + str(e))
                     test = test.drop(columns="DiscardDestinationID")
-                except Exception as e: 
+                except Exception as e:
                     print(str(e))
                     data_dict[file[5:-4]] = test.to_csv(index=False)
         data_json = json.dumps(data_dict)
@@ -400,9 +394,8 @@ def output():
         file_name=q,
         is_single=is_single,
         scenario_json=user_json,
-        session=session.get('user'), 
-        pretty=json.dumps(session.get('user'), 
-        indent=4)
+        session=session.get("user"),
+        pretty=json.dumps(session.get("user"), indent=4),
     )
 
 
@@ -413,15 +406,16 @@ def callback():
 
 @app.route("/login")
 def login():
-    state = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
-    print("https://fsapps-stg.fs2c.usda.gov/oauth/authorize?client_id=HWPCLOCAL&redirect_uri=http://localhost:8080/login&response-type=code&state=" + state)
-    return render_template (
-        "pages/login.html",
-        url = "https://fsapps-stg.fs2c.usda.gov/oauth/authorize?client_id=HWPCLOCAL&redirect_uri=http://localhost:8080/login&response-type=code&state=" + state
+    state = "".join(random.choices(string.ascii_letters + string.digits, k=6))
+    print(
+        "https://fsapps-stg.fs2c.usda.gov/oauth/authorize?client_id=HWPCLOCAL&redirect_uri=http://localhost:8080/login&response-type=code&state="
+        + state
     )
-
-
-
+    return render_template(
+        "pages/login.html",
+        url="https://fsapps-stg.fs2c.usda.gov/oauth/authorize?client_id=HWPCLOCAL&redirect_uri=http://localhost:8080/login&response-type=code&state="
+        + state,
+    )
 
 
 @app.route("/logout")

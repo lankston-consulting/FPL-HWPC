@@ -2,14 +2,15 @@ import datetime
 import json
 from config import gch
 
+
 class Results:
-    def __init__(self,file_group):
-        self.bucket = 'hwpcarbon-data'
+    def __init__(self, file_group):
+        self.bucket = "hwpcarbon-data"
         self.prefix = file_group
-        self.basic_path = 'https://storage.googleapis.com/' + self.bucket + '/' + self.prefix + '/'
+        self.basic_path = (
+            "https://storage.googleapis.com/" + self.bucket + "/" + self.prefix + "/"
+        )
         self._set_file_collection()
-
-
 
     def _set_file_collection(self):
         blobs = gch.list_blobs_names(self.bucket, self.prefix)
@@ -20,8 +21,8 @@ class Results:
             counter += 1
             print(f_col)
 
-        self.f_col= f_col
-    
+        self.f_col = f_col
+
     def file_collection(self):
         """
         Last-chance catcher for an uninstantiated file colleciton instance

@@ -14,10 +14,14 @@ class S3Helper(object):
     secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
     # We use s3_client to upload data to the bucket with our service account
-    s3_client = boto3.client("s3", aws_access_key_id=service_id, aws_secret_access_key=secret_key)
+    s3_client = boto3.client(
+        "s3", aws_access_key_id=service_id, aws_secret_access_key=secret_key
+    )
 
     # We use s3_resource to download data from the bucket with our service account
-    s3_resource = boto3.resource("s3", aws_access_key_id=service_id, aws_secret_access_key=secret_key)
+    s3_resource = boto3.resource(
+        "s3", aws_access_key_id=service_id, aws_secret_access_key=secret_key
+    )
 
     @staticmethod
     def upload_file(file_name, bucket, object_name=None):
@@ -93,6 +97,8 @@ class S3Helper(object):
         user_file = tempfile.TemporaryFile()
         user_file.write(data_json)
         user_file.seek(0)
-        S3Helper.upload_file(user_file, bucket_name, source_file_name + "user_input.json")
+        S3Helper.upload_file(
+            user_file, bucket_name, source_file_name + "user_input.json"
+        )
         user_file.close()
         return

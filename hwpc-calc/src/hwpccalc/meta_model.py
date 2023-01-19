@@ -49,7 +49,7 @@ class MetaModel(singleton.Singleton):
         if MetaModel._instance is None:
             super().__new__(cls, args, kwargs)
 
-            dask.config.set({"distributed.comm.timeouts.connect": "300s", "distributed.comm.timeouts.tcp": "300s"})
+            # dask.config.set({"distributed.comm.timeouts.connect": "300s", "distributed.comm.timeouts.tcp": "300s"})
 
             MetaModel.start = timeit.default_timer()
 
@@ -70,24 +70,51 @@ class MetaModel(singleton.Singleton):
             use_fargate_raw = os.getenv("DASK_USE_FARGATE", "0")
             use_fargate = False
 
-            if use_fargate_raw.lower().find("t") >= 0 or use_fargate_raw.lower().find("1") >= 0:
+            if (
+                use_fargate_raw.lower().find("t") >= 0
+                or use_fargate_raw.lower().find("1") >= 0
+            ):
                 use_fargate = True
 
-            n_wrk = int(os.getenv("DASK_N_WORKERS"))
+            n_wrk = int(os.getenv("DASK_N_WORKERS", "16"))
 
             if use_fargate:
-                
+
                 task_security_group = os.getenv("AWS_SECURITY_GROUP")
                 subnet = os.getenv("AWS_SUBNET_ID")
-                vpc = os.getenv("AWS_VPC_ID") # default "vpc-05d3a2828669df55e"
+                vpc = os.getenv("AWS_VPC_ID")  # default "vpc-05d3a2828669df55e"
 
                 arn_prefix = "arn:aws:"
                 aws_region = os.getenv("AWS_DEFAULT_REGION", "us-west-2")
                 aws_project = os.getenv("AWS_PROJECT", "234659567514")
 
-                cluster_arn = arn_prefix + "ecs:" + aws_region + ":" + aws_project + ":cluster/" + os.getenv("AWS_CLUSTER_ARN")
-                scheduler_arn = arn_prefix + "ecs:" + aws_region + ":" + aws_project + ":task-definition/" + os.getenv("AWS_SCHEDULER_ARN", "hwpc-dask-scheduler")
-                worker_arn = arn_prefix + "ecs:" + aws_region + ":" + aws_project + ":task-definition/" + os.getenv("AWS_WORKER_ARN", "hwpc-dask-worker")
+                cluster_arn = (
+                    arn_prefix
+                    + "ecs:"
+                    + aws_region
+                    + ":"
+                    + aws_project
+                    + ":cluster/"
+                    + os.getenv("AWS_CLUSTER_ARN")
+                )
+                scheduler_arn = (
+                    arn_prefix
+                    + "ecs:"
+                    + aws_region
+                    + ":"
+                    + aws_project
+                    + ":task-definition/"
+                    + os.getenv("AWS_SCHEDULER_ARN", "hwpc-dask-scheduler")
+                )
+                worker_arn = (
+                    arn_prefix
+                    + "ecs:"
+                    + aws_region
+                    + ":"
+                    + aws_project
+                    + ":task-definition/"
+                    + os.getenv("AWS_WORKER_ARN", "hwpc-dask-worker")
+                )
 
                 MetaModel.cluster = FargateCluster(
                     cluster_arn=cluster_arn,
@@ -101,7 +128,9 @@ class MetaModel(singleton.Singleton):
                     environment={
                         "HWPC__PURE_S3": os.getenv("HWPC__PURE_S3"),
                         "HWPC__CDN_URI": os.getenv("HWPC__CDN_URI"),
-                        "HWPC__FIRST_RECYCLE_YEAR": os.getenv("HWPC__FIRST_RECYCLE_YEAR"),
+                        "HWPC__FIRST_RECYCLE_YEAR": os.getenv(
+                            "HWPC__FIRST_RECYCLE_YEAR"
+                        ),
                         "HWPC__RECURSE_LIMIT": os.getenv("HWPC__RECURSE_LIMIT"),
                     },
                     # dict(os.environ), # THIS DOES NOT WORK. Do NOT USE THIS.
@@ -109,12 +138,12 @@ class MetaModel(singleton.Singleton):
 
                 # MetaModel.cluster.adapt(minimum=4, maximum=48, wait_count=60, target_duration="100s")
             else:
-                MetaModel.cluster = LocalCluster(n_workers=n_wrk, processes=True, memory_limit=None)
+                MetaModel.cluster = LocalCluster(
+                    n_workers=n_wrk, processes=True, memory_limit=None
+                )
                 # MetaModel.cluster.adapt(minimum=8, maximum=24, wait_count=60, target_duration="100")
 
-            MetaModel.client = Client(
-                MetaModel.cluster
-            )
+            MetaModel.client = Client(MetaModel.cluster)
 
             MetaModel.lock = Lock("plock", client=MetaModel.client)
 
@@ -131,12 +160,11 @@ class MetaModel(singleton.Singleton):
     async def run_simulation():
         """ """
         client = get_client()
-        sched_info = client.scheduler_info()
 
-        n_wrk = int(os.getenv("DASK_N_WORKERS"))
-
-        agg_workers = list(sched_info["workers"].keys())[:-(int(n_wrk * .25))]
-        print(agg_workers)
+        # sched_info = client.scheduler_info()
+        # n_wrk = int(os.getenv("DASK_N_WORKERS"))
+        # agg_workers = list(sched_info["workers"].keys())[: -(int(n_wrk * 0.25))]
+        # print(agg_workers)
 
         md = client.get_dataset("modeldata")
         harvest = md.data[nm.Tables.harvest]
@@ -144,7 +172,9 @@ class MetaModel(singleton.Singleton):
         with Lock("plock"):
             print("Starting simluation.")
 
-        final_futures = model.Model.model_factory(model_data_path=md.input_path, harvest_init=harvest)
+        final_futures = model.Model.model_factory(
+            model_data_path=md.input_path, harvest_init=harvest
+        )
         mod_jobs = as_completed(final_futures)
         year_ds_col_all = dict()
         year_ds_col_rec = dict()
@@ -167,28 +197,31 @@ class MetaModel(singleton.Singleton):
 
             ykey = r.lineage[0]
 
-
             if ykey in year_ds_col_all:
-                year_ds_col_all[ykey] = MetaModel.aggregate_results(year_ds_col_all[ykey], r)
+                year_ds_col_all[ykey] = await MetaModel.aggregate_results(
+                    year_ds_col_all[ykey], r
+                )
             else:
                 year_ds_col_all[ykey] = r
 
             if ds_all is None:
                 ds_all = r
             else:
-                ds_all = MetaModel.aggregate_results(ds_all, r)
+                ds_all = await MetaModel.aggregate_results(ds_all, r)
 
             # Save the recycled materials on their own for reporting
             if len(r.lineage) > 1:
                 if ykey in year_ds_col_rec:
-                    year_ds_col_rec[ykey] = MetaModel.aggregate_results(year_ds_col_rec[ykey], r)
+                    year_ds_col_rec[ykey] = await MetaModel.aggregate_results(
+                        year_ds_col_rec[ykey], r
+                    )
                 else:
                     year_ds_col_rec[ykey] = r
 
                 if ds_rec is None:
                     ds_rec = r
                 else:
-                    ds_rec = MetaModel.aggregate_results(ds_rec, r)
+                    ds_rec = await MetaModel.aggregate_results(ds_rec, r)
 
             if r_futures:
                 mod_jobs.update(r_futures)
@@ -206,7 +239,11 @@ class MetaModel(singleton.Singleton):
 
         with Lock("plock"):
             print("===========================")
-            print("Model run time:", f"{(timeit.default_timer() - MetaModel.start) / 60}", "minutes")
+            print(
+                "Model run time:",
+                f"{(timeit.default_timer() - MetaModel.start) / 60}",
+                "minutes",
+            )
             print("Total tasks completed:", f"{task_count}")
             print("===========================")
 
@@ -215,28 +252,33 @@ class MetaModel(singleton.Singleton):
 
         try:
             # MetaModel.make_results(ds_all, prefix="comb", save=True)
-            future = client.submit(MetaModel.make_results, remote_ds_all, prefix="comb", save=True)
+            future = client.submit(
+                MetaModel.make_results, remote_ds_all, prefix="comb", save=True
+            )
             res_jobs.append(future)
         except Exception as e:
             print("ds_all_comb:", e)
- 
 
         if ds_rec is not None:
             remote_ds_rec = client.scatter(ds_rec)
             try:
                 # MetaModel.make_results(ds_rec, prefix="rec", save=True)
-                future = client.submit(MetaModel.make_results, remote_ds_rec, prefix="rec", save=True)
+                future = client.submit(
+                    MetaModel.make_results, remote_ds_rec, prefix="rec", save=True
+                )
                 res_jobs.append(future)
             except Exception as e:
                 print("ds_rec:", e)
-             
+
             try:
                 # MetaModel.make_results(ds_all, ds_rec, save=True)
-                future = client.submit(MetaModel.make_results, remote_ds_all, remote_ds_rec, save=True)
+                future = client.submit(
+                    MetaModel.make_results, remote_ds_all, remote_ds_rec, save=True
+                )
                 res_jobs.append(future)
             except Exception as e:
                 print("ds_all:", e)
-         
+
         else:
             # If there's no ds_rec, that either means there's no recycling, OR there hasn't
             # been any recycling so far (this run), OR ?
@@ -246,9 +288,6 @@ class MetaModel(singleton.Singleton):
                 res_jobs.append(future)
             except Exception as e:
                 print("ds_all:", e)
-           
-
-       
 
         for y in year_ds_col_all:
             year_ds_all = year_ds_col_all[y]
@@ -256,37 +295,57 @@ class MetaModel(singleton.Singleton):
 
             try:
                 # MetaModel.make_results(year_ds_col_all[y], prefix=str(y) + "_comb", save=True)
-                future = client.submit(MetaModel.make_results, remote_year_ds_col_all, prefix=str(y) + "_comb", save=True)
+                future = client.submit(
+                    MetaModel.make_results,
+                    remote_year_ds_col_all,
+                    prefix=str(y) + "_comb",
+                    save=True,
+                )
                 res_jobs.append(future)
             except Exception as e:
                 print(str(y), "ds_all_comb:", e)
 
             if y in list(year_ds_col_rec.keys()):  # No recycling in the first year
-              
+
                 year_ds_rec = year_ds_col_rec[y]
                 remote_year_ds_col_rec = client.scatter(year_ds_rec)
                 try:
                     # MetaModel.make_results(year_ds_col_rec[y], prefix=str(y) + "_rec", save=True)
-                    future = client.submit(MetaModel.make_results, remote_year_ds_col_rec, prefix=str(y) + "_rec", save=True)
+                    future = client.submit(
+                        MetaModel.make_results,
+                        remote_year_ds_col_rec,
+                        prefix=str(y) + "_rec",
+                        save=True,
+                    )
                     res_jobs.append(future)
                 except Exception as e:
                     print(str(y), "ds_rec:", e)
-                    
+
                 try:
                     # MetaModel.make_results(year_ds_col_all[y], year_ds_col_rec[y], prefix=str(y), save=True)
-                    future = client.submit(MetaModel.make_results, remote_year_ds_col_all, remote_year_ds_col_rec, prefix=str(y), save=True)
+                    future = client.submit(
+                        MetaModel.make_results,
+                        remote_year_ds_col_all,
+                        remote_year_ds_col_rec,
+                        prefix=str(y),
+                        save=True,
+                    )
                     res_jobs.append(future)
                 except Exception as e:
                     print(str(y), "ds_all:", e)
-                    
+
             else:
                 try:
                     # MetaModel.make_results(year_ds_col_all[y], prefix=str(y), save=True)
-                    future = client.submit(MetaModel.make_results, remote_year_ds_col_all, prefix=str(y), save=True)
+                    future = client.submit(
+                        MetaModel.make_results,
+                        remote_year_ds_col_all,
+                        prefix=str(y),
+                        save=True,
+                    )
                     res_jobs.append(future)
                 except Exception as e:
                     print(str(y), "ds_all:", e)
-                    
 
         with Lock("plock"):
             print("Waiting on result jobs.")
@@ -295,7 +354,10 @@ class MetaModel(singleton.Singleton):
 
         with Lock("plock"):
             print("===========================")
-            print("Final run time", f"{(timeit.default_timer() - MetaModel.start) / 60} minutes")
+            print(
+                "Final run time",
+                f"{(timeit.default_timer() - MetaModel.start) / 60} minutes",
+            )
             print("===========================")
 
         # We need a couple things for the email that gets sent, after the cluster might be closed.
@@ -315,17 +377,39 @@ class MetaModel(singleton.Singleton):
             new_ds = await new_ds
         src_ds, new_ds = xr.align(src_ds, new_ds, join="outer", fill_value=0)
 
-        src_ds[nm.Fields.end_use_products] = src_ds[nm.Fields.end_use_products] + new_ds[nm.Fields.end_use_products]
-        src_ds[nm.Fields.end_use_available] = src_ds[nm.Fields.end_use_available] + new_ds[nm.Fields.end_use_available]
-        src_ds[nm.Fields.products_in_use] = src_ds[nm.Fields.products_in_use] + new_ds[nm.Fields.products_in_use]
-        src_ds[nm.Fields.discarded_products] = src_ds[nm.Fields.discarded_products] + new_ds[nm.Fields.discarded_products]
-        src_ds[nm.Fields.discarded_dispositions] = src_ds[nm.Fields.discarded_dispositions] + new_ds[nm.Fields.discarded_dispositions]
-        src_ds[nm.Fields.can_decay] = src_ds[nm.Fields.can_decay] + new_ds[nm.Fields.can_decay]
+        src_ds[nm.Fields.end_use_products] = (
+            src_ds[nm.Fields.end_use_products] + new_ds[nm.Fields.end_use_products]
+        )
+        src_ds[nm.Fields.end_use_available] = (
+            src_ds[nm.Fields.end_use_available] + new_ds[nm.Fields.end_use_available]
+        )
+        src_ds[nm.Fields.products_in_use] = (
+            src_ds[nm.Fields.products_in_use] + new_ds[nm.Fields.products_in_use]
+        )
+        src_ds[nm.Fields.discarded_products] = (
+            src_ds[nm.Fields.discarded_products] + new_ds[nm.Fields.discarded_products]
+        )
+        src_ds[nm.Fields.discarded_dispositions] = (
+            src_ds[nm.Fields.discarded_dispositions]
+            + new_ds[nm.Fields.discarded_dispositions]
+        )
+        src_ds[nm.Fields.can_decay] = (
+            src_ds[nm.Fields.can_decay] + new_ds[nm.Fields.can_decay]
+        )
         src_ds[nm.Fields.fixed] = src_ds[nm.Fields.fixed] + new_ds[nm.Fields.fixed]
-        src_ds[nm.Fields.discarded_remaining] = src_ds[nm.Fields.discarded_remaining] + new_ds[nm.Fields.discarded_remaining]
-        src_ds[nm.Fields.could_decay] = src_ds[nm.Fields.could_decay] + new_ds[nm.Fields.could_decay]
-        src_ds[nm.Fields.emitted] = src_ds[nm.Fields.emitted] + new_ds[nm.Fields.emitted]
-        src_ds[nm.Fields.present] = src_ds[nm.Fields.present] + new_ds[nm.Fields.present]
+        src_ds[nm.Fields.discarded_remaining] = (
+            src_ds[nm.Fields.discarded_remaining]
+            + new_ds[nm.Fields.discarded_remaining]
+        )
+        src_ds[nm.Fields.could_decay] = (
+            src_ds[nm.Fields.could_decay] + new_ds[nm.Fields.could_decay]
+        )
+        src_ds[nm.Fields.emitted] = (
+            src_ds[nm.Fields.emitted] + new_ds[nm.Fields.emitted]
+        )
+        src_ds[nm.Fields.present] = (
+            src_ds[nm.Fields.present] + new_ds[nm.Fields.present]
+        )
         return src_ds
 
     @staticmethod
@@ -341,7 +425,9 @@ class MetaModel(singleton.Singleton):
         return c * 44.0 / 12.0
 
     @staticmethod
-    def make_results(ds: xr.Dataset, rec_ds: xr.Dataset = None, prefix: str = "", save=False):
+    def make_results(
+        ds: xr.Dataset, rec_ds: xr.Dataset = None, prefix: str = "", save=False
+    ):
 
         client = get_client()
         md = client.get_dataset("modeldata")
@@ -356,9 +442,17 @@ class MetaModel(singleton.Singleton):
         nonrec_piu = None
         if rec_ds:
             ds, rec_ds = xr.align(ds, rec_ds, join="left", fill_value=0)
-            nonrec_piu = ds[nm.Fields.products_in_use] - rec_ds[nm.Fields.products_in_use]
+            nonrec_piu = (
+                ds[nm.Fields.products_in_use] - rec_ds[nm.Fields.products_in_use]
+            )
 
-        final_e = ds[[nm.Fields.end_use_products, nm.Fields.products_in_use, nm.Fields.discarded_products]].sum(dim="EndUseID")
+        final_e = ds[
+            [
+                nm.Fields.end_use_products,
+                nm.Fields.products_in_use,
+                nm.Fields.discarded_products,
+            ]
+        ].sum(dim="EndUseID")
         final_d = ds[
             [
                 nm.Fields.discarded_dispositions,
@@ -372,59 +466,113 @@ class MetaModel(singleton.Singleton):
         ].sum(dim=[nm.Fields.end_use_id, nm.Fields.discard_destination_id])
         final = xr.merge([final_e, final_d])
 
-        annual_harvest_and_timber = ds[[nm.Fields.ccf, nm.Fields.end_use_products]].sum(dim=nm.Fields.end_use_id)
+        annual_harvest_and_timber = ds[[nm.Fields.ccf, nm.Fields.end_use_products]].sum(
+            dim=nm.Fields.end_use_id
+        )
         annual_harvest_and_timber = annual_harvest_and_timber.rename_vars(
-            {nm.Fields.ccf: C(nm.Fields.ccf), nm.Fields.end_use_products: MGC(nm.Fields.end_use_products)}
+            {
+                nm.Fields.ccf: C(nm.Fields.ccf),
+                nm.Fields.end_use_products: MGC(nm.Fields.end_use_products),
+            }
         )
 
-        compost_emitted = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=2)].sum(dim=nm.Fields.end_use_id)
+        compost_emitted = (
+            ds[nm.Fields.emitted]
+            .loc[dict(DiscardDestinationID=2)]
+            .sum(dim=nm.Fields.end_use_id)
+        )
         compost_emitted = MetaModel.c_to_co2e(compost_emitted)
         compost_emitted.name = CO2(E(nm.Fields.composted))
         compost_emitted = compost_emitted.drop_vars(nm.Fields.discard_destination_id)
 
-        carbon_present_landfills = ds[nm.Fields.present].loc[dict(DiscardDestinationID=3)].sum(dim=nm.Fields.end_use_id)
+        carbon_present_landfills = (
+            ds[nm.Fields.present]
+            .loc[dict(DiscardDestinationID=3)]
+            .sum(dim=nm.Fields.end_use_id)
+        )
         carbon_present_landfills.name = MGC(P(nm.Fields.landfills))
-        carbon_present_landfills = carbon_present_landfills.drop_vars(nm.Fields.discard_destination_id)
-        carbon_emitted_landfills = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=3)].sum(dim=nm.Fields.end_use_id)
+        carbon_present_landfills = carbon_present_landfills.drop_vars(
+            nm.Fields.discard_destination_id
+        )
+        carbon_emitted_landfills = (
+            ds[nm.Fields.emitted]
+            .loc[dict(DiscardDestinationID=3)]
+            .sum(dim=nm.Fields.end_use_id)
+        )
         carbon_emitted_landfills = MetaModel.c_to_co2e(carbon_emitted_landfills)
         carbon_emitted_landfills.name = CO2(E(nm.Fields.landfills))
-        carbon_emitted_landfills = carbon_emitted_landfills.drop_vars(nm.Fields.discard_destination_id)
+        carbon_emitted_landfills = carbon_emitted_landfills.drop_vars(
+            nm.Fields.discard_destination_id
+        )
 
-        carbon_present_dumps = ds[nm.Fields.present].loc[dict(DiscardDestinationID=4)].sum(dim=nm.Fields.end_use_id)
+        carbon_present_dumps = (
+            ds[nm.Fields.present]
+            .loc[dict(DiscardDestinationID=4)]
+            .sum(dim=nm.Fields.end_use_id)
+        )
         carbon_present_dumps.name = MGC(P(nm.Fields.dumps))
-        carbon_present_dumps = carbon_present_dumps.drop_vars(nm.Fields.discard_destination_id)
-        carbon_emitted_dumps = ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=4)].sum(dim=nm.Fields.end_use_id)
+        carbon_present_dumps = carbon_present_dumps.drop_vars(
+            nm.Fields.discard_destination_id
+        )
+        carbon_emitted_dumps = (
+            ds[nm.Fields.emitted]
+            .loc[dict(DiscardDestinationID=4)]
+            .sum(dim=nm.Fields.end_use_id)
+        )
         carbon_emitted_dumps = MetaModel.c_to_co2e(carbon_emitted_dumps)
         carbon_emitted_dumps.name = CO2(E(nm.Fields.dumps))
-        carbon_emitted_dumps = carbon_emitted_dumps.drop_vars(nm.Fields.discard_destination_id)
+        carbon_emitted_dumps = carbon_emitted_dumps.drop_vars(
+            nm.Fields.discard_destination_id
+        )
 
         fuel_carbon_emitted = (
-            ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=0)].where(ds.data_vars[nm.Fields.fuel] == 1, drop=True).sum(dim=nm.Fields.end_use_id)
+            ds[nm.Fields.emitted]
+            .loc[dict(DiscardDestinationID=0)]
+            .where(ds.data_vars[nm.Fields.fuel] == 1, drop=True)
+            .sum(dim=nm.Fields.end_use_id)
         )
         fuel_carbon_emitted = MetaModel.c_to_co2e(fuel_carbon_emitted)
         fuel_carbon_emitted.name = CO2(E(nm.Fields.fuel))
-        fuel_carbon_emitted = fuel_carbon_emitted.drop_vars(nm.Fields.discard_destination_id)
+        fuel_carbon_emitted = fuel_carbon_emitted.drop_vars(
+            nm.Fields.discard_destination_id
+        )
 
         if rec_ds:
             end_use_in_use_nr = nonrec_piu.sum(dim=nm.Fields.end_use_id)
             end_use_in_use_nr.name = MGC("new_" + nm.Fields.products_in_use)
-            end_use_in_use_r = rec_ds[nm.Fields.products_in_use].sum(dim=nm.Fields.end_use_id)
+            end_use_in_use_r = rec_ds[nm.Fields.products_in_use].sum(
+                dim=nm.Fields.end_use_id
+            )
             end_use_in_use_r.name = MGC("reused_" + nm.Fields.products_in_use)
 
-            end_use_in_use = xr.Dataset({end_use_in_use_nr.name: end_use_in_use_nr, end_use_in_use_r.name: end_use_in_use_r})
+            end_use_in_use = xr.Dataset(
+                {
+                    end_use_in_use_nr.name: end_use_in_use_nr,
+                    end_use_in_use_r.name: end_use_in_use_r,
+                }
+            )
         else:
             end_use_in_use = ds[nm.Fields.products_in_use].sum(dim=nm.Fields.end_use_id)
             end_use_in_use.name = MGC(nm.Fields.products_in_use)
 
         burned_without_energy_capture = (
-            ds[nm.Fields.emitted].loc[dict(DiscardDestinationID=0)].where(ds.data_vars[nm.Fields.fuel] == 0, drop=True).sum(dim=nm.Fields.end_use_id)
+            ds[nm.Fields.emitted]
+            .loc[dict(DiscardDestinationID=0)]
+            .where(ds.data_vars[nm.Fields.fuel] == 0, drop=True)
+            .sum(dim=nm.Fields.end_use_id)
         )
-        burned_without_energy_capture = MetaModel.c_to_co2e(burned_without_energy_capture)
+        burned_without_energy_capture = MetaModel.c_to_co2e(
+            burned_without_energy_capture
+        )
         burned_without_energy_capture.name = CO2(E(nm.Fields.burned_wo_energy_capture))
-        burned_without_energy_capture = burned_without_energy_capture.drop_vars(nm.Fields.discard_destination_id)
+        burned_without_energy_capture = burned_without_energy_capture.drop_vars(
+            nm.Fields.discard_destination_id
+        )
 
         # TODO discard_burned_with_energy_capture
-        burned_with_energy_capture = fuel_carbon_emitted  # TODO + discard_burned_with_energy_capture
+        burned_with_energy_capture = (
+            fuel_carbon_emitted  # TODO + discard_burned_with_energy_capture
+        )
 
         carbon_present_swds = carbon_present_landfills + carbon_present_dumps
         carbon_present_swds.name = MGC(P(nm.Fields.present))
@@ -432,56 +580,93 @@ class MetaModel(singleton.Singleton):
         if rec_ds:
             cumulative_carbon_stocks = xr.Dataset(
                 {
-                    "new_" + MGC(nm.Fields.products_in_use): end_use_in_use[end_use_in_use_nr.name],
-                    "reused_" + MGC(nm.Fields.products_in_use): end_use_in_use[end_use_in_use_r.name],
+                    "new_"
+                    + MGC(nm.Fields.products_in_use): end_use_in_use[
+                        end_use_in_use_nr.name
+                    ],
+                    "reused_"
+                    + MGC(nm.Fields.products_in_use): end_use_in_use[
+                        end_use_in_use_r.name
+                    ],
                     MGC(nm.Fields.swds): carbon_present_swds,
                 }
             )
-            cumulative_carbon_stocks["new_" + MGC(CHANGE(nm.Fields.products_in_use))] = cumulative_carbon_stocks[
-                "new_" + MGC(nm.Fields.products_in_use)
-            ].diff(
+            cumulative_carbon_stocks[
+                "new_" + MGC(CHANGE(nm.Fields.products_in_use))
+            ] = cumulative_carbon_stocks["new_" + MGC(nm.Fields.products_in_use)].diff(
                 dim=nm.Fields.harvest_year,
             )
-            cumulative_carbon_stocks["reused_" + MGC(CHANGE(nm.Fields.products_in_use))] = cumulative_carbon_stocks[
+            cumulative_carbon_stocks[
+                "reused_" + MGC(CHANGE(nm.Fields.products_in_use))
+            ] = cumulative_carbon_stocks[
                 "reused_" + MGC(nm.Fields.products_in_use)
             ].diff(
                 dim=nm.Fields.harvest_year,
             )
         else:
-            cumulative_carbon_stocks = xr.Dataset({MGC(nm.Fields.products_in_use): end_use_in_use, MGC(nm.Fields.swds): carbon_present_swds})
-            cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.products_in_use))] = cumulative_carbon_stocks[MGC(nm.Fields.products_in_use)].diff(
+            cumulative_carbon_stocks = xr.Dataset(
+                {
+                    MGC(nm.Fields.products_in_use): end_use_in_use,
+                    MGC(nm.Fields.swds): carbon_present_swds,
+                }
+            )
+            cumulative_carbon_stocks[
+                MGC(CHANGE(nm.Fields.products_in_use))
+            ] = cumulative_carbon_stocks[MGC(nm.Fields.products_in_use)].diff(
                 dim=nm.Fields.harvest_year,
             )
-        cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.swds))] = cumulative_carbon_stocks[MGC(nm.Fields.swds)].diff(dim=nm.Fields.harvest_year)
+        cumulative_carbon_stocks[
+            MGC(CHANGE(nm.Fields.swds))
+        ] = cumulative_carbon_stocks[MGC(nm.Fields.swds)].diff(
+            dim=nm.Fields.harvest_year
+        )
         cumulative_carbon_stocks = cumulative_carbon_stocks.fillna(0)
 
         # totalYearlyNetChange PDF
         if rec_ds:
             cumulative_stock_change = (
                 cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.swds))]
-                + cumulative_carbon_stocks["new_" + MGC(CHANGE(nm.Fields.products_in_use))]
-                + cumulative_carbon_stocks["reused_" + MGC(CHANGE(nm.Fields.products_in_use))]
+                + cumulative_carbon_stocks[
+                    "new_" + MGC(CHANGE(nm.Fields.products_in_use))
+                ]
+                + cumulative_carbon_stocks[
+                    "reused_" + MGC(CHANGE(nm.Fields.products_in_use))
+                ]
             )
             cumulative_stock_change.name = MGC(CHANGE(nm.Fields.present))
         else:
             cumulative_stock_change = (
-                cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.swds))] + cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.products_in_use))]
+                cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.swds))]
+                + cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.products_in_use))]
             )
             cumulative_stock_change.name = MGC(CHANGE(nm.Fields.present))
         # totalSelectedNetChange PDF
-        cumulative_selected_stock_change = cumulative_carbon_stocks.sel(Year=cumulative_carbon_stocks[nm.Fields.harvest_year] % 5 == 0)
+        cumulative_selected_stock_change = cumulative_carbon_stocks.sel(
+            Year=cumulative_carbon_stocks[nm.Fields.harvest_year] % 5 == 0
+        )
 
         emitted_w_ec = fuel_carbon_emitted
         emitted_w_ec.name = CO2(nm.Fields.emitted_with_energy_capture)
 
-        emitted_wo_ec = compost_emitted + carbon_emitted_landfills + carbon_emitted_dumps + burned_without_energy_capture
+        emitted_wo_ec = (
+            compost_emitted
+            + carbon_emitted_landfills
+            + carbon_emitted_dumps
+            + burned_without_energy_capture
+        )
         emitted_wo_ec.name = CO2(nm.Fields.emitted_wo_energy_capture)
 
         if rec_ds:
             big_four = xr.Dataset(
                 {
-                    "new_" + CO2(P(nm.Fields.products_in_use)): MetaModel.c_to_co2e(end_use_in_use_nr),
-                    "reused_" + CO2(P(nm.Fields.products_in_use)): MetaModel.c_to_co2e(end_use_in_use_r),
+                    "new_"
+                    + CO2(P(nm.Fields.products_in_use)): MetaModel.c_to_co2e(
+                        end_use_in_use_nr
+                    ),
+                    "reused_"
+                    + CO2(P(nm.Fields.products_in_use)): MetaModel.c_to_co2e(
+                        end_use_in_use_r
+                    ),
                     CO2(P(nm.Fields.swds)): MetaModel.c_to_co2e(carbon_present_swds),
                     CO2(E(nm.Fields.emitted_with_energy_capture)): emitted_w_ec,
                     CO2(E(nm.Fields.emitted_wo_energy_capture)): emitted_wo_ec,
@@ -490,7 +675,10 @@ class MetaModel(singleton.Singleton):
         else:
             big_four = xr.Dataset(
                 {
-                    "new_" + CO2(P(nm.Fields.products_in_use)): MetaModel.c_to_co2e(end_use_in_use),
+                    "new_"
+                    + CO2(P(nm.Fields.products_in_use)): MetaModel.c_to_co2e(
+                        end_use_in_use
+                    ),
                     CO2(P(nm.Fields.swds)): MetaModel.c_to_co2e(carbon_present_swds),
                     CO2(E(nm.Fields.emitted_with_energy_capture)): emitted_w_ec,
                     CO2(E(nm.Fields.emitted_wo_energy_capture)): emitted_wo_ec,
@@ -522,7 +710,10 @@ class MetaModel(singleton.Singleton):
                 }
             )
         carbon_emitted_distinct_swds = xr.Dataset(
-            {CO2(E(nm.Fields.dumps)): carbon_emitted_dumps, CO2(E(nm.Fields.landfills)): carbon_emitted_landfills}
+            {
+                CO2(E(nm.Fields.dumps)): carbon_emitted_dumps,
+                CO2(E(nm.Fields.landfills)): carbon_emitted_landfills,
+            }
         )
 
         # totalYearlyDispositions PDF
@@ -530,17 +721,39 @@ class MetaModel(singleton.Singleton):
             mega_table = xr.Dataset(
                 {
                     CO2(nm.Fields.emitted_with_energy_capture): emitted_w_ec,
-                    CO2(CHANGE(nm.Fields.emitted_with_energy_capture)): emitted_w_ec.diff(dim=nm.Fields.harvest_year),
+                    CO2(
+                        CHANGE(nm.Fields.emitted_with_energy_capture)
+                    ): emitted_w_ec.diff(dim=nm.Fields.harvest_year),
                     CO2(nm.Fields.emitted_wo_energy_capture): emitted_wo_ec,
-                    CO2(CHANGE(nm.Fields.emitted_wo_energy_capture)): emitted_wo_ec.diff(dim=nm.Fields.harvest_year),
-                    "reused_" + MGC(nm.Fields.products_in_use): cumulative_carbon_stocks["reused_" + MGC(nm.Fields.products_in_use)],
-                    "reused_" + MGC(CHANGE(nm.Fields.products_in_use)): cumulative_carbon_stocks["reused_" + MGC(CHANGE(nm.Fields.products_in_use))],
-                    "new_" + MGC(nm.Fields.products_in_use): cumulative_carbon_stocks["new_" + MGC(nm.Fields.products_in_use)],
-                    "new_" + MGC(CHANGE(nm.Fields.products_in_use)): cumulative_carbon_stocks["new_" + MGC(CHANGE(nm.Fields.products_in_use))],
+                    CO2(
+                        CHANGE(nm.Fields.emitted_wo_energy_capture)
+                    ): emitted_wo_ec.diff(dim=nm.Fields.harvest_year),
+                    "reused_"
+                    + MGC(nm.Fields.products_in_use): cumulative_carbon_stocks[
+                        "reused_" + MGC(nm.Fields.products_in_use)
+                    ],
+                    "reused_"
+                    + MGC(CHANGE(nm.Fields.products_in_use)): cumulative_carbon_stocks[
+                        "reused_" + MGC(CHANGE(nm.Fields.products_in_use))
+                    ],
+                    "new_"
+                    + MGC(nm.Fields.products_in_use): cumulative_carbon_stocks[
+                        "new_" + MGC(nm.Fields.products_in_use)
+                    ],
+                    "new_"
+                    + MGC(CHANGE(nm.Fields.products_in_use)): cumulative_carbon_stocks[
+                        "new_" + MGC(CHANGE(nm.Fields.products_in_use))
+                    ],
                     MGC(nm.Fields.swds): cumulative_carbon_stocks[MGC(nm.Fields.swds)],
-                    MGC(CHANGE(nm.Fields.swds)): cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.swds))],
-                    MGC(nm.Fields.present): cumulative_carbon_stocks[MGC(nm.Fields.swds)]
-                    + cumulative_carbon_stocks["reused_" + MGC(nm.Fields.products_in_use)]
+                    MGC(CHANGE(nm.Fields.swds)): cumulative_carbon_stocks[
+                        MGC(CHANGE(nm.Fields.swds))
+                    ],
+                    MGC(nm.Fields.present): cumulative_carbon_stocks[
+                        MGC(nm.Fields.swds)
+                    ]
+                    + cumulative_carbon_stocks[
+                        "reused_" + MGC(nm.Fields.products_in_use)
+                    ]
                     + cumulative_carbon_stocks["new_" + MGC(nm.Fields.products_in_use)],
                     MGC(CHANGE(nm.Fields.present)): cumulative_stock_change,
                 }
@@ -549,39 +762,66 @@ class MetaModel(singleton.Singleton):
             mega_table = xr.Dataset(
                 {
                     CO2(nm.Fields.emitted_with_energy_capture): emitted_w_ec,
-                    CO2(CHANGE(nm.Fields.emitted_with_energy_capture)): emitted_w_ec.diff(dim=nm.Fields.harvest_year),
+                    CO2(
+                        CHANGE(nm.Fields.emitted_with_energy_capture)
+                    ): emitted_w_ec.diff(dim=nm.Fields.harvest_year),
                     CO2(nm.Fields.emitted_wo_energy_capture): emitted_wo_ec,
-                    CO2(CHANGE(nm.Fields.emitted_wo_energy_capture)): emitted_wo_ec.diff(dim=nm.Fields.harvest_year),
-                    MGC(nm.Fields.products_in_use): cumulative_carbon_stocks[MGC(nm.Fields.products_in_use)],
-                    MGC(CHANGE(nm.Fields.products_in_use)): cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.products_in_use))],
+                    CO2(
+                        CHANGE(nm.Fields.emitted_wo_energy_capture)
+                    ): emitted_wo_ec.diff(dim=nm.Fields.harvest_year),
+                    MGC(nm.Fields.products_in_use): cumulative_carbon_stocks[
+                        MGC(nm.Fields.products_in_use)
+                    ],
+                    MGC(CHANGE(nm.Fields.products_in_use)): cumulative_carbon_stocks[
+                        MGC(CHANGE(nm.Fields.products_in_use))
+                    ],
                     MGC(nm.Fields.swds): cumulative_carbon_stocks[MGC(nm.Fields.swds)],
-                    MGC(CHANGE(nm.Fields.swds)): cumulative_carbon_stocks[MGC(CHANGE(nm.Fields.swds))],
-                    MGC(nm.Fields.present): cumulative_carbon_stocks[MGC(nm.Fields.swds)] + cumulative_carbon_stocks[MGC(nm.Fields.products_in_use)],
+                    MGC(CHANGE(nm.Fields.swds)): cumulative_carbon_stocks[
+                        MGC(CHANGE(nm.Fields.swds))
+                    ],
+                    MGC(nm.Fields.present): cumulative_carbon_stocks[
+                        MGC(nm.Fields.swds)
+                    ]
+                    + cumulative_carbon_stocks[MGC(nm.Fields.products_in_use)],
                     MGC(CHANGE(nm.Fields.present)): cumulative_stock_change,
                 }
             )
 
         # totalSelectedDispositions PDF
-        mega_selected_table = mega_table.sel(Year=cumulative_carbon_stocks[nm.Fields.harvest_year] % 5 == 0)
+        mega_selected_table = mega_table.sel(
+            Year=cumulative_carbon_stocks[nm.Fields.harvest_year] % 5 == 0
+        )
 
         if save:
             zip_buffer = BytesIO()
 
-            result_zip = zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_STORED, allowZip64=False)
+            result_zip = zipfile.ZipFile(
+                zip_buffer, mode="w", compression=zipfile.ZIP_STORED, allowZip64=False
+            )
             if len(prefix) > 1:
                 prefix = prefix + "_"
             with tempfile.TemporaryFile() as temp:
                 ds.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "results.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "results.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 final.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "final.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "final.csv", temp.read(), compress_type=zipfile.ZIP_STORED
+                )
             with tempfile.TemporaryFile() as temp:
                 annual_harvest_and_timber.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "annual_harvest_and_timber_product_output.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "annual_harvest_and_timber_product_output.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 if rec_ds:
                     cumulative_carbon_stocks[
@@ -592,91 +832,182 @@ class MetaModel(singleton.Singleton):
                         ]
                     ].to_dataframe().to_csv(temp)
                 else:
-                    cumulative_carbon_stocks[[MGC(CHANGE(nm.Fields.products_in_use)), MGC(CHANGE(nm.Fields.swds))]].to_dataframe().to_csv(temp)
+                    cumulative_carbon_stocks[
+                        [
+                            MGC(CHANGE(nm.Fields.products_in_use)),
+                            MGC(CHANGE(nm.Fields.swds)),
+                        ]
+                    ].to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "annual_net_change_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "annual_net_change_carbon_stocks.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 burned_without_energy_capture.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "burned_wo_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "burned_wo_energy_capture_emit.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 burned_with_energy_capture.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "burned_w_energy_capture_emit.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "burned_w_energy_capture_emit.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 compost_emitted.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_composted_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_composted_carbon_emitted.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 if rec_ds:
                     cumulative_carbon_stocks[
-                        ["new_" + MGC(nm.Fields.products_in_use), "reused_" + MGC(nm.Fields.products_in_use), MGC(nm.Fields.swds)]
+                        [
+                            "new_" + MGC(nm.Fields.products_in_use),
+                            "reused_" + MGC(nm.Fields.products_in_use),
+                            MGC(nm.Fields.swds),
+                        ]
                     ].to_dataframe().to_csv(temp)
                 else:
-                    cumulative_carbon_stocks[[MGC(nm.Fields.products_in_use), MGC(nm.Fields.swds)]].to_dataframe().to_csv(temp)
+                    cumulative_carbon_stocks[
+                        [MGC(nm.Fields.products_in_use), MGC(nm.Fields.swds)]
+                    ].to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_cumulative_carbon_stocks.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_cumulative_carbon_stocks.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 carbon_emitted_dumps.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_dumps_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_dumps_carbon_emitted.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 carbon_present_dumps.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_dumps_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_dumps_carbon.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 end_use_in_use.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_end_use_products.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_end_use_products.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 fuel_carbon_emitted.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_fuelwood_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_fuelwood_carbon_emitted.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 carbon_emitted_landfills.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_landfills_carbon_emitted.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_landfills_carbon_emitted.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 carbon_present_landfills.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_landfills_carbon.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_landfills_carbon.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
 
             # Flashy page outputs
             with tempfile.TemporaryFile() as temp:
                 big_four.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "big_four.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "big_four.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 emitted_all.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "emitted_all.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "emitted_all.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 carbon_present_distinct_swds.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "carbon_present_distinct_swds.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "carbon_present_distinct_swds.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 carbon_emitted_distinct_swds.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "carbon_emitted_distinct_swds.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "carbon_emitted_distinct_swds.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
 
             # PDF table outputs
             with tempfile.TemporaryFile() as temp:
                 cumulative_stock_change.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_yearly_net_change.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_yearly_net_change.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 cumulative_selected_stock_change.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_selected_net_change.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_selected_net_change.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 mega_table.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_yearly_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_yearly_dispositions.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
             with tempfile.TemporaryFile() as temp:
                 mega_selected_table.to_dataframe().to_csv(temp)
                 temp.seek(0)
-                result_zip.writestr(prefix + "total_selected_dispositions.csv", temp.read(), compress_type=zipfile.ZIP_STORED)
+                result_zip.writestr(
+                    prefix + "total_selected_dispositions.csv",
+                    temp.read(),
+                    compress_type=zipfile.ZIP_STORED,
+                )
 
             result_zip.close()
             zip_buffer.seek(0)
-            S3Helper.upload_file(zip_buffer, "hwpc-output", md.output_path + "/results/" + prefix + md.run_name + ".zip")
+            S3Helper.upload_file(
+                zip_buffer,
+                "hwpc-output",
+                md.output_path + "/results/" + prefix + md.run_name + ".zip",
+            )

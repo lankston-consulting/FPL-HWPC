@@ -18,7 +18,9 @@ _debug_mode_raw = os.getenv("HWPC__DEBUG__MODE")
 _debug_mode = False
 
 if _debug_mode_raw is not None and (
-    _debug_mode_raw.lower().find("y") >= 0 or _debug_mode_raw.lower().find("t") >= 0 or _debug_mode_raw.lower().find("1") >= 0
+    _debug_mode_raw.lower().find("y") >= 0
+    or _debug_mode_raw.lower().find("t") >= 0
+    or _debug_mode_raw.lower().find("1") >= 0
 ):
     _debug_mode = True
 
@@ -43,7 +45,9 @@ def validate_env():
 
     for re in required_envs:
         if envs[re] is None:
-            raise EnvValueError(f'Missing required environment variable. "{re}" is required.')
+            raise EnvValueError(
+                f'Missing required environment variable. "{re}" is required.'
+            )
 
     if _debug_mode:
         debug_envs = [
@@ -55,7 +59,9 @@ def validate_env():
 
         for de in debug_envs:
             if envs[de] is None:
-                raise EnvValueError(f'Debug mode requested. "{re}" environment variable is required.')
+                raise EnvValueError(
+                    f'Debug mode requested. "{re}" environment variable is required.'
+                )
 
 
 # validate_env()

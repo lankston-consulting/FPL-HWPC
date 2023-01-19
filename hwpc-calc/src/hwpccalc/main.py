@@ -42,7 +42,6 @@ async def main(args: argparse.Namespace) -> int:
     try:
         user_info = await me.run_simulation()
     except Exception as last_ex:
-        traceback.print_exc()
         _handle_exception("Exception running simulation.", last_ex)
 
     print("model finished.")
@@ -53,7 +52,9 @@ async def main(args: argparse.Namespace) -> int:
             print(f"http://www.hwpcarbon.com/output?p={path}&q={name}")
         else:
             email.Email().send_email(
-                email_address=user_info["email_address"], user_string=user_info["user_string"], scenario_name=user_info["scenario_name"]
+                email_address=user_info["email_address"],
+                user_string=user_info["user_string"],
+                scenario_name=user_info["scenario_name"],
             )
     except Exception as last_ex:
         _handle_exception("Exception sending notification email to user.", last_ex)
@@ -90,14 +91,30 @@ if __name__ == "__main__":
 
     print("Container has been started. Beginning execution.")
 
-    parser.add_argument("-b", "--bucket", help="Bucket to use for user input", default="hwpc")
+    parser.add_argument(
+        "-b", "--bucket", help="Bucket to use for user input", default="hwpc"
+    )
 
     if _debug_mode:
-        parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", default=f"{_debug_default_path}")
-        parser.add_argument("-n", "--name", help="User provided name of simulation run.", default=f"{_debug_default_name}")
+        parser.add_argument(
+            "-p",
+            "--path",
+            help="Path to uploaded user data to run on",
+            default=f"{_debug_default_path}",
+        )
+        parser.add_argument(
+            "-n",
+            "--name",
+            help="User provided name of simulation run.",
+            default=f"{_debug_default_name}",
+        )
     else:
-        parser.add_argument("-p", "--path", help="Path to uploaded user data to run on", required=True)
-        parser.add_argument("-n", "--name", help="User provided name of simulation run.", required=True)
+        parser.add_argument(
+            "-p", "--path", help="Path to uploaded user data to run on", required=True
+        )
+        parser.add_argument(
+            "-n", "--name", help="User provided name of simulation run.", required=True
+        )
 
     args, _ = parser.parse_known_args()
 
