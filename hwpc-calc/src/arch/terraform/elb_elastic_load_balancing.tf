@@ -116,13 +116,13 @@ resource "aws_alb_target_group" "arn_aws_elasticloadbalancing_us_west_2_23465956
   vpc_id      = aws_vpc.vpc_0012250a7646d8885.id
 }
 
-resource "aws_alb_target_group_attachment" "YyrGi" {
+resource "aws_alb_target_group_attachment" "Geczn" {
   port             = 80
   target_group_arn = aws_alb_target_group.arn_aws_elasticloadbalancing_us_west_2_234659567514_targetgroup_hwpc_web_fargate_tg_59c5cc26133b5efa.id
   target_id        = "172.31.28.192"
 }
 
-resource "aws_alb_target_group_attachment" "lpkus" {
+resource "aws_alb_target_group_attachment" "NOvQE" {
   port             = 443
   target_group_arn = aws_alb_target_group.arn_aws_elasticloadbalancing_us_west_2_234659567514_targetgroup_hwpc_web_fargate_tg_59c5cc26133b5efa.id
   target_id        = "172.31.44.193"

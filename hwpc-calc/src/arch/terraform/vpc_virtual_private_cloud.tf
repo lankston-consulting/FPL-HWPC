@@ -151,14 +151,14 @@ resource "aws_subnet" "hwpc_sbn" {
     Name = "hwpc-sbn"
   }
 
-  availability_zone_id                = "usw2-az4"
+  availability_zone                   = "us-west-2d"
   cidr_block                          = "10.0.0.0/24"
   private_dns_hostname_type_on_launch = "ip-name"
   vpc_id                              = aws_vpc.hwpc_vpc.id
 }
 
 resource "aws_subnet" "subnet_00c7b79155a9bbab8" {
-  availability_zone_id                = "usw2-az3"
+  availability_zone                   = "us-west-2c"
   cidr_block                          = "172.31.0.0/20"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
@@ -166,7 +166,7 @@ resource "aws_subnet" "subnet_00c7b79155a9bbab8" {
 }
 
 resource "aws_subnet" "subnet_090dfbdf359cf77e7" {
-  availability_zone_id                = "usw2-az4"
+  availability_zone                   = "us-west-2d"
   cidr_block                          = "172.31.48.0/20"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
@@ -174,7 +174,7 @@ resource "aws_subnet" "subnet_090dfbdf359cf77e7" {
 }
 
 resource "aws_subnet" "subnet_0a67a553e8d4a6e46" {
-  availability_zone                   = "us-west-2a"
+  availability_zone_id                = "usw2-az1"
   cidr_block                          = "172.31.16.0/20"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
