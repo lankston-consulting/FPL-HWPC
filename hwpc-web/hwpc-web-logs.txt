@@ -1,0 +1,2499 @@
+commit 509bc827b625946b89739b236127c9b219287de9
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Jan 19 15:02:13 2023 -0600
+
+    Continuous changes for code cleanup
+
+commit 9d6c00f1cc1ab22e98485e4542023b8054f0e1e0
+Merge: 48573c2 b030c73
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Wed Jan 18 18:43:08 2023 -0600
+
+    Merge pull request #42 from lankston-consulting/HWPC-203-clean-up-javascript-code-so-that-it-is-gov-compliant
+    
+    Hwpc 203 clean up javascript code so that it is gov compliant
+
+commit b030c73182c40c9721b06339f8f6f0c5755ca755
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Jan 18 18:42:31 2023 -0600
+
+    fix for outputs after sonarlint fix with oauth
+
+commit 9ea10128bc6d964335e853656588f2915f171e6d
+Merge: d8bed20 e936ec3
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Jan 18 18:23:12 2023 -0600
+
+    merge with oauth
+
+commit d8bed2056d0a18ff955a8a62f190327c8a2f5d73
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Jan 18 17:53:25 2023 -0600
+
+    cleaned up redundant console logs
+
+commit dffdae83a9f21db1a4f053c24a5e44e429c93c18
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Jan 18 17:51:40 2023 -0600
+
+    Leftover python updates
+
+commit bb981f6767be7dc8fa21886b304c9642dc875d4e
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Jan 18 17:46:30 2023 -0600
+
+    Python updates
+
+commit 76131b0c756b0d479d33bd864fd559dd74e65611
+Merge: ed9c03b 2d13540
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Jan 18 17:30:24 2023 -0600
+
+    merge resolve with claire's clean-up
+
+commit ed9c03b71fda420821f088a3f9d72b2b5f607574
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Jan 18 17:29:16 2023 -0600
+
+    graph fixes from major breakage from code clean
+
+commit 2d13540ed9bba1ae90dcac3e86c7d775bff262e1
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Jan 18 16:35:57 2023 -0600
+
+    Updated taboutput.js var to let
+
+commit 55508acba313c350bb2aace314c3e2ae5595c2e9
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Jan 18 16:35:20 2023 -0600
+
+    Deleted extra semicolons
+
+commit 5a7a14032995b740432c939b422ba818bf2cba96
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Jan 18 16:34:19 2023 -0600
+
+    Updated Web: HTML and CSS
+    
+    CSS:
+    Removed extra semicolons
+    Merged duplicated properties and selectors
+    Removed longhand property that was before shorthand property
+    Declared generic san-serif font for "font-awesome" family.
+    HTML:
+    Removed sections of commented out code from html and updated cdns to have integrity.
+    I don’t used a <dt> (description tag) anywhere as far as I can tell. But I’ll keep my eye out for it.
+
+commit 17d58754fa00ad601e3a61f18afb282ec0eda897
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Jan 18 14:29:12 2023 -0600
+
+    major clean-up of output.js
+
+commit e936ec37e896bdcade67f9e7c24a1d0af868a47e
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Jan 17 16:39:18 2023 -0600
+
+    Updated variables
+
+commit 3c29f208aa2d125b280fb60e74b1d94751a6d8ad
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Jan 17 16:36:33 2023 -0600
+
+    oauth attempt
+
+commit 48573c2988c0c8a9bbbde3b789a0c313b5051db5
+Merge: c8a78b7 e72ea5f
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Jan 17 16:28:52 2023 -0600
+
+    Merge pull request #41 from lankston-consulting/HWPC-198-add-sum-column-to-display-table
+    
+    Hwpc 198 add sum column to display table
+
+commit e72ea5f29ef1e8059419db1e76e94ee71d77ebe0
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Jan 17 15:01:34 2023 -0600
+
+    one more label fix
+
+commit 0d9893541fc534d082ccadc1f1f5a82af40fc105
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Jan 17 14:53:15 2023 -0600
+
+    added CO2e label to sum
+
+commit 632a93745e464863ce2589253d71dc528780ef21
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Jan 17 14:52:06 2023 -0600
+
+    added sum column to both display table and export table of big four
+
+commit c8a78b73bbc18b81163789d371eafbe318c9601f
+Merge: fcfc2ad 47cef59
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Fri Jan 13 16:57:38 2023 -0600
+
+    Merge pull request #40 from lankston-consulting/HWPC-197-formatting-issues-with-single-year-table
+    
+    Hwpc 197 formatting issues with single year table
+
+commit 47cef59b1e06a23c164a4db12e14659ed3974b86
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Jan 13 15:58:22 2023 -0600
+
+    one last caught undo
+
+commit 978215809cfc910c062f03d357e94d87429870ca
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Jan 13 15:57:39 2023 -0600
+
+    forgot a line
+
+commit 8dd2f76e485e7af46348213a9eb0d9aca2a10a37
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Jan 13 15:55:37 2023 -0600
+
+    undid auth0 work around
+
+commit 8503f3ae76185988824671d62c3ac0317b25bcc4
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Jan 13 15:44:13 2023 -0600
+
+    multiple graph fixes
+
+commit fcfc2adecfc97c8bb388afc6f233c4e65ef0a58d
+Author: Robb Lankston <robb@lankstonconsulting.com>
+Date:   Wed Jan 11 17:59:08 2023 -0800
+
+    Removing zip bundle with old keys.
+
+commit b4e656ecf3c0205e64deb87308d3ed1283c37be3
+Merge: 78fcb87 0580e4e
+Author: Robb Lankston <robb@lankstonconsulting.com>
+Date:   Wed Jan 11 17:56:37 2023 -0800
+
+    Merge pull request #39 from lankston-consulting/dev-com-aws
+    
+    Dev com aws
+
+commit 0580e4e2ef9d0294e2308c0624d8950bcc7e54c0
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Jan 10 17:43:15 2023 -0600
+
+    Login rewording
+
+commit ef91e9e1614520530ff439752db34d27c06fe28d
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Jan 10 16:44:37 2023 -0600
+
+    Added logout link
+
+commit d9d84639306098b2f5dcf4747a5a9ea2c395e989
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Jan 10 16:41:16 2023 -0600
+
+    Login Page and Logout styling updates
+    
+    +Styling Updates.
+    Still need route testing/review.
+
+commit 312a2a15f7bcfd7641e6d0ba3ab2de538767f595
+Merge: 1a81d48 f0c9a27
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Tue Jan 10 13:45:04 2023 -0600
+
+    Merge pull request #38 from lankston-consulting/terraform
+    
+    Authentication hooked up
+
+commit f0c9a27192c893af76f057505dccea7cdbb0695b
+Author: Robb Lankston <robb@lankstonconsulting.com>
+Date:   Tue Jan 10 11:20:45 2023 -0800
+
+    Technically working authentication
+    
+    Need to make the login HTML better, and add to Auth0 any hwpcarbon.com addresses that we will use.
+
+commit e00a3bf378e0fbe0a7dda00743009d4d839846f8
+Author: Robb Lankston <robb@lankstonconsulting.com>
+Date:   Mon Jan 9 21:27:51 2023 -0800
+
+    Small updates for potential terraform update
+
+commit 78fcb8791c21d3f60d2ef47537883de3d9267765
+Merge: 2f3e1c1 1a81d48
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Mon Jan 9 21:25:00 2023 -0800
+
+    Merge pull request #37 from lankston-consulting/dev-com-aws
+    
+    Dev com aws merge for error handling requests
+
+commit 1a81d482ee466dd66b60a6d20da846e3a56b3078
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Jan 6 18:17:33 2023 -0600
+
+    Fixed 500 for aws
+
+commit 9b32832fa975e6a72df7c0b3c73102357c4288b4
+Merge: a1ff813 f165d13
+Author: Robb Lankston <robb@lankstonconsulting.com>
+Date:   Fri Jan 6 13:10:07 2023 -0800
+
+    Merge remote-tracking branch 'origin/dev-com-aws' into dev-com-aws
+
+commit a1ff813902296509dc7544ca29476a72bdcb97bc
+Author: Robb Lankston <robb@lankstonconsulting.com>
+Date:   Fri Jan 6 13:10:01 2023 -0800
+
+    Fix for container not starting
+
+commit f165d133641915a60a066e0247610563f7d695cb
+Merge: f4647c6 a1bf425
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Fri Jan 6 13:22:24 2023 -0600
+
+    Merge pull request #36 from lankston-consulting/gitcheckout-bHWPC-192-404-coverage
+    
+    Created 500 error handling page
+
+commit a1bf42555765285b84e93cf5eadfda05dd50f40d
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Jan 6 13:11:58 2023 -0600
+
+    Created 500 error handling page
+
+commit f4647c6f91d84c00aa5005165dd44a39131a13e7
+Merge: 5b9bcab 2dfb2c4
+Author: Robb Lankston <robb@lankstonconsulting.com>
+Date:   Tue Jan 3 20:02:41 2023 -0800
+
+    Merge remote-tracking branch 'origin/dev-com-aws' into dev-com-aws
+
+commit 5b9bcab646d5c8787bdb8fc5ca962459e9f7c74b
+Author: Robb Lankston <robb@lankstonconsulting.com>
+Date:   Tue Jan 3 20:02:32 2023 -0800
+
+    Updating Dockerfile to use dynamic port
+
+commit 2f3e1c1d06ea375b8713c2f5c105d1097a4ba0c0
+Merge: 1d3cb42 2dfb2c4
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Tue Jan 3 19:00:08 2023 -0600
+
+    Merge pull request #35 from lankston-consulting/dev-com-aws
+    
+    Dev com aws
+
+commit 2dfb2c4fbf35f5c1811828e8e9bfbd49e0c24ae0
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Jan 3 18:56:41 2023 -0600
+
+    update for single year export file names
+
+commit 1d3cb425ce2bd5e586ddd2b15978fe685b9934c5
+Merge: b051760 4b06962
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Jan 3 18:26:17 2023 -0600
+
+    Merge pull request #34 from lankston-consulting/gitcheckout-bHWPC-179-tco-2-e-or-tons-co-2-e
+    
+    Gitcheckout b hwpc 179 tco 2 e or tons co 2 e
+
+commit 4b0696294c6bd3e88cf7136beb42a0ec2d70ae80
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Jan 3 18:11:37 2023 -0600
+
+    Quick updates
+
+commit 24ba8b4df645ef5e77005ad5bbd2da48e39ea11a
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Jan 3 18:00:24 2023 -0600
+
+    merge with main
+
+commit d93edddbf9f21eda7d2bd55149818806642788ee
+Merge: b051760 2a3ddbd
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Tue Jan 3 17:54:58 2023 -0600
+
+    Merge pull request #33 from lankston-consulting/HWPC-188-next-button-on-07-email-doesnt-advance
+    
+    fix for email next button and small hotfixes for compose file and val…
+
+commit 965bd8a8cc73f1d3e46a6552a597ca3bd1f2c1c2
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Jan 3 17:51:07 2023 -0600
+
+    Updates to t CO2e
+
+commit 2a3ddbded8d357abfbe0005a4e11707382e98731
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Jan 3 15:15:05 2023 -0600
+
+    fix for email next button and small hotfixes for compose file and validator
+
+commit b051760cd801449d64d4521b7c1a15cbbd8a81d8
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Dec 15 17:37:06 2022 -0600
+
+    validator for name
+
+commit 8756a43ba6b351e7734826ea396567593e1e3ae4
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Dec 15 00:49:19 2022 -0600
+
+    404 page
+
+commit 2ef3c7391f93d835eeedf836e7a9ec7ed1f0ed53
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Dec 13 20:30:22 2022 -0600
+
+    Updated Template and destinations to dispositions
+
+commit 2bce7a1f3d6f15aedd2a9f2e9afb9d1f74e6a19c
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Dec 12 01:15:37 2022 -0600
+
+    Spelling errors on modals
+
+commit 5fcdaee87ec1e0cc193f6c50c743035660fefe8b
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Sun Dec 11 23:49:23 2022 -0600
+
+    Overall of Calc page 'More Info' and Templates file
+
+commit 3cf6f7da19c07aeb8dddb71f3862a7a9afc40240
+Merge: 5f1cd6b 1893a82
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Fri Dec 9 18:52:21 2022 -0600
+
+    Merge pull request #32 from lankston-consulting/HWPC-171-update-input-deselect-placeholder-text-from-currently-default-to-no-file-uploaded
+    
+    fix for cancel buttons
+
+commit 1893a82fe8edc956d1b20946edac8b969e7210f6
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Dec 9 18:49:37 2022 -0600
+
+    fix for cancel buttons
+
+commit 5f1cd6bb056f2daf98f0bacfe1de8092f790bd94
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Dec 9 17:29:57 2022 -0600
+
+    Table
+
+commit 178946deb271a78959ab0a5575b80c4475812446
+Merge: cef5b7f 2cdaa8c
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Fri Dec 9 13:06:25 2022 -0600
+
+    Merge pull request #31 from lankston-consulting/fs-deploy
+    
+    Auto stash before merge of "main" and "origin/main"
+
+commit 2cdaa8cac78912583b857fdb4e02093298141b8f
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Thu Dec 8 19:12:30 2022 -1000
+
+    Auto stash before merge of "main" and "origin/main"
+
+commit cef5b7f68a01b57eb9b8147ad12b3fe8134ce3b4
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Dec 8 21:21:32 2022 -0600
+
+    Changes to home and calc
+
+commit 88d5aba60b209a81d89762bdf45b2b04321735a1
+Merge: 2be1bfa 6a74fac
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Dec 8 21:21:14 2022 -0600
+
+    Merge remote-tracking branch 'origin/main' into main
+
+commit 6a74fac82199a3b099315196dbbcbe600ea74269
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Dec 8 20:59:27 2022 -0600
+
+    updated to make upload public
+
+commit e9e2aad79b93cabf05254256ed3a881ffce04a75
+Merge: 63adefd 37510e5
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Dec 8 19:34:26 2022 -0600
+
+    Merge branch 'main' of github.com:lankston-consulting/hwpc-web into main
+
+commit 63adefd488e784436c76516b27435683ea042da9
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Dec 8 19:34:08 2022 -0600
+
+    loss factor and user-bucket update
+
+commit 2be1bfa7660547e0e5e4d167101c0f5d8b112e81
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Dec 7 15:15:44 2022 -0600
+
+    Quick update to flowchart
+
+commit 4f0935fad7a1ea1876b1e657bc397d4abd64fc05
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Dec 7 12:50:59 2022 -0600
+
+    Download fix
+
+commit 37510e5bcb984561baf8fd20e36687c46a5f9721
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Dec 7 03:40:55 2022 -0600
+
+    Changes to Output page
+
+commit 5f18d8c67578d4b763db7392f6a0a2321ead8359
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Dec 6 13:50:07 2022 -0600
+
+    Flowchart update
+    
+    Fixed submit page spelling error
+
+commit ddf188b1ab2e4aa1c7ca32c04a2a40cbaa447cbb
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Dec 1 20:12:42 2022 -0600
+
+    full integration of user scenario to ui
+
+commit ed7722d39b0436a9930260c7cec91aa7b2903941
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Dec 1 18:50:20 2022 -0600
+
+    Updates for output
+
+commit e382f79cdffaf27d8a550916f4fbdf3b93dec9f8
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Dec 1 18:18:15 2022 -0600
+
+    updated Discard Ratios for Templates.xlsx
+
+commit a2109a56f342bd43a8f2a41da264a67a38ff116c
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Dec 1 15:32:13 2022 -0600
+
+    user_input.json now exports with download
+
+commit 0db1686ddb6e7b5833fcdbef81ec39341fc02030
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Nov 29 19:36:07 2022 -0600
+
+    Changes to hidden graphs
+
+commit 8403c4cd8e3a8691b15401d18cecc9236cf82773
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Nov 29 19:35:29 2022 -0600
+
+    Updated graphs on output page
+    
+    Changed so that they weren't being cut off
+
+commit 41319cfb094b4542bddb4fd4f7555ede221dbc91
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Nov 29 18:56:44 2022 -0600
+
+    Beta changes
+    
+    +Added div on flowchart between "Annual Harvest" and "Timber Products" with new "Converted to CCF for model operations.
+    +Updated MBF and CCF abbreviations
+    +Updated MgC to metric tons CO2e on flowchart
+    +Drag and drop on Calc
+    +Updated loss factor to be percentage (backend I divide the whole number by 100 so that the system still takes in a decimal number)
+    +Updated Monte Carlo information
+    +Updated Run name accepts any user inputs
+    +Filename on output page
+    +Went through flowchart, calc, and output and replaced CO2e with correct subscript instead of superscript
+    Updated workbook
+
+commit 54a1f359b5d48232edfe9b96e1200959e79e74fc
+Merge: 46f4749 2056fde
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Mon Nov 21 18:00:01 2022 -0600
+
+    Merge pull request #30 from lankston-consulting/dev
+    
+    Dev
+
+commit 2056fdec666fdd3cfa77fffbf98493ce3f88ba28
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Nov 21 17:59:10 2022 -0600
+
+    Quick Updates
+
+commit 1be654cd4c7f5f31a4aff3b1ebd4cb388d5c6081
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Nov 17 14:43:37 2022 -0600
+
+    Weight change in flowchart
+
+commit 1c3cc7f17684274fe7a303aeb951df8f92ed90e6
+Merge: 5fffb09 9ba875e
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Nov 17 14:19:12 2022 -0600
+
+    Merge branch 'how-it-works-updates' into dev
+
+commit 5fffb0946c8010b2bb42d5780434f44b53bfb312
+Merge: 46f4749 fdbdab5
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Nov 17 14:17:17 2022 -0600
+
+    Merge branch 'Calculator-Updates' into dev
+
+commit 46f4749395eafa536a925ba70d32c84b27002c64
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Nov 16 22:47:22 2022 -0600
+
+    overhaul to graph annotations
+
+commit 91461b62276ca280ba4d5e780bdef525fb124dfb
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 16 22:04:15 2022 -0600
+
+    Merge remote-tracking branch 'origin/Calculator-Updates' into Calculator-Updates
+
+commit fdbdab547e21fa0968a3b0f8cb8eda55b60e34a7
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Nov 16 21:20:53 2022 -0600
+
+    fix for modified custom ratio subtabs
+
+commit a57bb54f2aba2141458582761ab5ad969cd37c38
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Nov 16 21:18:09 2022 -0600
+
+    fixed missing Currently using default messages
+
+commit 9ba875e4e758c52a5118bf464e2a58548ccee707
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 16 21:07:07 2022 -0600
+
+    Completed Flowchart
+
+commit 7ed36e1155a93bbf3013f61598e842fbb55f0078
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 16 20:27:50 2022 -0600
+
+    Merge remote-tracking branch 'origin/Calculator-Updates' into Calculator-Updates
+
+commit 4f10fdc9a8cb7f6e66764b4dd91bd0335d2c0b43
+Merge: 721550a 2891c9f
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 16 18:37:55 2022 -0600
+
+    Merge remote-tracking branch 'origin/Calculator-Updates' into Calculator-Updates
+
+commit 2891c9f509cf98c06f56ef5c89c9258b95ebad87
+Merge: 28c081c 10bbe4b
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Wed Nov 16 16:52:28 2022 -0600
+
+    Merge pull request #27 from lankston-consulting/HWPC-157-preview-default-indicator
+    
+    default message in input controls
+
+commit 10bbe4be6db843e0f1d69e4dddd7ca4abf12eeed
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Nov 16 16:49:57 2022 -0600
+
+    default message in input controls
+
+commit 536c165b4a873b0b04def8a6622ffd2b638356ea
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 16 15:45:13 2022 -0600
+
+    Updated units
+
+commit 721550a7e5448958cc2cd2290356877b3167764c
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 16 15:29:05 2022 -0600
+
+    More Wording Updates
+
+commit 28c081c8a9dcb90e8e8a031babb087321726a3eb
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 16 15:04:10 2022 -0600
+
+    Rewording questions on Calc
+
+commit 986a3024c8b705a6f7e8a088807bcbeee6eae7df
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 16 15:03:17 2022 -0600
+
+    Updates to the How-it-Works Section
+
+commit 0d67a7dce1b139ac51bae49c332e1893288fda32
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Nov 16 15:01:13 2022 -0600
+
+    hotfix for overwritten id from pulling PIU out
+
+commit f0775dc01ee9b6a457cfceedcae3d7a5185f0d5f
+Merge: dcb4799 d723da7
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Wed Nov 16 14:43:46 2022 -0600
+
+    Merge pull request #26 from lankston-consulting/HWPC-151-make-region-selection-a-primary-requirement
+    
+    Hwpc 151 make region selection a primary requirement
+
+commit d723da7f1218b0d6625300c6716fa07b90924f9a
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Nov 16 14:22:59 2022 -0600
+
+    fixed preview modata selection funtion in modal
+
+commit 0ef8b9ccf5ba25e3e19909ec32656c97fbfc463d
+Merge: ecd6ea4 dcb4799
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Nov 16 14:16:23 2022 -0600
+
+    Merge branch 'main' into HWPC-151-make-region-selection-a-primary-requirement
+
+commit ecd6ea4354f9d5d17d0de36899599b4ac6f1cb1a
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Nov 16 14:15:55 2022 -0600
+
+    pre merge
+
+commit dcb479990fd9e3971b68c4ded14395bffb33c1ab
+Merge: 9909f6c 89238e7
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Nov 15 17:37:18 2022 -0600
+
+    Merge pull request #25 from lankston-consulting/HWPC-154-calculator-section-05-updates
+    
+    monte carlo input update
+
+commit 89238e7c01c0f6c24494122cb7bff5ef23d774cd
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Nov 15 17:36:10 2022 -0600
+
+    monte carlo uinput update
+
+commit 9909f6c33e014d32ef41b153a0a92ede2d00c324
+Merge: 838a0c8 3b9d66c
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Nov 15 16:10:31 2022 -0600
+
+    Merge pull request #24 from lankston-consulting/HWPC-163-going-to-metric-tons-carbon
+    
+    ...fixed... the y-y axis labels
+
+commit 3b9d66c3b4c5b57868e6e7c37b27ba4791160d90
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Nov 15 16:08:27 2022 -0600
+
+    ...fixed... the y-y axis labels
+
+commit 838a0c80957c8c246726560813c4ecd155938928
+Merge: d3f1def 337242e
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Nov 15 15:59:18 2022 -0600
+
+    Merge pull request #23 from lankston-consulting/HWPC-161-results-x-axis-label
+    
+    x-axis year correction
+
+commit 337242efc20bf49fef7a9baba9b4c04e85feeade
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Nov 15 15:58:34 2022 -0600
+
+    x-axis year correction
+
+commit d3f1def81a7eed210d2a017e4a7f1da540d1c637
+Merge: 0c83072 90ed0a2
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Nov 15 15:50:26 2022 -0600
+
+    Merge pull request #22 from lankston-consulting/HWPC-156-bug-clicking-section-07-in-calculator-opens-all-tiles
+    
+    fix for opening tabs
+
+commit 90ed0a25965f566ab4560d69cb0509f7bf99b771
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Nov 15 15:45:07 2022 -0600
+
+    fix for opening tabs
+
+commit 0c83072e112aecb7638d7c3890b393bd99704ad0
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 9 16:28:36 2022 -0600
+
+    Accessibility Check
+
+commit 84660900951a4a9a704d7a598813c9e0717e42ce
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Nov 3 12:31:42 2022 -0500
+
+    new graphs for split PIU
+
+commit 8624930f7eab7a27309765018078970dd5581402
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Nov 2 15:57:43 2022 -0500
+
+    Removed Recycled Graph
+
+commit 4441306702a24299acd181837f07f9d43dcd01cd
+Merge: 10954f2 c7de296
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Nov 1 15:41:59 2022 -0500
+
+    Merge pull request #21 from lankston-consulting/web-stress-test
+    
+    Web stress test
+
+commit c7de296eea87b3b528720ee58f495409aa4c1cfc
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Nov 1 15:38:21 2022 -0500
+
+    update to check for empty columns and display error
+
+commit 0d3302f7e522403122b7138c38f2c7d430720402
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Oct 31 17:02:03 2022 -0500
+
+    overhaul to data sanitization
+
+commit 10954f25b116cc97a90f70fa692097b3a332113a
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Oct 28 16:23:56 2022 -0500
+
+    Open Graph Updates
+
+commit 927c757f1ae6a6c4b04d83dec4bbe9d4b4afd5ce
+Merge: afc8203 0e6796c
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Mon Oct 24 19:22:36 2022 -0500
+
+    Merge pull request #20 from lankston-consulting/HWPC-136-enter-breaks-the-output-screen
+    
+    Fix for page break on 'enter'
+
+commit 0e6796cf530bdde7715821f5784f363a02622781
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Oct 18 16:33:23 2022 -0500
+
+    Fix for page break on 'enter'
+
+commit afc82034c0e04b3a24cf274076fb0837b2b6d3eb
+Merge: 253f6db 67a5641
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Oct 18 14:31:25 2022 -0500
+
+    Merge pull request #19 from lankston-consulting/HWPC-138-timber-product-id-parsing
+    
+    column name space remover
+
+commit 67a5641f5b1a8182ade87fca257379218b9ace3c
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Oct 18 14:29:31 2022 -0500
+
+    column name space remover
+
+commit 253f6db7766aca9b9972089c0787288c8240a710
+Merge: 73aa975 80a6e6c
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Fri Oct 14 18:19:13 2022 -0500
+
+    Merge pull request #18 from lankston-consulting/HWPC-137-primary-products-upload-bug
+    
+    fixed custom primary products upload
+
+commit 73aa975015d877ead5236f98df47e39d625591ea
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Oct 14 16:57:04 2022 -0500
+
+    Fixed Overflow issue on Calc page
+
+commit 80a6e6c1ead8fb28fa1b72bceac6d716901b00ad
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Oct 14 16:51:41 2022 -0500
+
+    fixed custom primary products upload
+
+commit e269710720ce0005a68168145fcb6c71818c57db
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Oct 14 15:13:10 2022 -0500
+
+    PDF Landscape Update
+    
+    Landscape PDFs were cutting off data, quick fix to ensure that doesn't happen.
+
+commit a2c126da88099b39050ebc39382e80c97865c180
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Tue Oct 11 19:50:35 2022 -0700
+
+    Black/Prettier reformat
+
+commit 4c2b2fd6140293cea107a70acdd15577b7b4ee4f
+Merge: 7accb0d 18b914f
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Tue Oct 11 19:44:51 2022 -0700
+
+    Merge pull request #17 from lankston-consulting/HWPC-135-create-an-official-records-button-checkbox-or-toggle-on-the-output-export-modal
+    
+    Hwpc 135 create an official records button checkbox or toggle on the output export modal
+
+commit 18b914f8e4c485844b69d79effa999f707e76296
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Oct 11 15:23:40 2022 -0500
+
+    Official Records Json update
+
+commit e70f2cb5c77bc94fa8661a2756420160679993d2
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Oct 11 15:22:22 2022 -0500
+
+    Official Records Json update
+
+commit 7accb0d46f02f6cab895fce278002aa4d6b85946
+Merge: 69c0338 c901cbe
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Tue Oct 11 11:07:06 2022 -0700
+
+    Merge pull request #16 from lankston-consulting/HWPC-134-change-file-size-of-pd-fs
+    
+    Fixed pdf export
+
+commit 69c0338f3cb6a1e17b7045a7b56b7009e5e9ec76
+Merge: 6a924f9 d28f853
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Tue Oct 11 11:06:53 2022 -0700
+
+    Merge pull request #15 from lankston-consulting/HWPC-111-review-captions-on-all-graphs
+    
+    Fixed Captions on graphs and hidden graphs
+
+commit c901cbe62f5ffb8f09066e846bfcb3d897890f46
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Oct 10 18:25:37 2022 -0500
+
+    Fixed pdf export
+
+commit d28f853444166042d9aedb48c2ecf0dbf1ee790e
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Oct 10 14:29:00 2022 -0500
+
+    Fixed Captions on graphs and hidden graphs
+
+commit 6a924f94eca9cd9b0593616914fd6c170123f7fe
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Oct 3 15:05:37 2022 -0500
+
+    Quick Updates on PDF header names
+
+commit 6b97133aa4a9ecae16af2bfbe92a38a52eceb99c
+Merge: f142958 d71ab04
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 29 16:05:33 2022 -0500
+
+    Merge remote-tracking branch 'origin/main' into main
+
+commit d71ab049144543ab3471db093c30d15db46624e6
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 29 14:46:57 2022 -0500
+
+    rest of defaulst
+
+commit 51144e593784fcec0cd742513bd1f64de20218bb
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 29 14:45:09 2022 -0500
+
+    regions default
+
+commit f142958f7e42d6900e435e8d619f42d420cfae4c
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 29 14:42:18 2022 -0500
+
+    Updated Accordion for monte carlo
+
+commit f3ccc13fca264949aa0ac4165a07dad03f2df021
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 29 14:32:01 2022 -0500
+
+    default id_lookup.csv
+
+commit d887616d6ea5a1191038b60b0ab48c3df96f9716
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 29 14:28:07 2022 -0500
+
+    default timber_products.csv
+
+commit bc649d00ef5ea460f08aa9899e298a334eef6a72
+Merge: 1accbae 2a49f53
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 29 14:01:22 2022 -0500
+
+    Merge branch 'main' of github.com:lankston-consulting/hwpc-web into main
+
+commit 1accbae2a094c36409c2fda0cac69a1231787e5a
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 29 14:00:33 2022 -0500
+
+    melt fix
+
+commit 2a49f53767082d1e74e81e01a0d06adad5433d74
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 29 12:42:17 2022 -0500
+
+    Remove focus outline
+
+commit a984e0716bbecdccf2227780cc4713a5fb2daea9
+Merge: ca797ed 00677b5
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Thu Sep 29 12:33:54 2022 -0500
+
+    Merge pull request #14 from lankston-consulting/graph-bug-fixing
+    
+    Graph bug fixing
+
+commit 00677b52a59ca11aca4bccd92889cdf2b7ee106e
+Merge: d30eda6 ca797ed
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 29 12:31:59 2022 -0500
+
+    Merge branch 'main' into graph-bug-fixing
+
+commit ca797ed34fd8ee5eb6754cdc9fa358def6ee5522
+Merge: 6bf0b65 da9c911
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Thu Sep 29 12:31:28 2022 -0500
+
+    Merge pull request #13 from lankston-consulting/Responsive-and-508-compliance
+    
+    A few changes to the layout of the landing, calculator and output pag…
+
+commit d30eda6dcfcb4512f1b421d02313f35627b05800
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 29 12:30:39 2022 -0500
+
+    user string in json
+
+commit 6bf0b65a77df0c0b9f3b5289124ba320ce62eabc
+Merge: d4fcc6f ac380ec
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Sep 27 12:53:10 2022 -0500
+
+    Merge pull request #12 from lankston-consulting/graph-bug-fixing
+    
+    json gen hotfix
+
+commit 4f698a92da473ba20513e276b5d8cae3e0da1040
+Merge: ac380ec d4fcc6f
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 27 12:50:52 2022 -0500
+
+    Merge branch 'main' into graph-bug-fixing
+
+commit ac380ec81c7fc227359b66464a7ae96fe849a64b
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 27 12:50:19 2022 -0500
+
+    json gen hotfix
+
+commit da9c9113c172c8adb169c056c177b3bf14c9f5b9
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Sep 26 17:14:01 2022 -0500
+
+    A few changes to the layout of the landing, calculator and output pages to ensure they're mostly with a responsive layout design.
+    
+    Output page due to time constraints I wasn't able to set the width of the main active svg graph for mobile screens. So the main section of output page is the same width on mobile as it is on desktop. Still usable just not as pretty.
+    
+    Also went through and reviewed and changed parts of the website that weren't quite meeting accessibility standards, graphs on output are a little unique, but they do have aria-labels now.
+
+commit d4fcc6fc527c6b31cf212f0310fec38dec3085fc
+Merge: e055fa8 2acd546
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Mon Sep 26 17:07:49 2022 -0500
+
+    Merge pull request #11 from lankston-consulting/graph-bug-fixing
+    
+    Graph bug fixing
+
+commit 2acd5467a26e4489b56f0dce5d572363882f5940
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Sep 26 14:49:16 2022 -0500
+
+    fixes to upload json
+
+commit 0612f49deb9df5224d21d46bb0bc80bb9b191fb2
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 23 19:28:06 2022 -0500
+
+    Code Cleanup
+
+commit 85ed349c3539e5abed65a06fda26b1fbd060cbeb
+Merge: 3c0e38d 5358145
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 23 19:20:50 2022 -0500
+
+    Merge remote-tracking branch 'origin/graph-bug-fixing' into graph-bug-fixing
+
+commit 3c0e38dd833c49875995432c4288a5bfbad97f4e
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 23 19:20:43 2022 -0500
+
+    Monte Carlo Disclaimer
+    
+    -Updated output page with help message
+    -Fixed up the styling on the downloads modal
+    -Updated Calculator with a monte carlo disclaimer where user has to press the button in order to re-enable question 5.
+
+commit 5358145379c9b20728d93963f27cf8516563d07f
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Sep 23 19:11:55 2022 -0500
+
+    annual harvest graph hides on single year selection
+
+commit 0c990836807949164c3ace2661561a965061b147
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Sep 23 18:52:18 2022 -0500
+
+    csv now uploads, export complplete
+
+commit 6c0d8f393d0528472e12ca2fbd7de69f2108c6d0
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 23 16:44:58 2022 -0500
+
+    graph png and table pdf generation for zip
+
+commit 7bd187f1a2cef5eb1cd43817161e3ff303df7241
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 23 15:27:18 2022 -0500
+
+    PDF generate Benchmark
+
+commit c840b63b29200337bab554705ffa80b8609cafa6
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Sep 23 14:17:23 2022 -0500
+
+    zip downloading graphs
+
+commit 7cc51ac87e2415b5c9b8910853ab61b77d3eca37
+Merge: 9375f65 491a899
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Fri Sep 23 11:25:54 2022 -0700
+
+    Merge pull request #10 from lankston-consulting/HWPC-127-scenario-metadata-file
+    
+    new json and file uploading
+
+commit 9375f65b648767a0f7f91e08c27736d8be724573
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 23 13:14:40 2022 -0500
+
+    Download Modal Zip Benchmark
+
+commit 491a899fdbac50704622c53f2edcf2a104340f09
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 22 19:06:15 2022 -0500
+
+    new json and file uploading
+
+commit 9b8e0bf23a56b843df85b1cd2abf2242fb1a3b80
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 22 18:21:56 2022 -0500
+
+    Line on Graph
+
+commit e8cd23d540fd970e8cdc5a165f1c0a1afa16f9b7
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 22 17:28:36 2022 -0500
+
+    single year selection checker
+
+commit fd29a5b9056333d68ee441f7ffbad760829ceb80
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 22 13:09:47 2022 -0500
+
+    Quick Download fix for Demo
+
+commit 4e390510cf8a7dfa8792961810dc0cb0435607e8
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 22 13:07:35 2022 -0500
+
+    Output Page Updates
+    
+    +Fixed and updated download modal so that it can download graphs
+    +generating tables
+    +Fixed graphic on landing page
+    +Fixed inactive graphs so that they all have the same height
+
+commit 3d8b1f9995c81e4736a60ca05dd0947389558b09
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 22 12:50:44 2022 -0500
+
+    benchmark
+
+commit 740eb3dde104b1e00d69e3d69a5f2b9d87e9f5e1
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 22 12:32:09 2022 -0500
+
+    code cleanup
+
+commit 849a3cba98fe65a4834d20466e014b28a8d1103b
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 22 12:04:11 2022 -0500
+
+    update for graph filtering
+
+commit ba51f115fae9cb2277f8c39c3560719cb2238473
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Sep 21 19:34:54 2022 -0500
+
+    overhaul to zipfile reading and update for new columns
+
+commit e821ad9f67e41c17c1116461677b63d65cde7048
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Sep 21 17:41:14 2022 -0500
+
+    single year and all year filter working
+
+commit 3af0b723c4c049597c62dc4a838289a232a8b631
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Sep 21 14:22:44 2022 -0500
+
+    fixed graph selection bug!
+
+commit e092d77c2433e2df33f3679722de84d4904356c4
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Sep 21 13:50:10 2022 -0500
+
+    fixes for new data column names
+
+commit c8b32c64c4fa08209a96262ac95bf4448ff691c0
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Sep 21 01:44:51 2022 -0500
+
+    benchmark
+
+commit 07ff13e078b5bf734fd84e3ba595c8bf1644636e
+Merge: 1e57013 9920f28
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Sep 21 01:44:15 2022 -0500
+
+    Merge remote-tracking branch 'origin/graph-bug-fixing' into graph-bug-fixing
+
+commit 1e57013bb0db5fcfa1b12c44338d974132040849
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Sep 20 17:58:23 2022 -0500
+
+    Table generation and preview modal overhaul
+
+commit 9920f28911bae97e08630381bdfb5071708b770f
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Sep 20 17:58:23 2022 -0500
+
+    Table Benchmark
+
+commit 0db1f17b0d46550b967e7c3ce29ce0dac3fb819d
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 20 13:26:16 2022 -0500
+
+    wrapped up all new graphs
+
+commit 1755e1c06c34920b08cf8fee8b9745fe869a741d
+Merge: c89653c d2fbfb3
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 20 11:53:55 2022 -0500
+
+    resolved merge
+
+commit c89653c5f0027ff8f8243d71101fc0aca46c4cd7
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 20 11:52:36 2022 -0500
+
+    update to stack graphs
+
+commit d2fbfb3ad88323b4ed0e54eb019b66d145c6b5fb
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Sep 19 19:52:02 2022 -0500
+
+    Reworked captions and updated styling
+
+commit a853ffb813bb0cad1cc6a13499cd76082ddf23f9
+Merge: 4863f47 591b3a1
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Sep 19 17:48:00 2022 -0500
+
+    Merge remote-tracking branch 'origin/graph-bug-fixing' into graph-bug-fixing
+
+commit 4863f47ba6e7d0c8dcc9086171032e07496e08cf
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Sep 19 17:47:54 2022 -0500
+
+    Rates Update
+
+commit 591b3a1e317936827496bc5c46fa42f5d95e89d2
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Sep 19 16:04:11 2022 -0500
+
+    benchmark for robb to test
+
+commit 3305ba5b220557af6c42dfd22d1076d36a669807
+Merge: 97acb39 dd40431
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Sep 19 13:53:32 2022 -0500
+
+    Merge remote-tracking branch 'origin/graph-bug-fixing' into graph-bug-fixing
+
+commit 97acb39494e8186787a69008c036749cb066890f
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Sep 19 13:53:25 2022 -0500
+
+    Region map update
+
+commit dd4043184e3c8a6e007bd376fb9311c56845a9d8
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Sep 19 13:18:56 2022 -0500
+
+    benchmark captions for new graraphs
+
+commit fad207649143821fb5a099169d5462a7746b756e
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Sep 19 12:16:01 2022 -0500
+
+    benchmark graphs update
+
+commit 19c0b8f7025909b7dc040b0a3a182dc8eb72f0de
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 16 17:50:14 2022 -0500
+
+    New tab organization
+
+commit 34656d75484aeae9c2d1015ee4b6de046018136e
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Sep 16 17:49:06 2022 -0500
+
+    fixed graph switching functionality
+
+commit c889a84191ff9e05f0f968db553bdd3b0e8e2af1
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 16 15:12:29 2022 -0500
+
+    Updated bar graph
+
+commit 3525e564f0b76d530ae9b306a462d7dc9218408e
+Merge: ab248aa fa7cce1
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Sep 16 15:04:05 2022 -0500
+
+    Merge branch 'graph-bug-fixing' of github.com:lankston-consulting/hwpc-web into graph-bug-fixing
+
+commit ab248aaaf0e473a2a9b47fe4a41a70353eb3dd34
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Sep 16 15:03:48 2022 -0500
+
+    benchamark stacked bar
+
+commit fa7cce1f87aca1c795accbae72d8a20d4c5d4509
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 16 14:55:12 2022 -0500
+
+    Added Tabs Preparing for new graphs
+
+commit dbce43804727bec032a8c2e2e1f893d20e9870b9
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 16 13:50:51 2022 -0500
+
+    Tidy Annual Net Change Data
+
+commit e055fa8ca8eaa868ae987edf74f8ec146cbfa151
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Thu Sep 15 15:51:01 2022 -0700
+
+    Docker and deploy update
+
+commit 27146504f98fcca94da7786b5460705e558016f1
+Merge: 78b1214 885eef9
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Thu Sep 15 14:16:24 2022 -0500
+
+    Merge pull request #9 from lankston-consulting/captions
+    
+    Captions
+
+commit 885eef9a26bafef91eb66b7cc18e64b1b7ed02a1
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 15 14:14:44 2022 -0500
+
+    Quick font change
+
+commit 19eb1ea2e07fd0980e65d7de9344d68d64cf6bf4
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 15 14:14:19 2022 -0500
+
+    finalized graph captions
+
+commit 505979630768b135ff38f34a7c257b2c061fd63d
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 15 13:56:57 2022 -0500
+
+    Updated layout on Captions
+
+commit 538d000a2ccca65c02db182635b6cc31df76a9fd
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 15 13:41:17 2022 -0500
+
+    captions benchmark
+
+commit 78b121407a9faee5a6e7f0b31cac4e6f008cd583
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 15 12:09:41 2022 -0500
+
+    Graph styling changes
+
+commit 763243d12e495deb037f2ee652c2196cbaaca048
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 15 11:49:35 2022 -0500
+
+    Output Page layout change for larger screens
+
+commit a66c3dbcdd2c69f99e412b5035404c1b6f5815be
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 15 11:41:33 2022 -0500
+
+    Page Layout styling
+
+commit cd32a81c9bc6282af3b5d0c06521488a83c89495
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 15 11:35:40 2022 -0500
+
+    graph fixes
+
+commit a8c8fb0bdf22041948a96db92a469c4c7e29df5a
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Sep 14 20:20:22 2022 -0500
+
+    fixed linegraph focus
+
+commit 8af192256a962a48c978ec6cadebd8bb20e06bd3
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Sep 14 15:08:14 2022 -0500
+
+    Multiline jumbo
+
+commit a41e77b623c143b9af2ace28416920f991a71ee1
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Sep 14 14:53:43 2022 -0500
+
+    reconnected graphs with divs
+
+commit fc6cbde7966c6eec1ee31b69b406fa1483258181
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Sep 14 14:25:54 2022 -0500
+
+    merge conflict resolved
+
+commit 3197ed2c211fe5d6242bf5ae36bac6863d209909
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Sep 14 14:05:50 2022 -0500
+
+    zip files
+
+commit 3b0061d16310a8dcf06368e6280dff83b7892edb
+Merge: 59adba3 d3bb499
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Sep 13 15:09:09 2022 -0500
+
+    Merge pull request #8 from lankston-consulting/s3-download-compatability
+    
+    S3 download compatability
+
+commit d3bb4993737b4cae1d2970f7f7f7cc077104b70b
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 13 15:06:34 2022 -0500
+
+    successful download from hwpc bucket
+
+commit 59adba3ae089f47ea0a4f8873d3bae206d3f6b9c
+Merge: 3e14768 91dc1b0
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Tue Sep 13 11:20:45 2022 -0700
+
+    Merge pull request #7 from lankston-consulting/HWPC-104-re-dockerize-hwpc-web
+    
+    Dockerized web app
+
+commit 91dc1b0eca1e56d2faf92ab2140310ffddb33370
+Merge: c946117 3e14768
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Tue Sep 13 11:20:07 2022 -0700
+
+    Merge fix
+
+commit c946117c7de7a650ff16b6896596f85044851d8f
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Tue Sep 13 11:16:31 2022 -0700
+
+    Deleting lock
+
+commit d7d53217b9d7897d8d9e0e93085f9666a69dbf70
+Merge: 8f8173f 3e14768
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 13 13:07:54 2022 -0500
+
+    Merge branch 'main' of github.com:lankston-consulting/hwpc-web into main
+
+commit 3e14768b5438034fcd7df8698ab2838ecac31191
+Merge: c01b658 444fd64
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Tue Sep 13 13:07:39 2022 -0500
+
+    Merge pull request #6 from lankston-consulting/dev
+    
+    Dev
+
+commit 444fd64566d26c65d0ea06b4ecaf51375f6b1e8c
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 13 13:04:56 2022 -0500
+
+    s3 upload compatability
+
+commit 995d5d63120c69b6dda277dfeb9911696190b025
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Tue Sep 13 11:04:40 2022 -0700
+
+    Dockerized web app
+
+commit afae78bcb533a4ccb5ae3050b9508a78af2d8c9d
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 9 17:42:39 2022 -0500
+
+    Updates to Download Modal
+    
+    Able to select graphs via checkbox and download them individually.
+
+commit ebf9f228c48298c31329fa7a8e0250c492e11ebb
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 8 16:59:57 2022 -0500
+
+    Downloads modal ui
+
+commit e7584687d08f46f41deab9d8b49d1445ef08f7d3
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Sep 8 16:11:46 2022 -0500
+
+    clean up of upload testing code now that lcutils is updated
+
+commit b3f388ed3d555febc3ff070230bf8ad58245d096
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Sep 7 14:21:32 2022 -0500
+
+    overhaul to data storage for d3
+
+commit c7c2fa3998c0dde1b6b27abd8b79b816862c4f9b
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Sep 6 19:39:58 2022 -0500
+
+    Editing Focus to be more readable
+
+commit 74d7e8add6b89f1a2530c45d41a71b87f368651f
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 6 19:09:03 2022 -0500
+
+    formatting focus info
+
+commit 8a32335940ab3250e43f6513613577cc93965b85
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 6 18:54:35 2022 -0500
+
+    fixed graph click bug
+
+commit bb3d0deef26eaba1e7c2d9d615365202c7ea2eb0
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Sep 6 18:39:22 2022 -0500
+
+    Graph Focus Styling
+
+commit 254839c01b594501d02bcec22a1a5e19694eb8f2
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 6 18:39:01 2022 -0500
+
+    functioning tab switch graph inheritence
+
+commit 0867f04970c8985875c3742e7d6356dff21fcf11
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 6 18:10:18 2022 -0500
+
+    benchmark after merge
+
+commit 0fcd314bd89c63c719f9c97fbfb7c05d4b0bafa2
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Sep 6 18:09:39 2022 -0500
+
+    benchmark tab graphs
+
+commit 8c545240ab3325f7709368577b42f0fc11d2266d
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Sep 6 15:39:46 2022 -0500
+
+    functioning graph switcher
+
+commit 950c81565d87f4ec53c62e7fbff6326cc3d49169
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 2 19:06:30 2022 -0500
+
+    Changes to graph swap
+    
+    Also general skeleton build for privacy, reference, and terms pages.
+
+commit 4e0cb3b42d0f4f7a98b74a4c0992de73462f0192
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Sep 2 18:48:28 2022 -0500
+
+    fix for data_json
+
+commit 9d443b858f9cb19ad58e873e18d1ff36958d7e26
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Sep 2 18:39:25 2022 -0500
+
+    joined swds and products in use for ui
+
+commit 6c5bf80182417ff2f554413a55f19e2825fe8595
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Sep 2 17:50:24 2022 -0500
+
+    graph switcher benchmark
+
+commit 350f855cc858932925b36a3ed7400f606f5362df
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Sep 2 15:58:13 2022 -0500
+
+    Graphs updates
+
+commit 698950602b7956fb4d502c2f68afb026c9fbbe1d
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 1 14:55:25 2022 -0500
+
+    Updated small graphs
+
+commit d560ab3a7d7754eb4fd7678817bd4bd1701cf879
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Sep 1 14:37:04 2022 -0500
+
+    Attempt to get smaller graphs to display
+    
+    Benchmark
+
+commit d5c11f4df7cc6ca15e3eb180eaefd39220fcefd1
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Aug 31 21:02:08 2022 -0500
+
+    Benchmark for responsive graphs on Output page
+
+commit 0c094627d63fa764fa899f358110ab2a74401c38
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Aug 30 18:11:08 2022 -0500
+
+    Updated Outputs control and started work on making graphs responsive
+    
+    Also updated a few questions on the calculator page
+
+commit 5501df92fb213172b7ddca322d317f7ac5487806
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Aug 30 16:21:22 2022 -0500
+
+    benchmark user data on outputs
+
+commit 7e37150d60b97ecdacab96c7b363d6b6c2bbde78
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Aug 26 14:50:32 2022 -0500
+
+    Updated graphic to work on mobile
+
+commit 9925d900eddb8b6f44a5e892af54458261197198
+Merge: 0cdce0f d6e963e
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Aug 24 20:38:58 2022 -0500
+
+    Merge remote-tracking branch 'origin/dev' into dev
+
+commit 0cdce0f217f338ad2d0d78fb43a1a0124c513bed
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Aug 24 20:38:55 2022 -0500
+
+    Updated landing page graphic
+    
+    Worked on results/output page layout.
+
+commit d6e963e5295fb48affd61b7d2d8864b53d147664
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Aug 23 15:01:16 2022 -0500
+
+    ui update to validation for required inputs
+
+commit dae72ff5afa3941c405905856d40feb7c4cfe892
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Aug 22 20:35:10 2022 -0500
+
+    Accordion elements are accessible via keyboard
+
+commit 57f19c4748635264e3e0feb401507188392cb7ff
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Aug 22 18:59:46 2022 -0500
+
+    Updates to wording on accordion
+    
+    Updated questions on accordion , preview modal, and updated some of the help modals. Help modals should probably get wording review by team.
+
+commit 382e3ea2f226b5c1dfdddf1f36e667ef56c4a8f6
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Aug 19 19:28:55 2022 -0500
+
+    benchmark wide to long conversions
+
+commit 1f7f9eb7e1ed513bddc11059f1255c7ebb0720d4
+Merge: 2e4c11e 40a7742
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Aug 15 16:15:28 2022 -0500
+
+    Merge branch 'dev' of github.com:lankston-consulting/hwpc-web into dev
+
+commit 40a77422d8924fd93eca5bf4a4addf5f6d90df94
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Aug 15 16:14:43 2022 -0500
+
+    Validation Flag
+
+commit dde35172e7fb572ca19a24ea44d5461f3f61c46d
+Merge: 015f823 3cc6bd2
+Author: Claire Spain <35749695+clairespain@users.noreply.github.com>
+Date:   Mon Aug 15 16:06:57 2022 -0500
+
+    Merge pull request #5 from lankston-consulting/HWPC-89-preview-modal-styling-and-interaction
+    
+    Changes to Preview Modal
+
+commit 3cc6bd24e4852e5615708a9e9d61b92422cd60f0
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Aug 15 15:17:13 2022 -0500
+
+    cleaned up console.logs
+
+commit 1ae1349a5fb585ffd67e2014ce2f53b760482548
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Aug 15 15:16:14 2022 -0500
+
+    update to selection scroll
+
+commit 2e4c11ec601de9ff05d573ff3f1669a0c9c5dbc1
+Merge: 1143a56 015f823
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Aug 15 14:02:29 2022 -0500
+
+    Merge branch 'dev' of github.com:lankston-consulting/hwpc-web into dev
+
+commit 1143a56501db397cbc5e404b512e617c1862b0c6
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Aug 15 14:02:20 2022 -0500
+
+    benchmark input conversions
+
+commit 5a794a933374031b758b719d4b5a9822362febac
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Aug 15 13:56:58 2022 -0500
+
+    Changes to Preview Modal
+
+commit 015f82389ba69fea49397000eb62d10567355a13
+Merge: 7a420cc 26f6aea
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Aug 12 15:12:50 2022 -0500
+
+    Merge remote-tracking branch 'origin/dev' into dev
+
+commit 7a420ccb2894dc06f5e30e75969535487b20d494
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Aug 12 15:12:43 2022 -0500
+
+    Calculator is responsive, styled Modals
+
+commit 26f6aeaf8bf8597e3d4ee5f48a9fe0129020321b
+Merge: 6e9055a bb4d0cc
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Aug 12 14:02:55 2022 -0500
+
+    Merge branch 'dev' of github.com:lankston-consulting/hwpc-web into dev
+
+commit 6e9055ad101dea7836d3082bd50db2c09c15ad37
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Aug 12 14:02:44 2022 -0500
+
+    benchmark output page
+
+commit bb4d0cc59d26262a5e89a8670307eedf56065c5b
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Aug 12 12:43:47 2022 -0500
+
+    Footer is responsive
+
+commit e2e524b99446a0531398a961c3502224c4758fad
+Merge: d945e68 1fb9bae
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Aug 12 12:32:07 2022 -0500
+
+    Merge branch 'dev' of github.com:lankston-consulting/hwpc-web into dev
+
+commit d945e6833a58f671e02da8d77763d4c69ac08781
+Merge: 82b6e3f 38af133
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Aug 12 12:31:59 2022 -0500
+
+    merge resolve and benchmark
+
+commit 1fb9bae1ff2e0b2a3db03841878e40afe11e0572
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Aug 12 12:30:31 2022 -0500
+
+    Landing Page Updates
+    
+    Graphic is set up to be a bit more mobile/webpage responsive. Still needs some work but waiting on review of the actually graphic content before continuing.
+    
+    Added a contact us section with a dummy email link. This is also accessible with keyboard and screenreader.
+
+commit 38af13362b859b6cd23238e599b2ea597528d2f3
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Aug 12 11:33:52 2022 -0500
+
+    Updated Calculator Page styling
+
+commit 82b6e3fb6ac2bda1a5e6d86861bde74332911b4c
+Merge: 90456de f897dde
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 11 14:54:43 2022 -0500
+
+    Merge branch 'dev' of github.com:lankston-consulting/hwpc-web into dev
+
+commit 90456de1a592509094b51235f3adedbe105f8aa8
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 11 14:54:34 2022 -0500
+
+    benchmark accordian
+
+commit f897ddef4323d660bb3396ff1317151934956ba3
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 11 14:54:19 2022 -0500
+
+    Styling updates
+
+commit 6ac1df4f16276595bdbdbb5c907fce2164ac6221
+Merge: 4fbd121 5a8e52e
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Aug 10 16:35:25 2022 -0500
+
+    merge conflict resolved
+
+commit 4fbd121818a448de2c540cf93a96f99d2901e9cf
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Aug 10 16:34:01 2022 -0500
+
+    deleted ccf_to_mgc and major overhaul to preview data
+
+commit 5a8e52eedc6ba5d4162e227715c906f8db4d2ef8
+Merge: a5681b0 fd20fc8
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Aug 10 16:01:06 2022 -0500
+
+    Merge remote-tracking branch 'origin/dev' into dev
+
+commit a5681b02fc18cbbb08ef1ccf11a936797bc8ec74
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Aug 10 16:01:03 2022 -0500
+
+    Improved Header and updated landing page graphic
+
+commit fd20fc8b0257643e454540db709cb87438baa5cf
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Aug 9 15:24:22 2022 -0500
+
+    update to uploads and benchmark modal
+
+commit 32d2203159cdf2f58db4119a455e9c1ca8b4996e
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Tue Aug 9 12:42:10 2022 -0500
+
+    Updates to flowchart graphic
+
+commit 995df6aca0e9ce1a1cc6adcb5e39b1023ef21877
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Tue Aug 9 11:58:39 2022 -0500
+
+    benchmark modal code
+
+commit 00faf68d323a5c28f55448a58624c732187e8e93
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Mon Aug 8 12:50:30 2022 -0500
+
+    added ccf_to_mgc upload and cleaned console.logs
+
+commit e1b31be9c7732f1e8373a7e20730af526098c967
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Aug 5 19:14:19 2022 -0500
+
+    Began work on interactable graphic
+
+commit 6730686b48f7be149d44d2f5c14d73b2e8e9342e
+Merge: 98910f1 4e5f81c
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Fri Aug 5 18:05:39 2022 -0500
+
+    Merge pull request #3 from lankston-consulting/HWPC-30-calculator-accordion-sections-to-open-on-submit-if-input-is-not-uploaded-or-set-to-default
+    
+    Hwpc 30 calculator accordion sections to open on submit if input is not uploaded or set to default
+
+commit 4e5f81c279bb164646204b9a69cb912476470dde
+Merge: 6ed0fb4 98910f1
+Author: coltongerth <35784792+coltongerth@users.noreply.github.com>
+Date:   Fri Aug 5 18:05:29 2022 -0500
+
+    Merge branch 'dev' into HWPC-30-calculator-accordion-sections-to-open-on-submit-if-input-is-not-uploaded-or-set-to-default
+
+commit 6ed0fb44ad7b47fa9e620366997a822aacc369c5
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Aug 5 18:03:39 2022 -0500
+
+    validation for required fields
+
+commit 98910f102721ac5888fd7d6a109978ffb943d5bf
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Aug 5 14:35:07 2022 -0500
+
+    Fixed Footer positioning
+
+commit bf84fbe736ccbb3827001337c1cb0fe1904e28dc
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Fri Aug 5 13:35:08 2022 -0500
+
+    merge
+
+commit 300ff6e52f92308dbc40f8b6f4bb2e1e0532337f
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Fri Aug 5 13:32:59 2022 -0500
+
+    Styled all accordion panel questions
+
+commit 8de59f97a2e83773265b258e3d68b00a96ccb7ad
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 20:26:14 2022 -0500
+
+    Updated styling for question 4
+
+commit 8e64546b506fb9811ff4b1b28c8efce1d816a5fd
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 20:18:27 2022 -0500
+
+    function for clear file input x button
+
+commit 41f02b55c1b9e8378e0ae52d0c99dbe26341c03d
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 20:17:54 2022 -0500
+
+    updates to question 2 and 4
+
+commit 27d2e12d197677b9af6361ec8062dd52122c1680
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 19:51:17 2022 -0500
+
+    File input null button
+
+commit 73b031831f4ed664b35e5f6bd7fe568a50b110ed
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 19:46:38 2022 -0500
+
+    uploading custom region csv updates dropdown too.
+
+commit 51c9f4ffabe9024adc79e5f23356179b54379c4f
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 19:35:42 2022 -0500
+
+    Auto stash before merge of "dev" and "origin/dev"
+
+commit 6e289bfe20c0840fada52b13dec1836d1347970f
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 19:34:26 2022 -0500
+
+    edit and default mode added
+
+commit d6b85edd3bb95bfff6db3de3905db3177904ddbf
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 18:45:36 2022 -0500
+
+    uploads all wired up to gcp
+
+commit 3155b75dcadca43e90beb3d7113036ac551d1c06
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 18:28:40 2022 -0500
+
+    update to form delivery
+
+commit 48fa11b66c972e2457930e5417aa9d62c37d40ba
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 16:46:31 2022 -0500
+
+    merge conflict and naming conventions updated
+
+commit be7f871fcde8940b848c51be30ec2a33454fa8c5
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 16:42:25 2022 -0500
+
+    Upload file styling and script
+
+commit 6be58a841574db5f728abd490b65dce2081d49bf
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 15:07:02 2022 -0500
+
+    Cleaning up calc
+
+commit 348c81691c1ee56319d59d32416379bd7c161724
+Merge: defafe8 2a7b0d3
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 13:27:15 2022 -0500
+
+    Merge remote-tracking branch 'origin/dev' into dev
+
+commit 2a7b0d32ef5cf455ca3242662cc78f044133292e
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 13:26:54 2022 -0500
+
+    whitespace added to accordiand to push
+
+commit defafe8df7e8306b94e91e1d4b367d815234bad9
+Merge: df079fa 4c191ab
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 13:23:05 2022 -0500
+
+    Merge remote-tracking branch 'origin/dev' into dev
+
+commit 4c191abb47888fb95226e019eb0c8e04724abe28
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 13:22:51 2022 -0500
+
+    removed validation
+
+commit df079fa657a19071aea1754d202caad0568f7fa2
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 13:18:18 2022 -0500
+
+    Auto stash before merge of "dev" and "origin/dev"
+
+commit 08554a41ba44e2df4ecaa7d80a7ff4b2af018292
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 13:16:56 2022 -0500
+
+    removed console.logs
+
+commit 8956abc9d7ef5e3b09d6696912a273caacd950db
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Thu Aug 4 13:16:18 2022 -0500
+
+    revamped back and next buttons
+
+commit 2505bc6d0499f1fbd6f766191045e955be2fdf32
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Thu Aug 4 12:33:38 2022 -0500
+
+    Updated accordion next prev btns
+
+commit 10786504d854fd95960c27e604b1af95e5422178
+Merge: 6498a07 3c330a9
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Aug 3 18:48:03 2022 -0500
+
+    Merge branch 'dev' of github.com:lankston-consulting/hwpc-web into dev
+
+commit 6498a07bda6c2d7557e00c24b2bdbee8df3c1de4
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Aug 3 18:47:18 2022 -0500
+
+    functionality for rolling next and back buttons
+
+commit 3c330a9ed758429a86c6e44b0650cc019e467c95
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Aug 3 18:15:47 2022 -0500
+
+    New svg for logo/title
+    
+    Exported logo as all paths instead of previously being paths and letters. Should stay consistent on all browsers.
+
+commit 8f8173fd95fc6afbaf029c5c3faabb141611d412
+Author: cg117634 <colton11gerth@gmail.com>
+Date:   Wed Aug 3 17:47:22 2022 -0500
+
+    .envrc
+
+commit 8ee009e5b0f9585d1ed08dcd27b71bfb2dc33826
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Wed Aug 3 17:46:11 2022 -0500
+
+    Update to calc added favicons
+
+commit 9f1d2030ce8419143cb65f62c8e403623916714e
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Aug 1 20:05:55 2022 -0500
+
+    Updated landing page and footer
+
+commit 6788b6995720e7d8c0ae2863c1b279369c908f96
+Author: Claire Spain <clairespain@outlook.com>
+Date:   Mon Aug 1 11:47:07 2022 -0500
+
+    Init dev branch
+    
+    Working on Landing and Calculator page
+
+commit c01b658382d4ee802bb15e1ce75c7eda3228b1cb
+Merge: 90a3e8a 79c8864
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Wed Jul 13 15:29:14 2022 -0700
+
+    Merge pull request #2 from lankston-consulting/HWPC-26-finishing-lcutils-compatability
+    
+    Hwpc 26 finishing lcutils compatability
+
+commit 79c8864155304804ccaf591b412976c5eccf6b23
+Author: Colton <colton@lankstonconsulting.com>
+Date:   Wed Apr 27 18:02:48 2022 -0500
+
+    removed credential json
+
+commit 27f5f572e9bc6477b4b7990ee730cae16f0001a2
+Author: Colton <colton@lankstonconsulting.com>
+Date:   Wed Apr 27 18:01:46 2022 -0500
+
+    .gitignore update for .json credential files
+
+commit e08a90dd38fe5aa1d48f612198bfd8564bb2f00e
+Author: Colton <colton@lankstonconsulting.com>
+Date:   Wed Apr 27 17:55:12 2022 -0500
+
+    update attempt number 2
+
+commit 90a3e8a94252c948dcb5a4b7ed78500e37d86fea
+Author: colto <colton11gerth@gmail.com>
+Date:   Fri Jan 7 15:01:50 2022 -0600
+
+    .env compatibility
+
+commit 846f816d7e49ed7640fc8e7ba78751f1cae7b64b
+Author: colto <colton11gerth@gmail.com>
+Date:   Fri Jan 7 11:41:43 2022 -0600
+
+    made email required
+
+commit 1a62c348426fc231dc8e7e3ce3cb88c188b75dad
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Jan 6 12:33:38 2022 -0600
+
+    results update for email delivery
+
+commit 7a3139d5e841a2e0c6b77575828c345631acef65
+Merge: beeb0d6 773a669
+Author: colto <colton11gerth@gmail.com>
+Date:   Wed Jan 5 14:05:05 2022 -0600
+
+    Merge branch 'main' of github.com:lankston-consulting/hwpc-web
+
+commit beeb0d6c8b98708016d42d52507ee3a173ab8639
+Author: colto <colton11gerth@gmail.com>
+Date:   Wed Jan 5 14:04:54 2022 -0600
+
+    Timeout increase
+
+commit 773a669b03b8e5c38620c469e6c9c66f4a8d56dc
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Mon Jan 3 10:40:04 2022 -0800
+
+    First documentation file
+    
+    Added a markdown documentation file for the HWPC-Web UI Mapping. This lists each file that gets created by the UI.
+
+commit 7be817af3625c6c6b2682bf63f1dd4d9307b4985
+Author: colto <colton11gerth@gmail.com>
+Date:   Fri Dec 3 14:59:26 2021 -0600
+
+    fix for render_template
+
+commit 875b420b8b8b633dcf18af1f650c0bb079da7062
+Author: colto <colton11gerth@gmail.com>
+Date:   Fri Dec 3 14:27:47 2021 -0600
+
+    loading spinner benchmark
+
+commit 5ba9fa08c8251d8be65f8f7ddb7980cd93f4b733
+Author: colto <colton11gerth@gmail.com>
+Date:   Wed Dec 1 13:46:44 2021 -0600
+
+    timeout counter for gcp results check
+
+commit f743c9c475a200835ab4f9755e1a8feb0229c2a8
+Author: colto <colton11gerth@gmail.com>
+Date:   Wed Nov 24 13:57:19 2021 -0600
+
+    flip config
+
+commit ed5461a03523aeef7805c2b5e4646caa21496677
+Author: colto <colton11gerth@gmail.com>
+Date:   Wed Nov 24 13:02:43 2021 -0600
+
+    cleaned up tabs responses and console.logs
+
+commit 8c59e569d8958a8383fdb2d91ffcf9147109f53d
+Merge: ef09d9e 4b6dd1a
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Nov 23 14:27:17 2021 -0600
+
+    Merge branch 'main' of github.com:lankston-consulting/hwpc-web
+
+commit ef09d9e26ec2ebc0c07d20e5c9a4d186d3689a9a
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Nov 23 14:27:02 2021 -0600
+
+    ui clean-up 11/23/2021
+
+commit 4b6dd1a6b51ce96571126b7d6792332798b1c7bf
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Sat Nov 20 10:12:43 2021 -0800
+
+    Updated run path to force it not to encode the URI for now
+
+commit f245b8d69208a196c34efb103e22f6f9d7246dfd
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Sat Nov 20 09:38:39 2021 -0800
+
+    Some QA updates to main and string parsing.
+
+commit d298f571bde286d5c12f56d0071489041a850231
+Merge: b6de81c d576641
+Author: colto <colton11gerth@gmail.com>
+Date:   Sat Nov 20 11:03:45 2021 -0600
+
+    Merge branch 'main' of github.com:lankston-consulting/hwpc-web
+
+commit b6de81c950ff853e090b8450284b8e45ce1b16a9
+Author: colto <colton11gerth@gmail.com>
+Date:   Mon Nov 8 13:12:10 2021 -0600
+
+    url arg pass update
+
+commit d576641e73f49f3db473485ce58d21ce86aa67f4
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Tue Nov 2 08:44:15 2021 -0700
+
+    Cleaning up some resources for App Engine
+
+commit ea9420d4be8322d5a1b71272beafec63fcda0400
+Author: colto <colton11gerth@gmail.com>
+Date:   Mon Nov 1 13:28:09 2021 -0500
+
+    os port hotfix for local devel
+
+commit 476b7e012561dd4f17bbc5e9191bc1b4deb7a264
+Merge: 4c02e22 98ec764
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Mon Nov 1 10:40:38 2021 -0700
+
+    Merge branch 'run-name' into main
+
+commit 98ec764ec177e937800b3fc95aa173d1a822df74
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Mon Nov 1 10:40:09 2021 -0700
+
+    Updating PORT env variable for more flexible docker containers
+
+commit 44541ff8f73187c110b1e236e89cf2ae10b937e9
+Author: colto <colton11gerth@gmail.com>
+Date:   Mon Nov 1 12:24:14 2021 -0500
+
+    docker compatibility
+
+commit 14f51452354bba6ed0b0630ae8a38a2cd2d87290
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Oct 28 16:31:28 2021 -0500
+
+    config flip
+
+commit 412e93cd1a36685504f7e233a3002882cd199190
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Oct 28 16:30:59 2021 -0500
+
+    loading spinner
+
+commit 4c02e22c294d1f8886e778efb641940cd9d2c429
+Merge: eb61dbd 3952c97
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Thu Oct 28 14:13:13 2021 -0700
+
+    Merge branch 'run-name' into main
+
+commit 09ae1e997373ecc07b8e448e4bd230aa304709ab
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Oct 28 15:57:12 2021 -0500
+
+    download.js
+
+commit 3952c9729529f705f77553b5b7bd20de031f4d32
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Oct 28 14:24:05 2021 -0500
+
+    download working
+
+commit eb61dbd7ebee82aef0c7a0f33b85fca4a066e758
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Thu Oct 28 11:27:15 2021 -0700
+
+    Reverting CORS for the web app
+
+commit 4cbd9884462c2015f1151be86547426a49bd02a9
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Oct 28 13:26:43 2021 -0500
+
+    code benchmark
+
+commit d7c7056c85d5edf6ce483812fec802ba976552db
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Oct 28 12:50:14 2021 -0500
+
+    cors work around benchmark not working yet
+
+commit 4667879cae8910f0fbf0e76a451db7f9bcd549aa
+Merge: 8ae643c b555010
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Thu Oct 28 10:42:27 2021 -0700
+
+    Merge branch 'appengine' into main
+
+commit b55501083491216fd73e104de8d853a4b2d059d2
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Thu Oct 28 10:41:52 2021 -0700
+
+    CORS policy update
+
+commit 1eeb3e2ea53b82585d1ff4b848741f897742dea8
+Author: colto <colton11gerth@gmail.com>
+Date:   Mon Oct 25 12:45:16 2021 -0500
+
+    zipfile naming input
+
+commit 49ca3b73dd7be161958f2e7163e4656bc51ab225
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Fri Oct 22 09:46:23 2021 -0700
+
+    Demo deploy
+
+commit 8ae643c1d482c53e71f7d494ebdf0928d2bb0689
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Oct 7 11:29:59 2021 -0500
+
+    additional files
+
+commit 64df0d1c4c9c5099e94c7938edcde681a3f370fd
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Oct 7 11:29:26 2021 -0500
+
+    ui update benchmark 10/7/2021
+
+commit 3cd9c9c1b3318575dd59b5477e4ad8e6dee72dcb
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Fri Oct 1 13:03:12 2021 -0700
+
+    Cloud Run request updated for parameter
+
+commit b1a71d0b5a7e89d8ca0c34f9c9089f8e55dedacb
+Author: colto <colton11gerth@gmail.com>
+Date:   Fri Oct 1 13:36:35 2021 -0500
+
+    download link hotfix
+
+commit 3198889fbe475d27a22f0803fa5659fdfda8a8bb
+Merge: 9fed14a 3a1fee3
+Author: colto <colton11gerth@gmail.com>
+Date:   Fri Oct 1 13:18:10 2021 -0500
+
+    Merge branch 'main' of github.com:lankston-consulting/hwpc-web
+
+commit 3a1fee34717e7aeec2090fe97cf816db213036de
+Merge: 024d75c d985bf9
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Fri Oct 1 11:16:51 2021 -0700
+
+    Merge branch 'appengine' into main
+
+commit 024d75cb8ff8d58db4c080d0c66db83499b85951
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Fri Oct 1 11:15:17 2021 -0700
+
+    main.py now uses UUID to generate user data folder
+    
+    Also attempts to call the cloud run function using the generated folder.
+
+commit 9fed14a0016d49f8fd6b0ea31084796a101cd565
+Author: colto <colton11gerth@gmail.com>
+Date:   Fri Oct 1 13:08:42 2021 -0500
+
+    results.html added
+
+commit 4a464c0e6a8f702b5d3fc7839f48e1634de55c4c
+Author: colto <colton11gerth@gmail.com>
+Date:   Fri Oct 1 12:35:00 2021 -0500
+
+    pre-dynamic results page zip download
+
+commit 4545d70497a28e15b5d75a5915aec6d1c345e9c6
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Sep 30 16:43:47 2021 -0500
+
+    web will take in zip once zip is public
+
+commit d985bf96b7c229ac0dea4caaf29bf9293fb5d6e5
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Thu Sep 30 11:59:57 2021 -0700
+
+    AppEngine changes for deployment
+
+commit 33f664efabfcc990006f432d4c46bea52b4b1604
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Sep 30 13:23:46 2021 -0500
+
+    benchmark 9/30/2021
+
+commit cc603aaec390f873dcd6bd03afbc2ffa5fc51a07
+Author: colto <colton11gerth@gmail.com>
+Date:   Wed Sep 29 12:44:10 2021 -0500
+
+    download implementation 9/29/20021
+
+commit d7b42e84ef8052494c728cfa0ff7f1cd6e479e41
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Sep 14 15:27:28 2021 -0500
+
+    region logic and naming improvement
+
+commit 3f0fe7836d18a266c51706b758d8e91ca0145b55
+Author: colto <colton11gerth@gmail.com>
+Date:   Sat Sep 11 14:01:51 2021 -0500
+
+    minor tweak to required inputs for custom region
+
+commit c915c4face376809dea0c2323431279b6f5e1567
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Sep 9 16:11:14 2021 -0500
+
+    spinner fixed and default values added
+
+commit 90759b558a8579cad7fea7158b13a1ae182f7adc
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Sep 9 16:00:37 2021 -0500
+
+    primary_product_data name match
+
+commit 1c492b7f422b24b1e9120d2eb9c95f52fcd31d5c
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Sep 9 11:16:50 2021 -0500
+
+    tweaks to ui and pushed data
+
+commit db3b4f6e9f530ebb824dc92cc05889aee9451330
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Sep 7 12:46:42 2021 -0500
+
+    abstraction and custom region form validation
+
+commit c524a020de770aed0191a1c23e1b618d5278d549
+Author: Robb Lankston <robblankston@gmail.com>
+Date:   Mon Sep 6 14:37:06 2021 -0700
+
+    Abstracted the storage class
+
+commit 8c6fd7780f1aa3f55205068af0f9a5795cd20582
+Author: colto <colton11gerth@gmail.com>
+Date:   Mon Sep 6 15:39:18 2021 -0500
+
+    dockerfile added and working with guinicorn
+
+commit f4e0b20f9577413d3f86ff3c02ad9af74ae30a06
+Author: colto <colton11gerth@gmail.com>
+Date:   Sun Sep 5 14:55:29 2021 -0500
+
+    Loading spinner implemented to show query progress, prevents screen interactions
+
+commit a38567e908d54cf1d4ee67407ea1d59efe39af87
+Author: colto <colton11gerth@gmail.com>
+Date:   Fri Sep 3 18:00:23 2021 -0500
+
+    file uploads and json generation complete
+
+commit b64d8e952013e3636c9bcabbd020b0307a94107d
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Sep 2 13:43:47 2021 -0500
+
+    successful bucket upload
+
+commit 04a3a617f415a55acddfbd359e6ee19e2be14afb
+Author: colto <colton11gerth@gmail.com>
+Date:   Thu Sep 2 12:39:54 2021 -0500
+
+    9/2/2021 benchmark
+
+commit 57e71c165181dae01e11b9eea7e3c71c280d06ef
+Author: colto <colton11gerth@gmail.com>
+Date:   Wed Sep 1 14:43:58 2021 -0500
+
+    total iframe fix
+
+commit 02909ab000983a490c0fc952e51a24d74ed56885
+Author: colto <colton11gerth@gmail.com>
+Date:   Wed Sep 1 12:51:03 2021 -0500
+
+    iframe resizer fix
+
+commit cf89cf26e34361f395c3607e6e47f315849d57ef
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Aug 31 17:43:21 2021 -0500
+
+    update radio button
+
+commit 98e2a5319c418c831af0fa63c82c07f69316d454
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Aug 31 16:33:47 2021 -0500
+
+    files page added, completing entire home-row
+
+commit 41c678f1c0244df928eb68b923f1290dd02f70cb
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Aug 31 15:42:34 2021 -0500
+
+    mbf/ccf selection
+
+commit 587ca1b1d9a82bfbaaf91118c5dbd89f6b2e3000
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Aug 31 14:25:14 2021 -0500
+
+    input json parser
+
+commit 29bb096967f37f8db95883d4a290975daa273fa7
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Aug 31 14:24:42 2021 -0500
+
+    input json parser
+
+commit 3163bef3c7fa3ce65e85d0097d668719a813cfd1
+Author: colto <colton11gerth@gmail.com>
+Date:   Tue Aug 31 10:39:51 2021 -0500
+
+    cleaned up web ui
+
+commit 9d75f601c89af9d668dd4704a90c8b2af5279299
+Author: rlank <robblankston@gmail.com>
+Date:   Mon Aug 30 16:00:33 2021 -0700
+
+    Initial commit
