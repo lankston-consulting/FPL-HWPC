@@ -9,7 +9,7 @@ resource "aws_cloudfront_distribution" "e146szegwxp2gu" {
     viewer_protocol_policy = "allow-all"
   }
 
-  enabled         = true
+  enabled         = false
   http_version    = "http2and3"
   is_ipv6_enabled = true
   logging_config {
@@ -20,8 +20,8 @@ resource "aws_cloudfront_distribution" "e146szegwxp2gu" {
   origin {
     connection_attempts = 3
     connection_timeout  = 10
-    domain_name         = aws_s3_bucket.hwpc.bucket_regional_domain_name
-    origin_id           = "hwpc.s3.us-west-2.amazonaws.com"
+    domain_name         = "hwpc.s3.us-west-2.amazonaws.com"
+    origin_id           = aws_s3_bucket.hwpc.bucket_regional_domain_name
   }
 
   price_class = "PriceClass_100"

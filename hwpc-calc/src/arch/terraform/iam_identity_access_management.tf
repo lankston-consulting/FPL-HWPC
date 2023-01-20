@@ -448,10 +448,10 @@ resource "aws_iam_role" "hwpc_system_role" {
   inline_policy {
   }
 
-  managed_policy_arns  = ["arn:aws:iam::aws:policy/AmazonS3FullAccess", "arn:aws:iam::234659567514:policy/dask-fargate-policy", aws_iam_policy.arn_aws_iam__234659567514_policy_hwpc_sa.id, "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+  managed_policy_arns  = ["arn:aws:iam::aws:policy/AmazonS3FullAccess", aws_iam_policy.arn_aws_iam__234659567514_policy_dask_fargate_policy.id, aws_iam_policy.arn_aws_iam__234659567514_policy_hwpc_sa.id, "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
   max_session_duration = 3600
   name                 = "hwpc-system-role"
-  path                 = aws_iam_policy.arn_aws_iam__234659567514_policy_dask_fargate_policy.path
+  path                 = "/"
 }
 
 resource "aws_iam_role" "hwpc_web_fargate_cluster_execution_role" {
