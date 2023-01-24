@@ -155,3 +155,5 @@ hwpc-sa.json
 .venv/*
 .venv-*
 .venv-/*
+
+.terraform/*
