@@ -5,16 +5,16 @@ terraform {
       version = "~> 4.16"
     }
   }
-  required_version= ">= 1.2.0"
+  required_version = ">= 1.2.0"
 }
 
 provider "aws" {
-    region = "us-west-2"
-    access_key = "AKIATNIWM26NFV4GY5UV"
-    secret_key = "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"
+  region     = "us-west-2"
+  access_key = "AKIATNIWM26NFV4GY5UV"
+  secret_key = "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"
 }
 
 module "terraform" {
-    source = "../"
-    
+  source = "../"
+
 }
