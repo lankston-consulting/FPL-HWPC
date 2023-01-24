@@ -31,12 +31,10 @@ oauth.register(
     "auth0",
     client_id=env.get("FSAPPS_CLIENT_ID"),
     client_secret=env.get("FSAPPS_CLIENT_SECRET"),
-    response_type="code",
     redirect_uri="http://localhost:8080/login",
 )
 
 # Routing for html template files
-@app.route("/")
 @app.route("/index")
 @app.route("/home", methods=["GET", "POST"])
 def home():
@@ -399,21 +397,43 @@ def output():
     )
 
 
-@app.route("/callback", methods=["GET", "POST"])
-def callback():
-    return redirect("/")
-
-
-@app.route("/login")
+@app.route("/")
+@app.route("/login", methods=["GET"])
 def login():
     state = "".join(random.choices(string.ascii_letters + string.digits, k=6))
-    print(
-        "https://fsapps-stg.fs2c.usda.gov/oauth/authorize?client_id=HWPCLOCAL&redirect_uri=http://localhost:8080/login&response-type=code&state="
-        + state
-    )
-    return render_template(
+
+    authorized_code = request.args.get("code")
+
+    r_func = render_template
+
+    if authorized_code is not None:
+        print(f"Caught code {authorized_code}")
+
+        url = "https://fsapps-stg.fs2c.usda.gov/oauth/token"
+
+        payload = {
+            "grant_type": "authorization_code",
+            "redirect_uri": "http://localhost:8080/login",
+            "code": f"{authorized_code}",
+        }
+        files = []
+        headers = {
+            "Authorization": "Basic SFdQQ0xPQ0FMOkNnVFRoOXk3IU0=",
+            "Accept": "application/json",
+        }
+
+        response = requests.request(
+            "POST", url, headers=headers, data=payload, files=files
+        )
+
+        print("RESPONSE")
+        print(response.text)
+
+        r_func = home
+
+    return r_func(
         "pages/login.html",
-        url="https://fsapps-stg.fs2c.usda.gov/oauth/authorize?client_id=HWPCLOCAL&redirect_uri=http://localhost:8080/login&response-type=code&state="
+        url="https://fsapps-stg.fs2c.usda.gov/oauth/authorize?client_id=HWPCLOCAL&redirect_uri=http://localhost:8080/login&response_type=code&state="
         + state,
     )
 
@@ -460,4 +480,4 @@ if __name__ == "__main__":
     # the "static" directory. See:
     # http://flask.pocoo.org/docs/1.0/quickstart/#static-files. Once deployed,
     # App Engine itself will serve those files as configured in app.yaml.
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=False)
