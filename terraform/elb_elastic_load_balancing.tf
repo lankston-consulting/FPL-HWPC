@@ -43,7 +43,7 @@ resource "aws_alb_listener" "arn_aws_elasticloadbalancing_us_west_2_234659567514
 }
 
 resource "aws_alb_listener" "arn_aws_elasticloadbalancing_us_west_2_234659567514_listener_app_hwpc_web_load_balancer_477dd0231f613c7d_8f96eb59f322ebc3" {
-  certificate_arn = "aws:acm:us-west-2:234659567514:certificate/664bd509-5a1a-4353-a01e-dfdd87c7c64d"
+  certificate_arn = "arn:aws:acm:us-west-2:234659567514:certificate/664bd509-5a1a-4353-a01e-dfdd87c7c64d"
   default_action {
     order            = 1
     target_group_arn = aws_alb_target_group.arn_aws_elasticloadbalancing_us_west_2_234659567514_targetgroup_hwpc_web_fargate_tg_59c5cc26133b5efa.id
