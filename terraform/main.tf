@@ -6,11 +6,6 @@ terraform {
     }
   }
   required_version= ">= 1.2.0"
-  backend "s3" {
-    bucket = "hwpc-test-bucket"
-    key    = "terraform.tfstate"
-    region = "us-west-2"
-  }
 }
 
 provider "aws" {
@@ -20,6 +15,6 @@ provider "aws" {
 }
 
 module "terraform" {
-    source = "/hwpc-calc/src/arch/terraform"
+    source = "../"
     
 }
