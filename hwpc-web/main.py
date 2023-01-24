@@ -404,8 +404,6 @@ def login():
 
     authorized_code = request.args.get("code")
 
-    r_func = render_template
-
     if authorized_code is not None:
         print(f"Caught code {authorized_code}")
 
@@ -429,9 +427,9 @@ def login():
         print("RESPONSE")
         print(response.text)
 
-        r_func = home
+        return home()
 
-    return r_func(
+    return render_template(
         "pages/login.html",
         url="https://fsapps-stg.fs2c.usda.gov/oauth/authorize?client_id=HWPCLOCAL&redirect_uri=http://localhost:8080/login&response_type=code&state="
         + state,
