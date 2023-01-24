@@ -139,6 +139,7 @@ dmypy.json
 
 # Local History for Visual Studio Code
 .history/
+.terraform/
 
 data/*
 default_data/*
