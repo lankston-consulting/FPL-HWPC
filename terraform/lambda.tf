@@ -21,7 +21,7 @@ resource "aws_lambda_function" "get_user_input" {
       AWS_WORKER_ARN           = "hwpc-dask-worker"
       DASK_N_WORKERS           = "20"
       DASK_USE_FARGATE         = "0"
-      HWPC__DEBUG__MODE        = aws_cloudfront_distribution.e146szegwxp2gu.in_progress_validation_batches
+      HWPC__DEBUG__MODE        = "0"
       HWPC__FIRST_RECYCLE_YEAR = "1970"
       HWPC__RECURSE_LIMIT      = aws_ecs_service.hwpc_web_fargate_cluster_hwpc_web_service_1.desired_count
       S3_INPUT_BUCKET          = aws_s3_bucket.hwpc.id
@@ -34,7 +34,7 @@ resource "aws_lambda_function" "get_user_input" {
   ephemeral_storage {
     size = 512
   }
-
+  filename = "get_user_input.zip"
   function_name                  = "get_user_input"
   handler                        = "lambda_function.lambda_handler"
   memory_size                    = 128

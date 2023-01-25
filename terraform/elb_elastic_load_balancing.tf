@@ -42,8 +42,16 @@ resource "aws_alb_listener" "arn_aws_elasticloadbalancing_us_west_2_234659567514
   protocol          = "HTTP"
 }
 
+data "aws_acm_certificate" "certificate" {
+  domain      = "hwpcarbon.com"
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
+
+
 resource "aws_alb_listener" "arn_aws_elasticloadbalancing_us_west_2_234659567514_listener_app_hwpc_web_load_balancer_477dd0231f613c7d_8f96eb59f322ebc3" {
-  certificate_arn = "aws:acm:us-west-2:234659567514:certificate/664bd509-5a1a-4353-a01e-dfdd87c7c64d"
+  certificate_arn = data.aws_acm_certificate.certificate.arn
   default_action {
     order            = 1
     target_group_arn = aws_alb_target_group.arn_aws_elasticloadbalancing_us_west_2_234659567514_targetgroup_hwpc_web_fargate_tg_59c5cc26133b5efa.id
@@ -71,7 +79,12 @@ resource "aws_alb_listener_rule" "arn_aws_elasticloadbalancing_us_west_2_2346595
     type = "redirect"
   }
 
-  condition    = []
+  condition {
+    http_header {
+      http_header_name = "X-Forwarded-For"
+      values           = ["192.168.1.*"]
+    }
+  }
   listener_arn = aws_alb_listener.arn_aws_elasticloadbalancing_us_west_2_234659567514_listener_app_hwpc_web_load_balancer_477dd0231f613c7d_22cde81b9668be6c.id
   priority     = 99999
 }
@@ -83,7 +96,12 @@ resource "aws_alb_listener_rule" "arn_aws_elasticloadbalancing_us_west_2_2346595
     type             = "forward"
   }
 
-  condition    = []
+  condition {
+    http_header {
+      http_header_name = "X-Forwarded-For"
+      values           = ["192.168.1.*"]
+    }
+  }
   listener_arn = aws_alb_listener.arn_aws_elasticloadbalancing_us_west_2_234659567514_listener_app_hwpc_web_load_balancer_477dd0231f613c7d_8f96eb59f322ebc3.id
   priority     = 99999
 }
