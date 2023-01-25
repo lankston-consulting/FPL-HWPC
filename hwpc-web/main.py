@@ -1,22 +1,20 @@
+import base64
 import json
 import os
 import random
 import string
 import tempfile
 from datetime import datetime
+from functools import wraps
 from io import StringIO
 from os import environ as env
 from urllib.parse import quote_plus, urlencode
-import random, string
-from functools import wraps
-
-import base64
 
 import config
 import pandas as pd
-from authlib.integrations.flask_client import OAuth,  OAuthError
-from flask import Flask, redirect, render_template, request, session, url_for
 import requests
+from authlib.integrations.flask_client import OAuth, OAuthError
+from flask import Flask, redirect, render_template, request, session, url_for
 from flask_session import Session
 from utils.s3_helper import S3Helper
 from werkzeug.exceptions import HTTPException
