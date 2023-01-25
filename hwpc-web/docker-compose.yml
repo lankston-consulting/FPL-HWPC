@@ -6,11 +6,10 @@ services:
     image: hwpc-web
     container_name: hwpc-web-app
     environment:
-      - PORT=${PORT}
       - PY_VERSION=${PY_VERSION}
     ports:
       - "443:443"
-      - "80:80"
+      - "8080:80"
     # Once deployed, update healthcheck for AWS environment
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${PORT}"]

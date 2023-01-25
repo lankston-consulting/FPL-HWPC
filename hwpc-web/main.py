@@ -1,9 +1,8 @@
 import json
 import os
+import random
+import string
 import tempfile
-import uuid
-import zipfile
-import requests
 from datetime import datetime
 from io import StringIO
 from os import environ as env
@@ -11,20 +10,25 @@ from urllib.parse import quote_plus, urlencode
 import random, string
 import base64
 
+import config
 import pandas as pd
+import requests
 from authlib.integrations.flask_client import OAuth
 from flask import Flask, redirect, render_template, request, session, url_for
-from werkzeug.exceptions import HTTPException
-
-import config
 from utils.s3_helper import S3Helper
+from werkzeug.exceptions import HTTPException
 
 user_data_folder = "hwpc-user-inputs/"
 user_data_output_folder = "hwpc-user-outputs/"
 user_json_path = "/user_input.json"
 
+_flask_debug = env.get("FLASK_DEBUG", default="False")
+FLASK_DEBUG = _flask_debug.lower() in {"1", "t", "true"}
+
+SECRET_KEY = env.get("SECRET_KEY")
+
 app = Flask(__name__, template_folder="templates")
-app.secret_key = env.get("APP_SECRET_KEY")
+app.secret_key = env.get("FLASK_SECRET_KEY")
 
 oauth = OAuth(app)
 
@@ -479,4 +483,4 @@ if __name__ == "__main__":
     # the "static" directory. See:
     # http://flask.pocoo.org/docs/1.0/quickstart/#static-files. Once deployed,
     # App Engine itself will serve those files as configured in app.yaml.
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=False)
+    app.run(host="0.0.0.0", port=int(env.get("PORT", 8080)), debug=FLASK_DEBUG)
