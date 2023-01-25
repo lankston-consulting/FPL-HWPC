@@ -1,4 +1,5 @@
-FROM python:3.10.4
+ARG PY_VERSION
+FROM python:$PY_VERSION
 
 ENV PYTHONUNBUFFERED True
 
@@ -12,9 +13,7 @@ COPY requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
 
 COPY . ./
-ENV PORT ${PORT}
 
-# EXPOSE ${PORT} 
 EXPOSE 80
 EXPOSE 443
 
