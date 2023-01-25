@@ -9,6 +9,7 @@ from io import StringIO
 from os import environ as env
 from urllib.parse import quote_plus, urlencode
 import random, string
+import base64
 
 import pandas as pd
 from authlib.integrations.flask_client import OAuth
@@ -406,24 +407,24 @@ def login():
 
     if authorized_code is not None:
         print(f"Caught code {authorized_code}")
-
+        print(env.get("FSAPPS_CLIENT_ID")+":"+env.get("FSAPPS_CLIENT_SECRET"))
         url = "https://fsapps-stg.fs2c.usda.gov/oauth/token"
 
         payload = {
-            "grant_type": "authorization_code",
-            "redirect_uri": "http://localhost:8080/login",
+            "grant_type": env.get("FSAPPS_GRANT_TYPE"),
+            "redirect_uri": env.get("FSAPPS_REDIRECT_URI"),
             "code": f"{authorized_code}",
         }
         files = []
         headers = {
-            "Authorization": "Basic SFdQQ0xPQ0FMOkNnVFRoOXk3IU0=",
-            "Accept": "application/json",
+            "Authorization": "basic "+ base64.b64encode(env.get("FSAPPS_CLIENT_ID")+":"+env.get("FSAPPS_CLIENT_SECRET")),
+            "Accept": env.get("FSAPPS_ACCEPT"),
         }
 
         response = requests.request(
             "POST", url, headers=headers, data=payload, files=files
         )
-
+        
         print("RESPONSE")
         print(response.text)
 
