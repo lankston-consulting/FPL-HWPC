@@ -75,6 +75,7 @@ def login():
         files = []
         headers = {
             "Authorization": "Basic "+(env.get("FSAPPS_CLIENT_SECRET")+"="),
+            # "Authorization": "Basic "+base64.b64encode(env.get("FSAPPS_CLIENT_ID"))+base64.b64encode(env.get("FSAPPS_CLIENT_SECRET")),
             "Accept": "application/json",
         }
 
@@ -101,8 +102,7 @@ def login():
         "pages/login.html",
         url=url,
         state=state,
-        redirect_uri=redirect_uri,
-        email_info=session['email']
+        redirect_uri=redirect_uri
     )
 
 
@@ -120,7 +120,14 @@ def login_required(f):
 @app.route("/logout")
 def logout():   
     # remove the email from the session if it's there
-    session["email"] = None
+    session.pop('email', None)
+    for key in list(session.keys()):
+        session.pop(key)
+
+    # key_list = list(session.keys())
+    #     for key in key_list: 
+    #         session.pop(key)
+    
     return redirect (url_for('login'))
 
 @app.route("/index")
@@ -488,8 +495,7 @@ def output():
         file_name=q,
         is_single=is_single,
         scenario_json=user_json,
-        session=session.get("user"),
-        pretty=json.dumps(session.get("user"), indent=4),
+        email_info=session['email']
     )
 
 @app.errorhandler(OAuthError)
