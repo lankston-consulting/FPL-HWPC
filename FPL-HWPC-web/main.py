@@ -44,6 +44,13 @@ FSAPPS_AUTHORIZE_PARAMS = env.get("FSAPPS_AUTHORIZE_PARAMS")
 
 SECRET_KEY = env.get("FLASK_SECRET_KEY")
 
+#####################################
+# Secret encoding
+#####################################
+
+_encoded_client_string = (FSAPPS_CLIENT_ID + ":" + FSAPPS_CLIENT_SECRET).encode("ascii")
+_base64_client_string = base64.b64encode(_encoded_client_string)
+FSAPPS_CLIENT_SECRET_64 = _base64_client_string.decode("ascii")
 
 #####################################
 # Flask setup
@@ -61,7 +68,7 @@ oauth = OAuth(app)
 eauth = oauth.register(
     name="eauth",
     client_id=FSAPPS_CLIENT_ID,
-    client_secret=FSAPPS_CLIENT_SECRET,
+    client_secret=FSAPPS_CLIENT_SECRET_64,
     access_token_url=FSAPPS_REQUEST_TOKEN_URL,
     access_token_params=None,
     authorize_url=FSAPPS_AUTHORIZE_URL,
@@ -110,8 +117,6 @@ def login():
     )
 
     if authorized_code is not None:
-        print(f"Caught code {authorized_code}")
-        print(f"Basic {FSAPPS_CLIENT_SECRET} =")
         url = FSAPPS_REQUEST_TOKEN_URL
 
         payload = {
@@ -121,7 +126,7 @@ def login():
         }
         files = []
         headers = {
-            "Authorization": "Basic " + FSAPPS_CLIENT_SECRET + "=",
+            "Authorization": "Basic " + FSAPPS_CLIENT_SECRET_64,
             "Accept": "application/json",
         }
 
