@@ -27,7 +27,7 @@ from werkzeug.exceptions import HTTPException
 HWPC_INPUT_BUCKET = env.get("S3_INPUT_BUCKET", "hwpc")
 HWPC_OUTPUT_BUCKET = env.get("S3_OUTPUT_BUCKET", "hwpc-output")
 
-_flask_debug = env.get("FLASK_DEBUG", default="False")
+_flask_debug = env.get("FLASK_DEBUG", default=True)
 FLASK_DEBUG = _flask_debug.lower() in {"1", "t", "true"}
 
 PORT = int(env.get("PORT", 8080))
@@ -91,20 +91,14 @@ calulator_html_path = "pages/calculator.html"
 def login():
     # This code will be created by the OAuth provider and returned AFTER a 
     # successful /authorize 
+    
     authorized_code = request.args.get("code")
     
     state = "".join(random.choices(string.ascii_letters + string.digits, k=6))
     
     redirect_uri = FSAPPS_REDIRECT_URI
-    
-    url = (
-        FSAPPS_API_BASE_URL + FSAPPS_AUTHORIZE_URL + "?client_id="
-        + FSAPPS_CLIENT_ID
-        + "&redirect_uri="
-        + redirect_uri
-        + "&response_type=code&state="
-        + state
-    ) 
+    # url was giving me issues with how it was formatted so I made it a string
+    url = FSAPPS_API_BASE_URL + FSAPPS_AUTHORIZE_URL + "?client_id="+ FSAPPS_CLIENT_ID+ "&redirect_uri="+ redirect_uri+ "&response_type=code&state="+ state
 
     if authorized_code is not None:
         print(f"Caught code {authorized_code}")
@@ -148,8 +142,7 @@ def login():
         "pages/login.html",
         url=url,
         state=state,
-        redirect_uri=redirect_uri,
-        email_info=session["email"],
+        redirect_uri=redirect_uri
     )
 
 
@@ -165,8 +158,14 @@ def login_required(f):
 
 @app.route("/logout")
 def logout():
-    # remove the email from the session if it's there
-    session["email"] = None
+     # remove the email from the session if it's there
+    session.pop('email', None)
+    for key in list(session.keys()):
+        session.pop(key)
+
+    # key_list = list(session.keys())
+    #     for key in key_list: 
+    #         session.pop(key)
     return redirect(url_for("login"))
 
 
@@ -536,8 +535,7 @@ def output():
         file_name=q,
         is_single=is_single,
         scenario_json=user_json,
-        session=session.get("user"),
-        pretty=json.dumps(session.get("user"), indent=4),
+        email_info=session['email'],
     )
 
 
