@@ -37,9 +37,9 @@ FSAPPS_CLIENT_SECRET = env.get("FSAPPS_CLIENT_SECRET")
 FSAPPS_REDIRECT_URI = env.get("FSAPPS_REDIRECT_URI")
 
 FSAPPS_API_BASE_URL = env.get("FSAPPS_API_BASE_URL")
-FSAPPS_REQUEST_TOKEN_URL = env.get("FSAPPS_REQUEST_TOKEN_URL")
+FSAPPS_REQUEST_TOKEN_URL = FSAPPS_API_BASE_URL + env.get("FSAPPS_REQUEST_TOKEN_URL")
 FSAPPS_REQUEST_TOKEN_PARAMS = env.get("FSAPPS_REQUEST_TOKEN_PARAMS")
-FSAPPS_AUTHORIZE_URL = env.get("FSAPPS_AUTHORIZE_URL")
+FSAPPS_AUTHORIZE_URL = FSAPPS_API_BASE_URL + env.get("FSAPPS_AUTHORIZE_URL")
 FSAPPS_AUTHORIZE_PARAMS = env.get("FSAPPS_AUTHORIZE_PARAMS")
 
 SECRET_KEY = env.get("FLASK_SECRET_KEY")
@@ -60,11 +60,11 @@ oauth = OAuth(app)
 
 eauth = oauth.register(
     name="eauth",
-    client_id=env.get("FSAPPS_CLIENT_ID"),
-    client_secret=env.get("FSAPPS_CLIENT_SECRET"),
-    access_token_url="https://fsapps-stg.fs2c.usda.gov/oauth/token",
+    client_id=FSAPPS_CLIENT_ID,
+    client_secret=FSAPPS_CLIENT_SECRET,
+    access_token_url=FSAPPS_REQUEST_TOKEN_URL,
     access_token_params=None,
-    authorize_url="https://fsapps-stg.fs2c.usda.gov/oauth/authorize",
+    authorize_url=FSAPPS_AUTHORIZE_URL,
     authorize_params=None,
     api_base_url="",
     client_kwargs={"scope": "usdaemail"},
@@ -86,24 +86,33 @@ calulator_html_path = "pages/calculator.html"
 
 # Routing for html template files
 
+
 @app.route("/")
 @app.route("/login", methods=["GET"])
 def login():
-    # This code will be created by the OAuth provider and returned AFTER a 
-    # successful /authorize 
-    
+    # This code will be created by the OAuth provider and returned AFTER a
+    # successful /authorize
+
     authorized_code = request.args.get("code")
-    
+
     state = "".join(random.choices(string.ascii_letters + string.digits, k=6))
-    
+
     redirect_uri = FSAPPS_REDIRECT_URI
     # url was giving me issues with how it was formatted so I made it a string
-    url = FSAPPS_API_BASE_URL + FSAPPS_AUTHORIZE_URL + "?client_id="+ FSAPPS_CLIENT_ID+ "&redirect_uri="+ redirect_uri+ "&response_type=code&state="+ state
+    url = (
+        FSAPPS_AUTHORIZE_URL
+        + "?client_id="
+        + FSAPPS_CLIENT_ID
+        + "&redirect_uri="
+        + redirect_uri
+        + "&response_type=code&state="
+        + state
+    )
 
     if authorized_code is not None:
         print(f"Caught code {authorized_code}")
         print(f"Basic {FSAPPS_CLIENT_SECRET} =")
-        url = "https://fsapps-stg.fs2c.usda.gov/oauth/token"
+        url = FSAPPS_REQUEST_TOKEN_URL
 
         payload = {
             "grant_type": "authorization_code",
@@ -121,7 +130,8 @@ def login():
         )
         if response.text is not None:
             url = (
-                FSAPPS_API_BASE_URL + "me?access_token="
+                FSAPPS_API_BASE_URL
+                + "me?access_token="
                 + response.json()["access_token"]
             )
 
@@ -139,10 +149,7 @@ def login():
         return home()
 
     return render_template(
-        "pages/login.html",
-        url=url,
-        state=state,
-        redirect_uri=redirect_uri
+        "pages/login.html", url=url, state=state, redirect_uri=redirect_uri
     )
 
 
@@ -158,13 +165,13 @@ def login_required(f):
 
 @app.route("/logout")
 def logout():
-     # remove the email from the session if it's there
-    session.pop('email', None)
+    # remove the email from the session if it's there
+    session.pop("email", None)
     for key in list(session.keys()):
         session.pop(key)
 
     # key_list = list(session.keys())
-    #     for key in key_list: 
+    #     for key in key_list:
     #         session.pop(key)
     return redirect(url_for("login"))
 
@@ -535,7 +542,7 @@ def output():
         file_name=q,
         is_single=is_single,
         scenario_json=user_json,
-        email_info=session['email'],
+        email_info=session["email"],
     )
 
 
