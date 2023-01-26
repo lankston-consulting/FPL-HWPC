@@ -73,7 +73,7 @@ eauth = oauth.register(
     access_token_params=None,
     authorize_url=FSAPPS_AUTHORIZE_URL,
     authorize_params=None,
-    api_base_url="",
+    api_base_url=FSAPPS_API_BASE_URL,
     client_kwargs={"scope": "usdaemail"},
 )
 
@@ -99,26 +99,9 @@ calulator_html_path = "pages/calculator.html"
 def login():
     # This code will be created by the OAuth provider and returned AFTER a
     # successful /authorize
-
     authorized_code = request.args.get("code")
-
-    state = "".join(random.choices(string.ascii_letters + string.digits, k=6))
-
-    redirect_uri = FSAPPS_REDIRECT_URI
-    # url was giving me issues with how it was formatted so I made it a string
-    url = (
-        FSAPPS_AUTHORIZE_URL
-        + "?client_id="
-        + FSAPPS_CLIENT_ID
-        + "&redirect_uri="
-        + redirect_uri
-        + "&response_type=code&state="
-        + state
-    )
-
+    
     if authorized_code is not None:
-        url = FSAPPS_REQUEST_TOKEN_URL
-
         payload = {
             "grant_type": "authorization_code",
             "redirect_uri": FSAPPS_REDIRECT_URI,
@@ -131,7 +114,7 @@ def login():
         }
 
         response = requests.request(
-            "POST", url, headers=headers, data=payload, files=files
+            "POST", FSAPPS_REQUEST_TOKEN_URL, headers=headers, data=payload, files=files
         )
         if response.text is not None:
             url = (
@@ -145,19 +128,31 @@ def login():
 
             token_response = requests.request("GET", url, headers=headers, data=payload)
 
-            print(token_response.text)
             session["name"] = token_response.json()["usdafirstname"]
             session["email"] = token_response.json()["usdaemail"]
             email_info = token_response.json()["usdaemail"]
 
             print(session["email"])
         return home()
+    
+    state = "".join(random.choices(string.ascii_letters + string.digits, k=6))
 
-    return render_template(
-        "pages/login.html", url=url, state=state, redirect_uri=redirect_uri
+    # url was giving me issues with how it was formatted so I made it a string
+    url = (
+        FSAPPS_AUTHORIZE_URL
+        + "?client_id="
+        + FSAPPS_CLIENT_ID
+        + "&redirect_uri="
+        + FSAPPS_REDIRECT_URI
+        + "&response_type=code&state="
+        + state
     )
 
+    return render_template(
+        "pages/login.html", url=url, state=state, redirect_uri=FSAPPS_REDIRECT_URI
+    )
 
+    
 def login_required(f):
     @wraps(f)
     def login_function(*args, **kwargs):
