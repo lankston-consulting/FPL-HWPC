@@ -1,67 +1,214 @@
+import base64
 import json
 import os
+import random
+import string
 import tempfile
-import uuid
-import zipfile
-import requests
 from datetime import datetime
+from functools import wraps
 from io import StringIO
 from os import environ as env
 from urllib.parse import quote_plus, urlencode
-import random, string
-
-import pandas as pd
-from authlib.integrations.flask_client import OAuth
-from flask import Flask, redirect, render_template, request, session, url_for
-from werkzeug.exceptions import HTTPException
 
 import config
+import pandas as pd
+import requests
+from authlib.integrations.flask_client import OAuth, OAuthError
+from flask import Flask, redirect, render_template, request, session, url_for
+from flask_session import Session
 from utils.s3_helper import S3Helper
+from werkzeug.exceptions import HTTPException
+
+
+#####################################
+# Environment loading
+#####################################
+
+HWPC_INPUT_BUCKET = env.get("S3_INPUT_BUCKET", "hwpc")
+HWPC_OUTPUT_BUCKET = env.get("S3_OUTPUT_BUCKET", "hwpc-output")
+
+_flask_debug = env.get("FLASK_DEBUG", default=True)
+FLASK_DEBUG = _flask_debug.lower() in {"1", "t", "true"}
+
+PORT = int(env.get("PORT", 8080))
+
+FSAPPS_CLIENT_ID = env.get("FSAPPS_CLIENT_ID")
+FSAPPS_CLIENT_SECRET = env.get("FSAPPS_CLIENT_SECRET")
+FSAPPS_REDIRECT_URI = env.get("FSAPPS_REDIRECT_URI")
+
+FSAPPS_API_BASE_URL = env.get("FSAPPS_API_BASE_URL")
+FSAPPS_REQUEST_TOKEN_URL = FSAPPS_API_BASE_URL + env.get("FSAPPS_REQUEST_TOKEN_URL")
+FSAPPS_REQUEST_TOKEN_PARAMS = env.get("FSAPPS_REQUEST_TOKEN_PARAMS")
+FSAPPS_AUTHORIZE_URL = FSAPPS_API_BASE_URL + env.get("FSAPPS_AUTHORIZE_URL")
+FSAPPS_AUTHORIZE_PARAMS = env.get("FSAPPS_AUTHORIZE_PARAMS")
+
+SECRET_KEY = env.get("FLASK_SECRET_KEY")
+
+#####################################
+# Secret encoding
+#####################################
+
+_encoded_client_string = (FSAPPS_CLIENT_ID + ":" + FSAPPS_CLIENT_SECRET).encode("ascii")
+_base64_client_string = base64.b64encode(_encoded_client_string)
+FSAPPS_CLIENT_SECRET_64 = _base64_client_string.decode("ascii")
+
+#####################################
+# Flask setup
+#####################################
+
+
+app = Flask(__name__, template_folder="templates")
+app.secret_key = env.get("FLASK_SECRET_KEY")
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
+oauth = OAuth(app)
+
+eauth = oauth.register(
+    name="eauth",
+    client_id=FSAPPS_CLIENT_ID,
+    client_secret=FSAPPS_CLIENT_SECRET_64,
+    access_token_url=FSAPPS_REQUEST_TOKEN_URL,
+    access_token_params=None,
+    authorize_url=FSAPPS_AUTHORIZE_URL,
+    authorize_params=None,
+    api_base_url=FSAPPS_API_BASE_URL,
+    client_kwargs={"scope": "usdaemail"},
+)
+
+
+#####################################
+## Static application strings
+#####################################
 
 user_data_folder = "hwpc-user-inputs/"
 user_data_output_folder = "hwpc-user-outputs/"
 user_json_path = "/user_input.json"
+calulator_html_path = "pages/calculator.html"
 
-app = Flask(__name__, template_folder="templates")
-app.secret_key = env.get("APP_SECRET_KEY")
-
-oauth = OAuth(app)
-
-oauth.register(
-    "auth0",
-    client_id=env.get("FSAPPS_CLIENT_ID"),
-    client_secret=env.get("FSAPPS_CLIENT_SECRET"),
-    redirect_uri="http://localhost:8080/login",
-)
+#####################################
+## Route handlers
+#####################################
 
 # Routing for html template files
+
+
+@app.route("/")
+@app.route("/login", methods=["GET"])
+def login():
+    # This code will be created by the OAuth provider and returned AFTER a
+    # successful /authorize
+    authorized_code = request.args.get("code")
+    
+    if authorized_code is not None:
+        payload = {
+            "grant_type": "authorization_code",
+            "redirect_uri": FSAPPS_REDIRECT_URI,
+            "code": f"{authorized_code}",
+        }
+        files = []
+        headers = {
+            "Authorization": "Basic " + FSAPPS_CLIENT_SECRET_64,
+            "Accept": "application/json",
+        }
+
+        response = requests.request(
+            "POST", FSAPPS_REQUEST_TOKEN_URL, headers=headers, data=payload, files=files
+        )
+        if response.text is not None:
+            url = (
+                FSAPPS_API_BASE_URL
+                + "me?access_token="
+                + response.json()["access_token"]
+            )
+
+            payload = {}
+            headers = {}
+
+            token_response = requests.request("GET", url, headers=headers, data=payload)
+
+            session["name"] = token_response.json()["usdafirstname"]
+            session["email"] = token_response.json()["usdaemail"]
+            email_info = token_response.json()["usdaemail"]
+
+            print(session["email"])
+        return home()
+    
+    state = "".join(random.choices(string.ascii_letters + string.digits, k=6))
+
+    # url was giving me issues with how it was formatted so I made it a string
+    url = (
+        FSAPPS_AUTHORIZE_URL
+        + "?client_id="
+        + FSAPPS_CLIENT_ID
+        + "&redirect_uri="
+        + FSAPPS_REDIRECT_URI
+        + "&response_type=code&state="
+        + state
+    )
+
+    return render_template(
+        "pages/login.html", url=url, state=state, redirect_uri=FSAPPS_REDIRECT_URI
+    )
+
+    
+def login_required(f):
+    @wraps(f)
+    def login_function(*args, **kwargs):
+        if session.get("email") is None:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+
+    return login_function
+
+
+@app.route("/logout")
+def logout():
+    # remove the email from the session if it's there
+    session.pop("email", None)
+    for key in list(session.keys()):
+        session.pop(key)
+
+    # key_list = list(session.keys())
+    #     for key in key_list:
+    #         session.pop(key)
+    return redirect(url_for("login"))
+
+
 @app.route("/index")
 @app.route("/home", methods=["GET", "POST"])
+@login_required
 def home():
-    return render_template("pages/home.html", session=session.get("user"))
+    return render_template("pages/home.html", email_info=session["email"])
 
 
 @app.route("/calculator", methods=["GET"])
+@login_required
 def calculator():
-    return render_template("pages/calculator.html", session=session.get("user"))
+    return render_template("pages/calculator.html", email_info=session["email"])
 
 
 @app.route("/reference", methods=["GET"])
+@login_required
 def test():
     return render_template("pages/reference.html", session=session.get("user"))
 
 
 @app.route("/privacy", methods=["GET"])
+@login_required
 def advanced():
     return render_template("pages/privacy.html", session=session.get("user"))
 
 
 @app.route("/terms", methods=["GET"])
+@login_required
 def references():
     return render_template("pages/terms.html", session=session.get("user"))
 
 
 @app.route("/contact", methods=["GET"])
+@login_required
 def contact():
     return render_template("contact.html", session=session.get("user"))
 
@@ -96,7 +243,7 @@ def upload():
             for i in yearly_harvest_input.columns:
                 if yearly_harvest_input[i].dropna().empty:
                     return render_template(
-                        "pages/calculator.html",
+                        calulator_html_path,
                         error="Missing Column Data in File: Harvest Data Column: " + i,
                     )
 
@@ -112,7 +259,7 @@ def upload():
             for i in yearly_harvest_input.columns:
                 if yearly_harvest_input[i].dropna().empty:
                     return render_template(
-                        "pages/calculator.html",
+                        calulator_html_path,
                         error="Missing Column Data in File: Harvest Data Column: " + i,
                     )
 
@@ -148,7 +295,7 @@ def upload():
             for i in timber_product_ratios.columns:
                 if timber_product_ratios[i].dropna().empty:
                     return render_template(
-                        "pages/calculator.html",
+                        calulator_html_path,
                         error="Missing Column Data in File: Timber Product Ratios Column: "
                         + i,
                     )
@@ -166,7 +313,7 @@ def upload():
             for i in timber_product_ratios.columns:
                 if timber_product_ratios[i].dropna().empty:
                     return render_template(
-                        "pages/calculator.html",
+                        calulator_html_path,
                         error="Missing Column Data in File: Timber Product Ratios Column: "
                         + i,
                     )
@@ -190,7 +337,7 @@ def upload():
                 for i in custom_region_file.columns:
                     if custom_region_file[i].dropna().empty:
                         return render_template(
-                            "pages/calculator.html",
+                            calulator_html_path,
                             error="Missing Column Data in File: Primary Product Ratios Column: "
                             + i,
                         )
@@ -207,7 +354,7 @@ def upload():
                 for i in custom_region_file.columns:
                     if custom_region_file[i].dropna().empty:
                         return render_template(
-                            "pages/calculator.html",
+                            calulator_html_path,
                             error="Missing Column Data in File: Primary Product Ratios Column: "
                             + i,
                         )
@@ -231,7 +378,7 @@ def upload():
             for i in end_use_product_ratios.columns:
                 if end_use_product_ratios[i].dropna().empty:
                     return render_template(
-                        "pages/calculator.html",
+                        calulator_html_path,
                         error="Missing Column Data in File: End Use Product Ratios Column: "
                         + i,
                     )
@@ -248,7 +395,7 @@ def upload():
             for i in end_use_product_ratios.columns:
                 if end_use_product_ratios[i].dropna().empty:
                     return render_template(
-                        "pages/calculator.html",
+                        calulator_html_path,
                         error="Missing Column Data in File: End Use Product Ratios Column: "
                         + i,
                     )
@@ -297,7 +444,9 @@ def upload():
         "user_string": new_id,
     }
 
-    S3Helper.upload_input_group("hwpc", user_data_folder + new_id + "/", data)
+    S3Helper.upload_input_group(
+        HWPC_INPUT_BUCKET, user_data_folder + new_id + "/", data
+    )
     return render_template("pages/submit.html")
 
 
@@ -324,6 +473,7 @@ def set_official():
 
 
 @app.route("/output", methods=["GET"])
+@login_required
 def output():
     is_single = "false"
     p = request.args.get("p")
@@ -334,12 +484,12 @@ def output():
     data_dict = {}
     if y == None:
         user_json = S3Helper.download_file(
-            "hwpc", user_data_folder + p + user_json_path
+            HWPC_INPUT_BUCKET, user_data_folder + p + user_json_path
         )
         user_json = json.dumps(user_json.read().decode("utf-8"))
 
         user_zip = S3Helper.read_zipfile(
-            "hwpc-output", user_data_output_folder + p + "/results/" + q + ".zip"
+            HWPC_OUTPUT_BUCKET, user_data_output_folder + p + "/results/" + q + ".zip"
         )
         for file in user_zip:
             if ".csv" in file and "results" not in file:
@@ -361,12 +511,12 @@ def output():
         is_single = "true"
 
         user_json = S3Helper.download_file(
-            "hwpc", user_data_folder + p + user_json_path
+            HWPC_INPUT_BUCKET, user_data_folder + p + user_json_path
         )
         user_json = json.dumps(user_json.read().decode("utf-8"))
 
         user_zip = S3Helper.read_zipfile(
-            "hwpc-output",
+            HWPC_OUTPUT_BUCKET,
             user_data_output_folder + p + "/results/" + y + "_" + q + ".zip",
         )
 
@@ -392,67 +542,13 @@ def output():
         file_name=q,
         is_single=is_single,
         scenario_json=user_json,
-        session=session.get("user"),
-        pretty=json.dumps(session.get("user"), indent=4),
+        email_info=session["email"],
     )
 
 
-@app.route("/")
-@app.route("/login", methods=["GET"])
-def login():
-    state = "".join(random.choices(string.ascii_letters + string.digits, k=6))
-
-    authorized_code = request.args.get("code")
-
-    r_func = render_template
-
-    if authorized_code is not None:
-        print(f"Caught code {authorized_code}")
-
-        url = "https://fsapps-stg.fs2c.usda.gov/oauth/token"
-
-        payload = {
-            "grant_type": "authorization_code",
-            "redirect_uri": "http://localhost:8080/login",
-            "code": f"{authorized_code}",
-        }
-        files = []
-        headers = {
-            "Authorization": "Basic SFdQQ0xPQ0FMOkNnVFRoOXk3IU0=",
-            "Accept": "application/json",
-        }
-
-        response = requests.request(
-            "POST", url, headers=headers, data=payload, files=files
-        )
-
-        print("RESPONSE")
-        print(response.text)
-
-        r_func = home
-
-    return r_func(
-        "pages/login.html",
-        url="https://fsapps-stg.fs2c.usda.gov/oauth/authorize?client_id=HWPCLOCAL&redirect_uri=http://localhost:8080/login&response_type=code&state="
-        + state,
-    )
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(
-        "https://"
-        + env.get("AUTH0_DOMAIN")
-        + "/v2/logout?"
-        + urlencode(
-            {
-                "returnTo": url_for("home", _external=True),
-                "client_id": env.get("AUTH0_CLIENT_ID"),
-            },
-            quote_via=quote_plus,
-        )
-    )
+@app.errorhandler(OAuthError)
+def handle_error(error):
+    return render_template("error.html", error=error)
 
 
 @app.errorhandler(404)
@@ -480,4 +576,4 @@ if __name__ == "__main__":
     # the "static" directory. See:
     # http://flask.pocoo.org/docs/1.0/quickstart/#static-files. Once deployed,
     # App Engine itself will serve those files as configured in app.yaml.
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=False)
+    app.run(host="0.0.0.0", port=PORT, debug=FLASK_DEBUG)

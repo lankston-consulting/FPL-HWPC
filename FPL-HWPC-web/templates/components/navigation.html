@@ -14,11 +14,19 @@
             <li><a href="/home">Home</a></li>
             <li><a href="/home#how-it-works">How it works</a></li>
             <li><a href="/home#contact">Contact</a></li>
-            <li class="logout"><a href="/logout">Logout</a></li>
+            <li class="logout"><a href="
+                {{ url_for( 'logout') }}">Logout</a></li>
             <li><a href="/calculator"><button class="custom-btn btn-calc">Calculator</button></a></li>
 
         </div>
-        <li class="logout-btn"><a href="/logout"><i id="logoutBtn" class="fa-solid fa-arrow-right-from-bracket"></i></a>
+        <li class="logout-btn"><a href="
+            {{ url_for( 'logout') }}"><i id="logoutBtn" class="fa-solid fa-arrow-right-from-bracket"></i></a>
         </li>
     </ul>
 </nav>
+<!-- banner -->
+<div class="banner">
+    <div class="banner-text">
+        <p>Logged in as</p><label>{{ email_info }}</label>
+    </div>
+</div>
