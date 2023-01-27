@@ -223,8 +223,14 @@ class MetaModel(singleton.Singleton):
 
             if r_futures:
                 mod_jobs.update(r_futures)
+        
+        with Lock("plock"):
+            print("Scattering results.")
 
         remote_ds_all = client.scatter(ds_all)
+
+        with Lock("plock"):
+            print("Awaiting aggregation jobs.")
 
         wait(agg_jobs)
 
