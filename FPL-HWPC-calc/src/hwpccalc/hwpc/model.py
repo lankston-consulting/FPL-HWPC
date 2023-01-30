@@ -113,7 +113,6 @@ class Model(object):
                 harvests=remote_harvest,
                 recycled=remote_year_recycled,
                 lineage=remote_k,
-                # key=k,
                 priority=p,
                 retries=3,
             )

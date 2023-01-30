@@ -130,7 +130,6 @@ def login():
 
             session["name"] = token_response.json()["usdafirstname"]
             session["email"] = token_response.json()["usdaemail"]
-            email_info = token_response.json()["usdaemail"]
 
             print(session["email"])
         return home()

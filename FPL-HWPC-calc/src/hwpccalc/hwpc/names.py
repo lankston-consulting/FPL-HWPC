@@ -110,7 +110,6 @@ class Names(singleton.Singleton):
         landfills = "Landfills"
         dumps = "Dumps"
 
-        # new_decay = 'new_decay'
         can_decay = "can_decay"
         """Amount of discarded material subject to decay. (Does not include fixed carbon)."""
         could_decay = "could_decay"
