@@ -37,7 +37,8 @@ FSAPPS_CLIENT_SECRET = env.get("FSAPPS_CLIENT_SECRET")
 FSAPPS_REDIRECT_URI = env.get("FSAPPS_REDIRECT_URI")
 
 FSAPPS_API_BASE_URL = env.get("FSAPPS_API_BASE_URL")
-FSAPPS_REQUEST_TOKEN_URL = FSAPPS_API_BASE_URL + env.get("FSAPPS_REQUEST_TOKEN_URL")
+FSAPPS_REQUEST_TOKEN_URL = FSAPPS_API_BASE_URL + \
+    env.get("FSAPPS_REQUEST_TOKEN_URL")
 FSAPPS_REQUEST_TOKEN_PARAMS = env.get("FSAPPS_REQUEST_TOKEN_PARAMS")
 FSAPPS_AUTHORIZE_URL = FSAPPS_API_BASE_URL + env.get("FSAPPS_AUTHORIZE_URL")
 FSAPPS_AUTHORIZE_PARAMS = env.get("FSAPPS_AUTHORIZE_PARAMS")
@@ -48,7 +49,8 @@ SECRET_KEY = env.get("FLASK_SECRET_KEY")
 # Secret encoding
 #####################################
 
-_encoded_client_string = (FSAPPS_CLIENT_ID + ":" + FSAPPS_CLIENT_SECRET).encode("ascii")
+_encoded_client_string = (FSAPPS_CLIENT_ID + ":" +
+                          FSAPPS_CLIENT_SECRET).encode("ascii")
 _base64_client_string = base64.b64encode(_encoded_client_string)
 FSAPPS_CLIENT_SECRET_64 = _base64_client_string.decode("ascii")
 
@@ -79,7 +81,7 @@ eauth = oauth.register(
 
 
 #####################################
-## Static application strings
+# Static application strings
 #####################################
 
 user_data_folder = "hwpc-user-inputs/"
@@ -88,7 +90,7 @@ user_json_path = "/user_input.json"
 calulator_html_path = "pages/calculator.html"
 
 #####################################
-## Route handlers
+# Route handlers
 #####################################
 
 # Routing for html template files
@@ -100,7 +102,7 @@ def login():
     # This code will be created by the OAuth provider and returned AFTER a
     # successful /authorize
     authorized_code = request.args.get("code")
-    
+
     if authorized_code is not None:
         payload = {
             "grant_type": "authorization_code",
@@ -126,14 +128,15 @@ def login():
             payload = {}
             headers = {}
 
-            token_response = requests.request("GET", url, headers=headers, data=payload)
+            token_response = requests.request(
+                "GET", url, headers=headers, data=payload)
 
             session["name"] = token_response.json()["usdafirstname"]
             session["email"] = token_response.json()["usdaemail"]
 
             print(session["email"])
         return home()
-    
+
     state = "".join(random.choices(string.ascii_letters + string.digits, k=6))
 
     # url was giving me issues with how it was formatted so I made it a string
@@ -151,7 +154,7 @@ def login():
         "pages/login.html", url=url, state=state, redirect_uri=FSAPPS_REDIRECT_URI
     )
 
-    
+
 def login_required(f):
     @wraps(f)
     def login_function(*args, **kwargs):
@@ -223,7 +226,8 @@ def upload():
     yearly_harvest_input = request.files["yearlyharvestinput"]
     if yearly_harvest_input.filename != "":
         yearly_harvest_input = pd.read_csv(yearly_harvest_input)
-        yearly_harvest_input.columns = yearly_harvest_input.columns.str.replace(" ", "")
+        yearly_harvest_input.columns = yearly_harvest_input.columns.str.replace(
+            " ", "")
         if len(yearly_harvest_input.columns) > 2:
             # Ensures that any long formatted data will start with YearID to begin the melt process
             yearly_harvest_input.rename(
@@ -236,7 +240,8 @@ def upload():
             yearly_harvest_input = yearly_harvest_input[
                 yearly_harvest_input["ccf"] != 0
             ]
-            yearly_harvest_input = yearly_harvest_input.drop(["YearID"], axis=1)
+            yearly_harvest_input = yearly_harvest_input.drop(
+                ["YearID"], axis=1)
             start_year = str(yearly_harvest_input["Year"].min())
             stop_year = str(yearly_harvest_input["Year"].max())
             for i in yearly_harvest_input.columns:
@@ -323,11 +328,13 @@ def upload():
         custom_region_file = request.files["customregion"]
         if custom_region_file.filename != "":
             custom_region_file = pd.read_csv(custom_region_file)
-            custom_region_file.columns = custom_region_file.columns.str.replace(" ", "")
+            custom_region_file.columns = custom_region_file.columns.str.replace(
+                " ", "")
             if len(custom_region_file.columns) > 3:
                 # Ensures that any long formatted data will start with PrimaryProductID to begin the melt process
                 custom_region_file.rename(
-                    columns={custom_region_file.columns[0]: "PrimaryProductID"},
+                    columns={
+                        custom_region_file.columns[0]: "PrimaryProductID"},
                     inplace=True,
                 )
                 custom_region_file = custom_region_file.melt(
@@ -455,20 +462,24 @@ def submit():
 
 
 @app.route("/set-official", methods=["GET"])
+@login_required
 def set_official():
     p = request.args.get("p")
-    data_json = S3Helper.download_file("hwpc", user_data_folder + p + user_json_path)
-    deliver_json = {}
-    with open(data_json.name, "r+") as f:
-        data = json.load(f)
-        data["is_official_record"] = "true"
-        deliver_json = json.dumps(data)
-    deliver_json = deliver_json.encode()
+    print("p:", p)
+    q = request.args.get("q")
+    print("q", q)
+    # Create a json with p and q
+    data = {"project-name": p, "run-name": q, "official-record": "true"}
+    json_data = json.dumps(data)
+    print(json_data)
     user_file = tempfile.TemporaryFile()
-    user_file.write(deliver_json)
+    user_file.write(json_data.encode())
     user_file.seek(0)
-    S3Helper.upload_file(user_file, "hwpc", user_data_folder + p + user_json_path)
+    S3Helper.upload_file(user_file, HWPC_OUTPUT_BUCKET,
+                         user_data_output_folder + q + ".json")
     user_file.close()
+    print("json created")
+    return "yo"
 
 
 @app.route("/output", methods=["GET"])

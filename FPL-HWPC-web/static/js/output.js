@@ -2686,7 +2686,7 @@ function savePDF(imageDataURL, file_name) {
     small_count += 1;
     if (small_count == big_count) {
       if (document.getElementById("official_check").checked == true) {
-        fetch(`/set-official?p=` + data_bucket)
+        fetch('/set-official?p=' + data_bucket + '&q=' + data_file_name)
           .then(function (response) {
             return response.text();
           })
