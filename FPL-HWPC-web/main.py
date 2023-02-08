@@ -477,6 +477,7 @@ def set_official():
     user_file.seek(0)
     S3Helper.upload_file(user_file, HWPC_OUTPUT_BUCKET,
                          user_data_output_folder + q + ".json")
+    print(user_data_output_folder)
     user_file.close()
     print("json created")
     return "yo"
