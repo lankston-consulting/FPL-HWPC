@@ -22,6 +22,15 @@ resource "aws_s3_bucket" "hwpc" {
   #   hosted_zone_id = "Z3BJ6K6RIION7M"
 }
 
+resource "aws_s3_bucket_public_access_block" "example-public-access-block" {
+  bucket = "hwpc"
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_s3_bucket" "hwpc_output" {
   #   arn            = "aws:s3:::hwpc-output"
   bucket = "hwpc-output"
