@@ -39,7 +39,7 @@ class S3Helper(object):
 
         try:
             response = S3Helper.s3_client.upload_fileobj(
-                file_name, bucket, object_name, ExtraArgs={"ACL": "public-read"}
+                file_name, bucket, object_name
             )
         except ClientError as e:
             logging.error(e)
