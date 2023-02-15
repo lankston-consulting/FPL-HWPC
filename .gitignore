@@ -159,3 +159,4 @@ hwpc-sa.json
 .terraform/*
 
 config.json
+FPL-HWPC-web/flask_session/
