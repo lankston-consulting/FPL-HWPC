@@ -17,7 +17,7 @@ if _debug_mode:
     _debug_default_name = os.getenv("HWPC__DEBUG__NAME")
 
 
-@staticmethod
+
 async def main(args: argparse.Namespace) -> int:
     """Main entrypoint for the HPWC simulation.
 

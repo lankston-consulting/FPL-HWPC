@@ -14,6 +14,7 @@ WORKDIR $PKG_HOME
 COPY src/ src/
 COPY pyproject.toml .
 COPY setup.py .
+COPY .env .
 
 RUN python -m build
 
