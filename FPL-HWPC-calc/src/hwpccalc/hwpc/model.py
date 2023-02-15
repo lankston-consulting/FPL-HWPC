@@ -47,7 +47,8 @@ class Model(object):
             if recycled is not None:
                 year_recycled = recycled.copy(deep=True)
                 year_recycled = year_recycled.assign_attrs({"lineage": k})
-                year_recycled = year_recycled.sel(Year=list(range(y, last_year + 1)))
+                year_recycled = year_recycled.sel(
+                    Year=list(range(y, last_year + 1)))
                 year_recycled[nm.Fields.end_use_products] = xr.where(
                     year_recycled[nm.Fields.harvest_year] == y,
                     year_recycled[nm.Fields.end_use_products],
@@ -69,7 +70,8 @@ class Model(object):
                 harvest = harvest_init.where(
                     harvest_init.coords[nm.Fields.harvest_year] >= y, drop=True
                 )
-                harvest = harvest.where(harvest.coords[nm.Fields.harvest_year] == y, 0)
+                harvest = harvest.where(
+                    harvest.coords[nm.Fields.harvest_year] == y, 0)
                 harvest = harvest.assign_attrs({"lineage": k})
                 year_recycled = None
 
@@ -77,7 +79,8 @@ class Model(object):
             # for 2 or 3 recursions max, otherwise the number will be way too big for an int
             if len(k) < recurse_limit + 1:
                 # Make a padded list with the key, expanding it to the number of recursions we're doing
-                pk = [k[_] if _ < len(k) else 0 for _ in range(recurse_limit + 1)]
+                pk = [k[_] if _ < len(k) else 0 for _ in range(
+                    recurse_limit + 1)]
             else:
                 pk = k
 
@@ -166,7 +169,8 @@ class Model(object):
         # corresponding primary product.
         end_use = working_table
         end_use[nm.Fields.end_use_products] = (
-            working_table[nm.Fields.ccf] * working_table[nm.Fields.end_use_ratio_direct]
+            working_table[nm.Fields.ccf] *
+            working_table[nm.Fields.end_use_ratio_direct]
         )
 
         # Make sure the rows are ascending to do the half life. Don't do this inplace
@@ -202,7 +206,8 @@ class Model(object):
             dd = xr.DataArray(
                 decayed,
                 dims=nm.Fields.harvest_year,
-                coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]},
+                coords={
+                    nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]},
             ).astype("float64")
             df[nm.Fields.products_in_use] = dd
         return df
@@ -236,7 +241,8 @@ class Model(object):
             dd = xr.DataArray(
                 decayed,
                 dims=nm.Fields.harvest_year,
-                coords={nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]},
+                coords={
+                    nm.Fields.harvest_year: df.coords[nm.Fields.harvest_year]},
             ).astype("float64")
             df[nm.Fields.products_in_use] = dd
         return df
@@ -322,6 +328,10 @@ class Model(object):
 
         # products_in_use[nm.Fields.discard_products] = products_in_use.groupby(nm.Fields.end_use_id).map(Model.chi2_func_inverse)
 
+        # Discard burned with energy capture
+        discard_burned_w_energy_capture_ratios = md.data[nm.Fields.discard_burned_with_energy_capture]
+        print(discard_burned_w_energy_capture_ratios)
+        print(b)
         # Zero out the stuff that was fuel. We will manually set the "discard" emissions after the other types
         # are discarded according to ratios (Fuel is an exception that 100% is emitted)
         products_in_use[nm.Fields.discarded_products] = products_in_use[
@@ -388,7 +398,8 @@ class Model(object):
             .loc[dict(EndUseID=fuel_ids)]
             .transpose(nm.Fields.end_use_id, nm.Fields.harvest_year)
         )
-        products_in_use[nm.Fields.products_in_use].loc[dict(EndUseID=fuel_ids)] = 0
+        products_in_use[nm.Fields.products_in_use].loc[dict(
+            EndUseID=fuel_ids)] = 0
 
         return products_in_use
 
@@ -402,7 +413,8 @@ class Model(object):
                 l = len(can_decay)
                 ox = np.zeros((l, l), dtype=np.float64)
                 s = 1 / (math.log(2) / hl)
-                weightspace = np.array([expon.sf(t, scale=s) for t in range(l)])
+                weightspace = np.array([expon.sf(t, scale=s)
+                                       for t in range(l)])
                 for h in range(l):
                     v = can_decay[h].item()
                     weights = weightspace[: l - h]
@@ -552,7 +564,8 @@ class Model(object):
                 recycled = recycled.drop_vars(drop_key)
 
                 # Zero out harvest info because recycled material isn't harvested
-                recycled[nm.Fields.ccf] = xr.zeros_like(recycled[nm.Fields.ccf])
+                recycled[nm.Fields.ccf] = xr.zeros_like(
+                    recycled[nm.Fields.ccf])
 
                 recycled_futures = Model.model_factory(
                     model_data_path=model_data_path,

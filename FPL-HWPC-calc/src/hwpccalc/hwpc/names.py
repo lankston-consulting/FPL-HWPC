@@ -126,6 +126,7 @@ class Names(singleton.Singleton):
 
         burned_with_energy_capture = "burned_w_energy_capture"
         burned_wo_energy_capture = "burned_wo_energy_capture"
+        discard_burned_with_energy_capture = "discard_burned_w_energy_capture"
 
         emitted_with_energy_capture = "emitted_w_energy_capture"
         emitted_wo_energy_capture = "emitted_wo_energy_capture"
