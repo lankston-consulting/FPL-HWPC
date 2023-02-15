@@ -328,10 +328,6 @@ class Model(object):
 
         # products_in_use[nm.Fields.discard_products] = products_in_use.groupby(nm.Fields.end_use_id).map(Model.chi2_func_inverse)
 
-        # Discard burned with energy capture
-        discard_burned_w_energy_capture_ratios = md.data[nm.Fields.discard_burned_with_energy_capture]
-        print(discard_burned_w_energy_capture_ratios)
-        print(b)
         # Zero out the stuff that was fuel. We will manually set the "discard" emissions after the other types
         # are discarded according to ratios (Fuel is an exception that 100% is emitted)
         products_in_use[nm.Fields.discarded_products] = products_in_use[
