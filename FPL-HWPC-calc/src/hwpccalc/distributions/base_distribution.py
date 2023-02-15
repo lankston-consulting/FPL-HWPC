@@ -7,4 +7,4 @@ class BaseDistribution(ABC):
 
     @abstractmethod
     def inverse_cdf(self, p: float) -> float:
-        raise NotImplemented
+        raise NotImplementedError("Not implemented!")
