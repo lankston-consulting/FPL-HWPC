@@ -424,7 +424,7 @@ def upload():
     run_name = run_name.replace(" ", "_")
 
     now = datetime.now()
-    dt_string = now.strftime("%d-%m-%YT%H:%M:%S")
+    dt_string = now.strftime("%d-%m-%YT%H%M%S")
     new_id = str(run_name + "-" + dt_string)
     # The data is compiled to a dictionary to be processed with the S3Helper class
     data = {
@@ -453,7 +453,7 @@ def upload():
     S3Helper.upload_input_group(
         HWPC_INPUT_BUCKET, user_data_folder + new_id + "/", data
     )
-    return render_template("pages/submit.html")
+    return render_template("pages/submit.html", url_string="https://hwpc-dev.fs2c.usda.gov/output?p=" + new_id+"&q=" + run_name)
 
 
 @app.route("/submit")
