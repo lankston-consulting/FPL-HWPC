@@ -1150,7 +1150,7 @@ input[type="radio"]:after{
   margin-bottom: 120px;
 }
 
-.graphic-container h1, h3, h4, h5 {
+.graphic-container h1, .graphic-container h3, .graphic-container h4,.graphic-container  h5 {
   font-family: var(--montserrat);
   font-weight: 600;
   text-align: center;
@@ -1477,34 +1477,62 @@ transform: rotate(135deg) translateY(80px) translateX(-70px);
 
 /* Contact */
 .contact-container {
-  width: 100%;
+  /* width: 100%;
   height: 300px;
   background: linear-gradient(281deg,var(--light-green),var(--dark-green));
+  margin-bottom: 15rem; */
   margin-bottom: 15rem;
+
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  width: 100%;
+ 
 }
 
 .contact-content {
-  color: white;
+  color: var(--dark-gray);
   max-width: var(--content-width);
   margin: auto;
+  margin-top: 10rem;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-between;
-  padding-top: 8em;
-  align-items:center;
-}
+  padding: 3em 8em 8em 8em;
+  border-radius: 25px;
+  /* background: linear-gradient(281deg,var(--light-green),var(--dark-green)); */
+  background: white;
+  /* align-items:center; */
 
-#contact h3 {
-  font-size: 3rem;
+
+  background-color: #f1f1f1ce;
+
+  border-radius: 4px;
+
+  box-shadow: var(--green-box-shadow);
+
+
 }
 
 #contact h1 {
-  font-size: 6rem;
+  font-size: 10rem;
+  text-align: justify;
+}
+#contact h2 {
+  font-size: 3rem;
+}
+#contact h3 {
+  font-size: 2rem;
+}
+
+#contact p {
+  font-size: 2rem;
+  margin-bottom: 2rem;
 }
 
 #contact a {
-  font-size: 3rem;
-  color: white;
+  font-size: 2rem;
+  color: var(--dark-gray);
 }
 
 #contact a i {
