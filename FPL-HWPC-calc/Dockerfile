@@ -66,6 +66,9 @@ ENTRYPOINT ["/tini", "-g", "--", "./entrypoint.sh"]
 ARG PY_VERSION=3.10.4
 FROM base AS client
 ENV PYTHONBUFFERED 1
+RUN adduser nonroot
+
+
 
 # Set app directory
 COPY ./src/hwpccalc/main.py main.py
@@ -73,4 +76,5 @@ COPY ./src/hwpccalc/main.py main.py
 EXPOSE 8786
 EXPOSE 8787
 # ENTRYPOINT ["python", "main.py"]
+USER nonroot
 ENTRYPOINT ["/tini", "-g", "--", "python", "main.py"]
