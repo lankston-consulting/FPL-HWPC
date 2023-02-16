@@ -19,5 +19,7 @@ EXPOSE 443
 
 # Run a WSGI server to serve the application. gunicorn must be declared as
 # a dependency in requirements.txt.
+RUN adduser nonroot
+USER nonroot
 ENTRYPOINT ["gunicorn", "-b", ":80", "--workers", "1", "--threads", "8", "--timeout", "0"]
 CMD ["main:app"]
