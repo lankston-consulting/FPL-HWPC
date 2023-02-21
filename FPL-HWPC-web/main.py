@@ -186,9 +186,9 @@ def home():
 
 
 @app.route("/calculator", methods=["GET"])
-@login_required
+# @login_required
 def calculator():
-    return render_template("pages/calculator.html", email_info=session["email"])
+    return render_template("pages/calculator.html")
 
 
 @app.route("/reference", methods=["GET"])
@@ -453,6 +453,7 @@ def upload():
     S3Helper.upload_input_group(
         HWPC_INPUT_BUCKET, user_data_folder + new_id + "/", data
     )
+
     return render_template("pages/submit.html", url_string="https://hwpc-dev.fs2c.usda.gov/output?p=" + new_id+"&q=" + run_name)
 
 
@@ -587,4 +588,4 @@ if __name__ == "__main__":
     # the "static" directory. See:
     # http://flask.pocoo.org/docs/1.0/quickstart/#static-files. Once deployed,
     # App Engine itself will serve those files as configured in app.yaml.
-    app.run(host="0.0.0.0", port=PORT, debug=FLASK_DEBUG)
+    app.run(host="0.0.0.0", port=PORT, debug=True)

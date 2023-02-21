@@ -246,7 +246,7 @@ $(".close").keydown(function (event) {
     $(".info-circle").focus();
   }
 });
-
+// Preview Modal
 $("#previewbtn").click(function (e) {
   let input_harvest = $("[name='yearlyharvestinput']").val();
   let harvest;
@@ -259,7 +259,7 @@ $("#previewbtn").click(function (e) {
       "</p><br>";
   } else {
     harvest =
-      '<p class="modal-input-data acc-01">Annual Harvest Data: MISSING REQUIRED DATA</p><br>';
+      '<p class="modal-input-data acc-01">Annual Harvest Data: <span style="color:red;">MISSING REQUIRED DATA</span></p><br>';
   }
 
   let input_mbf_to_ccf = $("[name='MbfToCcfFilename']").val();
@@ -293,40 +293,53 @@ $("#previewbtn").click(function (e) {
 
   let region_input = $("[name='regionselection']").val();
   let region;
-  let custom_region_input;
-  if (region_input != "Custom") {
+  if (region_input != "") {
     region =
-      '<p class="modal-input-data acc-03">Primary Products Region Selected: ' +
+      '<p class="modal-input-data acc-03">Region Selected: ' +
       region_input +
       "</p><br>";
   } else {
-    custom_region_input = $("[name='customregion']").val();
-    if (custom_region_input != "") {
-      custom_region_input = custom_region_input.split("\\");
-      custom_region_input = custom_region_input[custom_region_input.length - 1];
-      region =
-        '<p class="modal-input-data acc-03">Primary Products Custom Region Selected: ' +
-        custom_region_input +
-        "</p><br>";
-    } else {
-      region =
-        '<p class="modal-input-data acc-03">Primary Products Custom Region Selected: MISSING REQUIRED DATA</p><br>';
-    }
+    region =
+      '<p class="modal-input-data acc-03">Region Selected: <span style="color:red;">MISSING REQUIRED DATA</span></p><br>';
   }
 
-  let input_end_use_rates = $("[name='enduseproductrates']").val();
+  let primary_product_ratios = $("[name='PrimaryProductRatiosFilename']").val();
+  let primary_product;
+  if (primary_product_ratios != "") {
+    primary_product_ratios = primary_product_ratios.split("\\");
+    primary_product_ratios =
+      primary_product_ratios[primary_product_ratios.length - 1];
+    primary_product =
+      '<p class="modal-input-data acc-03b">Primary Product Ratios: ' +
+    primary_product_ratios +
+      "</p><br>";
+  } else {
+    primary_product =
+      '<p class="modal-input-data acc-03b">Primary Product Ratios: Using Default</p><br>';
+  }
+
+
+  let input_end_use_rates = $("[id='chi']");
   let end_use_rates;
-  if (input_end_use_rates != "") {
-    input_end_use_rates = input_end_use_rates.split("\\");
-    input_end_use_rates = input_end_use_rates[input_end_use_rates.length - 1];
+  if (input_end_use_rates[0].checked) {
     end_use_rates =
-      '<p class="modal-input-data acc-04b">End Use Ratios: ' +
-      input_end_use_rates +
+      '<p class="modal-input-data acc-04">End Use In Use Function: Chi squared' +
       "</p><br>";
   } else {
     end_use_rates =
-      '<p class="modal-input-data acc-04b">End Use Ratios: Using Default</p><br>';
+      '<p class="modal-input-data acc-04">End Use In Use Function: Exponential</p><br>';
   }
+  // if (input_end_use_rates != "") {
+  //   input_end_use_rates = input_end_use_rates.split("\\");
+  //   input_end_use_rates = input_end_use_rates[input_end_use_rates.length - 1];
+  //   end_use_rates =
+  //     '<p class="modal-input-data acc-04b">End Use In Use Function: ' +
+  //     input_end_use_rates +
+  //     "</p><br>";
+  // } else {
+  //   end_use_rates =
+  //     '<p class="modal-input-data acc-04b">End Use In Use Function: Using Default</p><br>';
+  // }
 
   let input_end_use_ratios = $("[name='EndUseRatiosFilename']").val();
   let end_use_ratios;
@@ -350,12 +363,12 @@ $("#previewbtn").click(function (e) {
     input_discard_dispostions =
       input_discard_dispostions[input_discard_dispostions.length - 1];
     discard_dispostions =
-      '<p class="modal-input-data acc-04d">Discard Dispositions: ' +
+      '<p class="modal-input-data acc-04d">Discard Product Dispositions Ratios: ' +
       input_discard_dispostions +
       "</p><br>";
   } else {
     discard_dispostions =
-      '<p class="modal-input-data acc-04d">Discard Dispositions: Using Default</p><br>';
+      '<p class="modal-input-data acc-04d">Discard Product Dispositions Ratios: Using Default</p><br>';
   }
 
   let input_discard_dispostions_half_lives = $("[name='DispositionHalfLivesFilename']").val();
@@ -368,12 +381,12 @@ $("#previewbtn").click(function (e) {
         input_discard_dispostions_half_lives.length - 1
       ];
     discard_dispostions_half_lives =
-      '<p class="modal-input-data acc-04e">Discard Dispositions Half-lives Ratios: ' +
+      '<p class="modal-input-data acc-04e">Discard Dispositions Decay Ratios: ' +
       input_discard_dispostions_half_lives +
       "</p><br>";
   } else {
     discard_dispostions_half_lives =
-      '<p class="modal-input-data acc-04e">Discard Dispositions Half-lives Ratios: Using Default</p><br>';
+      '<p class="modal-input-data acc-04e">Discard Dispositions Decay Ratios: Using Default</p><br>';
   }
 
   let input_burned = $("[name='BurnedRatiosFilename']").val();
@@ -382,12 +395,12 @@ $("#previewbtn").click(function (e) {
     input_burned = input_burned.split("\\");
     input_burned = input_burned[input_burned.length - 1];
     burned =
-      '<p class="modal-input-data acc-04f">Burned Ratios: ' +
+      '<p class="modal-input-data acc-04f">Discarded Burned with energy capture Ratios: ' +
       input_burned +
       "</p><br>";
   } else {
     burned =
-      '<p class="modal-input-data acc-04f">Burned Ratios: Using Default</p><br>';
+      '<p class="modal-input-data acc-04f">Discarded Burned with energy capture Ratios: Using Default</p><br>';
   }
 
   let input_loss_factor = $("[name='lossfactor']").val();
@@ -401,7 +414,7 @@ $("#previewbtn").click(function (e) {
       "</p><br>";
   } else {
     loss_factor =
-      '<p class="modal-input-data acc-05">Loss Factor: MISSING REQUIRED DATA</p><br>';
+      '<p class="modal-input-data acc-05">Loss Factor: <span style="color:red;">MISSING REQUIRED DATA</span></p><br>';
   }
 
   let input_iterations = $("[name='iterations']").val();
@@ -415,7 +428,7 @@ $("#previewbtn").click(function (e) {
       "</p><br>";
   } else {
     iterations =
-      '<p class="modal-input-data acc-06">Number of Monte Carlo Iterations: MISSING REQUIRED DATA</p><br>';
+      '<p class="modal-input-data acc-06">Number of Monte Carlo Iterations: <span style="color:red;">MISSING REQUIRED DATA</span></p><br>';
   }
 
   let input_distribution = $("[name='DistributionDataFilename']").val();
@@ -424,12 +437,12 @@ $("#previewbtn").click(function (e) {
     input_distribution = input_distribution.split("\\");
     input_distribution = input_distribution[input_distribution.length - 1];
     distribution =
-      '<p class="modal-input-data acc-06">Distribution Data: ' +
+      '<p class="modal-input-data acc-06">Distribution Parameters: ' +
       input_distribution +
       "</p><br>";
   } else {
     distribution =
-      '<p class="modal-input-data acc-06">Distribution Data: Using Default</p><br>';
+      '<p class="modal-input-data acc-06">Distribution Parameters: Using Default</p><br>';
   }
 
   let input_email = $("[name='email']").val();
@@ -441,7 +454,7 @@ $("#previewbtn").click(function (e) {
       '<p class="modal-input-data acc-07">Email: ' + input_email + "</p><br>";
   } else {
     email =
-      '<p class="modal-input-data acc-07">Email: MISSING REQUIRED DATA</p><br>';
+      '<p class="modal-input-data acc-07">Email: <span style="color:red;">MISSING REQUIRED DATA</span></p><br>';
   }
 
   let input_runname = $("[name='runname']").val();
@@ -455,7 +468,7 @@ $("#previewbtn").click(function (e) {
       "</p><br>";
   } else {
     runname =
-      '<p class="modal-input-data acc-08">Run Name: MISSING REQUIRED DATA</p><br>';
+      '<p class="modal-input-data acc-08">Run Name: <span style="color:red;">MISSING REQUIRED DATA</span></p><br>';
   }
 
   $("#preview-modal").css("display", "block");
@@ -464,14 +477,15 @@ $("#previewbtn").click(function (e) {
       mbf_to_ccf +
       timber_product_ratios +
       region +
+      primary_product +
       end_use_rates +
       end_use_ratios +
       discard_dispostions +
       discard_dispostions_half_lives +
-      distribution +
       burned +
       loss_factor +
       iterations +
+      distribution +
       email +
       runname
   );
@@ -483,6 +497,7 @@ $("#previewbtn").click(function (e) {
       .scrollIntoView({ behavior: "smooth", block: "center" });
   
     if (
+      class_list[1] == "acc-04a" ||
       class_list[1] == "acc-04b" ||
       class_list[1] == "acc-04c" ||
       class_list[1] == "acc-04d" ||
