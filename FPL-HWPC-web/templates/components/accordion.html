@@ -8,7 +8,7 @@
 </span>
 <div class="accordion">
     <form enctype="multipart/form-data" name="forms" id="forms" action="{{ url_for('upload') }}" method="post">
-        <h1 id="acc-01" class="acc-h1" role="button" tabindex="0"><span>01</span>Upload annual harvest data</h1>
+        <h1 id="acc-01" class="acc-h1" role="button" tabindex="0">Upload annual harvest data</h1>
         <div>
             <span style="display: flex;">
                 <span style="width: 100%;">
@@ -63,12 +63,13 @@
                     tabindex="0">Next</button></span>
 
         </div>
-        <h1 id="acc-02" class="acc-h1" role="button" tabindex="0"><span>02</span>Upload annual timber product ratios
+        <h1 id="acc-02" class="acc-h1" role="button" tabindex="0">Upload annual timber product ratios
         </h1>
         <div>
             <span style="display: flex;">
                 <span style="width: 100%;">
-                    <p>Timber product ratios show the proportion of harvested wood going to timber product classes. This
+                    <p>Timber product ratios show the proportion of harvested wood going to timber product classes. <br>
+                        This
                         data is available for USFS Cut/Sold reports but may need to be derived by working with timber
                         product output specialists.</p>
                     <br>
@@ -98,10 +99,7 @@
                     class="nextbtn acc-02">Next</button>
             </span>
         </div>
-        <h1 id="acc-03" class="acc-h1" role="button" tabindex="0"><span>03</span>Upload yearly primary product
-            ratios or
-            choose region for default
-            ratios</h1>
+        <h1 id="acc-03" class="acc-h1" role="button" tabindex="0">Select a region</h1>
         <div>
             <figure>
                 <img src="../../static/images/region_map.png" width="100%" alt="Region Map">
@@ -114,7 +112,7 @@
             <br>
             <br>
             <span style="width: 100%" class="region-select">
-                <label for="regionselection">Select a Region</label>
+                <label style="margin-right: 0.5em;" for="regionselection">Select a Region</label>
                 <span style="display: flex;">
                     <span class="select-dropdown">
                         <select name="regionselection" id="regionselection">
@@ -127,7 +125,6 @@
                             <option value="South Central">South Central</option>
                             <option value="Southeast">South East</option>
                             <option value="West">West</option>
-                            <option value="Custom">Custom</option>
                         </select>
                     </span>
 
@@ -135,29 +132,33 @@
                 <a class="info-circle" role="button" aria-label="More Info"><i tabindex="0" id="modal3"
                         class="fa-solid fa-circle-info"></i></a>
             </span>
-            <br>
-            <p> Or Upload Custom Region</p>
-            <span style="width: 100%">
-                <label for="customregion" id="buttonlabel">
-                    <span role="button" aria-controls="filename" tabindex="0">
-                        Upload File
-                    </span>
-                </label>
-                <input name='customregion' type="file" class="fileupload filename4" id="customregion" accept=".csv" />
-                <label for="filename" class="hide">
-                    uploaded file
-                </label>
-                <input name="filename" type="text" id="filename4" autocomplete="off" readonly
-                    placeholder="Using default">
-                <i tabindex="0" class="cancel-upload-btn fa-solid fa-circle-xmark"></i>
-                <span class="nextbackbtn-container">
-                    <button type="button" class="backbtn acc-03">Back</button><button type="button"
-                        class="nextbtn acc-03">Next</button>
-                </span>
+            <span class="nextbackbtn-container">
+                <button type="button" class="backbtn acc-03">Back</button><button type="button"
+                    class="nextbtn acc-03">Next</button>
+            </span>
         </div>
-
-        <h1 id="acc-04" class="acc-h2" role="button" tabindex="0"><span>04</span>Upload custom ratios (optional)</h1>
+        <h1 id="acc-04" class="acc-h2" role="button" tabindex="0">Upload custom ratios (optional)</h1>
         <div>
+            <h2 id="acc-04a" class="acc-h2" role="button" tabindex="0">Upload primary product ratios</h2>
+            <div>
+                <span style="width: 100%">
+                    <p>Custom primary product ratios will override default ratios selected from the region dropdown
+                        above.</p>
+                    <br>
+                    <label for="PrimaryProductRatiosFilename" id="buttonlabel">
+                        <span role="button" aria-controls="filename" tabindex="0">
+                            Upload File
+                        </span>
+                    </label>
+                    <input name='PrimaryProductRatiosFilename' type="file" class="fileupload filename4"
+                        id="PrimaryProductRatiosFilename" accept=".csv" />
+                    <label for="filename" class="hide">
+                        uploaded file
+                    </label>
+                    <input name="filename" type="text" id="filename4" autocomplete="off" readonly
+                        placeholder="Using default">
+                    <i tabindex="0" class="cancel-upload-btn fa-solid fa-circle-xmark"></i>
+            </div>
             <h2 id="acc-04b" class="acc-h2" role="button" tabindex="0">Select end use in use (products in use) survival
                 function</h2>
 
@@ -187,7 +188,6 @@
                 <br><br>
                 <span style="display: flex;">
                     <span class="file-input-container">
-                        <p class="h2defaultlabel" style="margin-right: 0.3em;">Use Default or</p>
                         <span style="display: flex;">
                             <label for="EndUseRatiosFilename" id="buttonlabel">
                                 <span role="button" aria-controls="filename" tabindex="0">
@@ -215,7 +215,6 @@
                 <br>
                 <span style="display: flex;">
                     <span class="file-input-container">
-                        <p class="h2defaultlabel" style="margin-right: 0.3em;">Use Default or</p>
                         <span style="display: flex;">
                             <label for="DispositionsFilename" id="buttonlabel">
                                 <span role="button" aria-controls="filename" tabindex="0">
@@ -246,7 +245,7 @@
                 <br>
                 <span style="display: flex;">
                     <span class="file-input-container">
-                        <p class="h2defaultlabel" style="margin-right: 0.3em;">Use Default or</p>
+
                         <span style="display: flex;">
                             <label for="DispositionHalfLivesFilename" id="buttonlabel">
                                 <span role="button" aria-controls="filename" tabindex="0">
@@ -268,36 +267,44 @@
                 </span>
             </div>
 
-            <h2 id="acc-04f" class="acc-h2" role="button" tabindex="0">Upload proportions for burned with energy capture
+            <h2 id="acc-04f" class="acc-h2" role="button" tabindex="0">Upload ratios for discarded burned with energy
+                capture
             </h2>
-            <div style="display: flex;">
-                <span class="file-input-container">
-                    <p class="h2defaultlabel" style="margin-right: 0.3em;">Use Default or</p>
-                    <span style="display: flex;">
-                        <label for="BurnedRatiosFilename" id="buttonlabel">
-                            <span role="button" aria-controls="filename" tabindex="0">
-                                Upload File
-                            </span>
-                        </label>
-                        <input name='BurnedRatiosFilename' type="file" class="fileupload filename10"
-                            id="BurnedRatiosFilename" accept=".csv" />
-                        <label for="filename" class="hide">
-                            uploaded file
-                        </label>
-                        <input name="filename" type="text" id="filename10" autocomplete="off" readonly
-                            placeholder="Using default">
-                        <i tabindex="0" class="h2-cancel cancel-upload-btn fa-solid fa-circle-xmark"></i>
+            <div>
+                <p>Custom discarded burned with energy capture ratios will override default ratios selected from the
+                    region dropdown
+                    above.</p>
+                <br>
+                <span style="display:flex;">
+                    <span class="file-input-container">
+                        <span style="display: flex;">
+
+                            <label for="BurnedRatiosFilename" id="buttonlabel">
+                                <span role="button" aria-controls="filename" tabindex="0">
+                                    Upload File
+                                </span>
+                            </label>
+                            <input name='BurnedRatiosFilename' type="file" class="fileupload filename10"
+                                id="BurnedRatiosFilename" accept=".csv" />
+                            <label for="filename" class="hide">
+                                uploaded file
+                            </label>
+                            <input name="filename" type="text" id="filename10" autocomplete="off" readonly
+                                placeholder="Using default">
+                            <i tabindex="0" class="h2-cancel cancel-upload-btn fa-solid fa-circle-xmark"></i>
+                        </span>
                     </span>
-                </span>
-                <a class="info-circle" role="button" aria-label="More Info"><i tabindex="0" id="modal8"
-                        class="fa-solid fa-circle-info"></i></a>
+                    <a class="info-circle" role="button" aria-label="More Info"><i tabindex="0" id="modal8"
+                            class="fa-solid fa-circle-info"></i></a>
             </div>
             <span class="nextbackbtn-container">
                 <button type="button" class="backbtn acc-04">Back</button><button type="button"
                     class="nextbtn acc-04">Next</button>
             </span>
+            </span>
         </div>
-        <h1 id="acc-05" class="acc-h1" role="button" tabindex="0"><span>05</span>Enter a wood product end use loss
+
+        <h1 id="acc-05" class="acc-h1" role="button" tabindex="0">Enter a wood product end use loss
             factor</h1>
         <div>
             <span style=" width: 100%;">
@@ -321,7 +328,7 @@
             </span>
 
         </div>
-        <h1 id="acc-06" class="acc-h1" role="button" tabindex="0"><span>06</span>Enter number of Monte
+        <h1 id="acc-06" class="acc-h1" role="button" tabindex="0">Enter number of Monte
             Carlo
             iterations
         </h1>
@@ -383,7 +390,7 @@
             </span>
         </div>
 
-        <h1 id="acc-07" class="acc-h1" role="button" tabindex="0"><span>07</span>Enter email address to send results
+        <h1 id="acc-07" class="acc-h1" role="button" tabindex="0">Enter email address to send results
         </h1>
         <div>
             <p>Once Calculations are complete an email will be sent to you from Amazon SES with the url link of outputs
@@ -405,7 +412,7 @@
             </span>
         </div>
 
-        <h1 id="acc-08" class="acc-h1" role="button" tabindex="0"><span>08</span> Name your run</h1>
+        <h1 id="acc-08" class="acc-h1" role="button" tabindex="0">Name your run</h1>
         <div>
             <span style="width: 100%;">
                 <i class="required-alert fa-solid fa-circle-exclamation"></i>

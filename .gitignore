@@ -160,3 +160,5 @@ hwpc-sa.json
 
 config.json
 FPL-HWPC-web/flask_session/
+
+FPL-HWPC-web/static/data_templates/~$DatabaseRatios.xlsx

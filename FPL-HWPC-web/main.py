@@ -453,6 +453,7 @@ def upload():
     S3Helper.upload_input_group(
         HWPC_INPUT_BUCKET, user_data_folder + new_id + "/", data
     )
+
     return render_template("pages/submit.html", url_string="https://hwpc-dev.fs2c.usda.gov/output?p=" + new_id+"&q=" + run_name)
 
 
