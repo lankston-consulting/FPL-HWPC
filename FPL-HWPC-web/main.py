@@ -182,13 +182,15 @@ def logout():
 @app.route("/home", methods=["GET", "POST"])
 @login_required
 def home():
-    return render_template("pages/home.html", email_info=session["email"])
+    return render_template("pages/home.html")
+, email_info=session["email"]
 
 
 @app.route("/calculator", methods=["GET"])
 @login_required
 def calculator():
-    return render_template("pages/calculator.html", email_info=session["email"])
+    return render_template("pages/calculator.html")
+# , email_info=session["email"]
 
 
 @app.route("/reference", methods=["GET"])
@@ -459,7 +461,8 @@ def upload():
 
 @app.route("/submit")
 def submit():
-    return render_template("pages/submit.html", session=session.get("user"))
+    return render_template("pages/submit.html")
+# , session=session.get("user")
 
 
 @app.route("/set-official", methods=["GET"])
@@ -554,8 +557,9 @@ def output():
         file_name=q,
         is_single=is_single,
         scenario_json=user_json,
-        email_info=session["email"],
+        
     )
+# email_info=session["email"],
 
 
 @app.errorhandler(OAuthError)
