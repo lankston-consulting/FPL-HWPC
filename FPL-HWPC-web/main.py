@@ -183,7 +183,7 @@ def logout():
 @login_required
 def home():
     return render_template("pages/home.html")
-, email_info=session["email"]
+# , email_info=session["email"]
 
 
 @app.route("/calculator", methods=["GET"])
@@ -557,7 +557,7 @@ def output():
         file_name=q,
         is_single=is_single,
         scenario_json=user_json,
-        
+
     )
 # email_info=session["email"],
 
