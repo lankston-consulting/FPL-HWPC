@@ -514,12 +514,13 @@ $("#previewbtn").click(function (e) {
 });
 
 const modal_dict = {
+  // I started with these in order but then the order of the calculator needed to be changed, the id of the modal from accordion.js should match"
   modal1:
     "A .csv file containing the yearly harvest amount per year in units of CCF (hundred cubic feet). Also see <i>Harvest Data</i> section from the workbook. <br />Should be formatted as follows:<br /><table><tr><th>Year, </th><th>Total</th></tr><tr><th>X</th><th>X</th></tr><tr><th>X</th><th>X</th></tr></table>",
   modal2:
     "A .csv file containing the ratios which harvested wood is converted into timber products. Also see <i>Timber Product Ratios</i> section from the workbook.<br />Should be formatted as follows:<br /><table><tr><th>Timber Product ID,</th><th>TPO Code,</th><th>Timber Description, </th><th>Year 1, </th><th>Year N</th></tr><tr><th>X</th><th>X</th><th>X</th><th>X</th><th>X</th></tr><tr><th>X</th><th>X</th><th>X</th><th>X</th><th>X</th></tr></table>",
   modal3:
-    "A .csv file containing the ratios which a region converts timber products into primary products. Either select a defined region in the drop down, or define a custom region by selecting Custom and inputting a .csv file. Also see <i>Primary Product Ratios</i> section from the workbook. <br />Should be formatted as follows:<br /><table><tr><th>Primary Product ID,</th><th>Timber Product,</th><th>Primary Product, </th><th>Year 1, </th><th>Year N</th></tr><tr><th>X</th><th>X</th><th>X</th><th>X</th><th>X</th></tr><tr><th>X</th><th>X</th><th>X</th><th>X</th><th>X</th></tr></table>",
+    "Select the region that the harvest is from.",
   modal4:
     "A .csv file for each end use, this gives the rate at which material is discarded. Default rate is in half-life but can also use the Chi parameter.",
   modal5:
@@ -538,7 +539,8 @@ const modal_dict = {
     "Email is required to send you link of the completed simulation outputs.",
   modal12: "Name of Run to label zip file.",
   modal13: "If harvest data is in MBF and you would like to upload a custom MBF to CCF ratio here to the modal, otherwise the Calculator will use the default MBF to CCF ratios. Also see <i>MBF to CCF</i> section from the workbook.<br /> Should be formatted as follows:<br /> <table><tr><th>Start Year, </th><th>Conversion Factor</th></tr><tr><th>X</th><th>X</th></tr><tr><th>X</th><th>X</th></tr></table>",
-  modal14: "<b>Temporary Image</b> <br> <img src='static/images/image007.png' width='100%'>"
+  modal14: "<b>Temporary Image</b> <br> <img src='static/images/image007.png' width='100%'>",
+  modal15: "A .csv file with custom primary product ratios that will override the default ratios of the region selected in 'Select a region'"
 };
 
 $("#getdata").click(function (e) {
