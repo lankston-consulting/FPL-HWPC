@@ -1156,8 +1156,8 @@ input[type="radio"]:after{
 
 #systemFlow .tabcontent {
   transition: background ease 0.2s;
-  min-height: fit-content;
-  height:max-content;
+  /* min-height: fit-content;
+  height:max-content; */
 }
 
 .flowchart-container {
@@ -1570,8 +1570,9 @@ transform: rotate(135deg) translateY(80px) translateX(-70px);
   padding: 10rem 1rem 15rem 1rem;
   display: flex;
   min-width: fit-content;
-  width: 1600px;
+  min-width: 100%;
   margin: auto;
+
 }
 
 .output-page aside {
@@ -1581,20 +1582,20 @@ transform: rotate(135deg) translateY(80px) translateX(-70px);
   /* height: fit-content; */
   flex-grow: 1;
   margin-right: 2em;
-  
   margin-bottom: 2em;
   border-radius: 10px;
   padding: 25px;
+
 }
 
 .output-page section {
   background-color: white;
-  width: 85%;
   min-height: 89vh;
-  margin-bottom: 2em;
+
   border-radius: 10px;
   height: fit-content;
-  /* padding-bottom: 2em; */
+  width: 100%; 
+  margin-bottom: 2em;
 }
 
 
@@ -1626,7 +1627,25 @@ transform: rotate(135deg) translateY(80px) translateX(-70px);
 }
 
 
+/* media query 601 pxs or more */
+@media only screen and (min-width: 601px) and (max-width: 1200px) {
+  .output-page {
+    width: 100%;
+    min-width: 100%;
+    margin: 0;
+  }
 
+  .output-page aside {
+    max-width: 40%;
+  }
+
+  .output-page section {
+    width: 100%;
+    margin: 0;
+    margin-bottom: 2em;
+  }
+
+}
 
 
 /* @media screen and (min-width: 1920px) {
@@ -1661,6 +1680,7 @@ transform: rotate(135deg) translateY(80px) translateX(-70px);
 .tab {
   overflow: hidden;
   background-color: #f1f1f1;
+  border-radius: 10px 10px 0 0;
 }
 
 
@@ -1692,6 +1712,36 @@ transform: rotate(135deg) translateY(80px) translateX(-70px);
   border-top: none;
   transition: background ease 0.2s;
 }
+
+figcaption {
+  font-size: 1.4rem;
+  font-weight: 500;
+  text-align: center;
+  margin: auto;
+  margin-bottom: 1em;
+  width: 90%;
+}
+
+#tableContent {
+  width: 100%;
+  height: fit-content;
+  overflow-x: scroll;
+}
+
+
+@media only screen and (max-width: 600px) {
+  figcaption{
+    /* margin-top: 20em; */
+    width: 100%;
+  }
+}
+
+.all_final_results_table {
+  height: fit-content;
+  width: 100%;
+  overflow-x: scroll;
+}
+
 
 .active-graph {
   margin-bottom: 1em;
@@ -1751,8 +1801,10 @@ transform: translateY(-15px);
 content: "Click to make graphs larger";
 } */
 
+
 div.plotly-container{
   border-radius: 10px;
+ 
 }
 
 div.user-select-none.svg-container {
@@ -1772,12 +1824,11 @@ div.svg-container svg:first-child {
 }
 
 @media only screen and (max-width: 600px) {
-  .user-select-none .svg-container {
+
+  .main-svg {
     width: 100% !important;
-    height: 200px !important;
   }
 }
-
 
 
 .year-controls {
@@ -2079,7 +2130,7 @@ label.official_chk_label  {
   .dl-modal {
     width: 90%;
     min-height: fit-content;
-    height: 50%;
+    height: fit-content;
     padding: 2rem 1rem;
   }
 
@@ -2168,6 +2219,9 @@ label.official_chk_label  {
 }
 
 @media only screen and (max-width: 600px) {
+  #footer {
+    margin-top: 0;
+  }
   .footer-container{
     padding: 2em;
   }
