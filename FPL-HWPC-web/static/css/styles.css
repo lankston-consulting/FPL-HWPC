@@ -273,7 +273,7 @@ li {
  }
 
 
- @media (max-width: 768px) {
+ @media (max-width: 912px) {
  
   .menu { 
    display:none;
@@ -307,7 +307,16 @@ li {
   .logout-btn {
     display: none;
   }
+    .logo a img{
+    margin-top: 15px;
+  }
+
  }
+
+  .banner-text {
+    margin-top: 10px;
+
+  }
 
 
 @media (max-width: 768px) {
@@ -328,7 +337,7 @@ li {
 		align-items: center;
 		margin: 0 auto;
 	}
-
+  
 }
 
 @media (min-width: 1025px) {
@@ -336,6 +345,11 @@ li {
 		flex-direction: row;
 		justify-content: space-between;
 	}
+  .banner-text {
+    margin-top: 0px;
+
+  }
+
 
 }
 
@@ -356,8 +370,27 @@ li {
 @media (max-width: 768px) {
   .banner {
     transform: translateY(90px);
+    padding-left: 10px;
+    padding-right: 15px;
+  }
+ 
+}
+
+
+
+@media (min-width: 758px) {
+   .banner-text {
+    margin-top: 20px;
+
   }
 }
+@media (min-width: 1035px) {
+   .banner-text {
+    margin-top: 0px;
+
+  }
+}
+
 
 /* Landing Page */
 .home-container {
@@ -370,7 +403,7 @@ li {
 .info-container {
   background-color: #f1f1f1ce;
   min-height: 400px;
-  height: fit-content;
+  min-height: fit-content;
   max-width: 812px;
   width: 80%;
   padding: 42px 35px;
@@ -1511,7 +1544,6 @@ transform: rotate(135deg) translateY(80px) translateX(-70px);
 
   box-shadow: var(--green-box-shadow);
 
-
 }
 
 #contact h1 {
@@ -1591,31 +1623,36 @@ transform: rotate(135deg) translateY(80px) translateX(-70px);
 }
 
 
+/* media query for phone */
 
+@media only screen and (max-width: 600px) {
 
-@media screen and (max-width: 600px) {
   .output-page {
     flex-direction: column;
-    /* width: 100%; */
-    min-width: var(--content-width);
-    width: fit-content;
-    margin: auto;
+    padding: 0;
+    width: 100%;
+    min-width: 100%;
+    margin: 0;
   }
 
   .output-page aside {
-    max-width: fit-content; 
-    height: fit-content;
+    margin: 0;
     margin-bottom: 2em;
-    margin-left: 3em;
+    max-width: 100%;
+    margin-top: 10em;
   }
 
   .output-page section {
-    width: 95%;
-    margin: auto;
-    height: fit-content;
+    width: 100%;
+    margin: 0;
     margin-bottom: 2em;
   }
+
 }
+
+
+
+
 
 /* @media screen and (min-width: 1920px) {
   .output-page {
@@ -1757,6 +1794,13 @@ div.non-active.graph>div.plot-container>div.svg-container:hover{
 
 div.svg-container svg:first-child {
   border-radius: 10px;
+}
+
+@media only screen and (max-width: 600px) {
+  .user-select-none .svg-container {
+    width: 100% !important;
+    height: 200px !important;
+  }
 }
 
 
@@ -2243,7 +2287,7 @@ label.official_chk_label  {
 
 @media only screen and (max-width: 600px) {
   .login-container {
-    height: 100vh;
+    height: 50vh;
   }
   .login-container h1 {
     font-size: 6rem;
