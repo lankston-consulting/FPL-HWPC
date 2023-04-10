@@ -4,121 +4,123 @@
 
 <div class="output-page">
     <aside>
-        <h1 id="name-of-run"></h1>
-        <hr>
-        <br>
-        <h2 style="margin-bottom: 1em; font-size: 1.8rem;">Controls</h2>
-        <form action="">
-            <fieldset>
-                <legend>Choose Harvest Year(s)</legend>
-                <ul class="year-controls">
-                    <li>
-                        <input class="control-input" type="radio" id="allYearsBtn" name="harvestYears" checked="checked"
-                            value="3">
-                        <label class="control-label" for="allYearsBtn">All Harvest Years</label>
-                    </li>
-                    <li>
-                        <input class="control-input" type="radio" id="singleYearBtn" name="harvestYears" value="1">
-                        <label class="control-label" for="singleYearBtn">Single Harvest Year</label>
+        <div class="aside-controls">
+            <h1 id="name-of-run"></h1>
+            <hr>
+            <br>
+            <h2 style="margin-bottom: 1em; font-size: 1.8rem;">Controls</h2>
+            <form action="">
+                <fieldset>
+                    <legend>Choose Harvest Year(s)</legend>
+                    <ul class="year-controls">
+                        <li>
+                            <input class="control-input" type="radio" id="allYearsBtn" name="harvestYears"
+                                checked="checked" value="3">
+                            <label class="control-label" for="allYearsBtn">All Harvest Years</label>
+                        </li>
+                        <li>
+                            <input class="control-input" type="radio" id="singleYearBtn" name="harvestYears" value="1">
+                            <label class="control-label" for="singleYearBtn">Single Harvest Year</label>
 
-                    </li>
-                    <li id="yearInput-1" class="toHide" style="display:none;">
-                        <div style="display:flex;">
-                            <label class="control-label-sub" for="singleYear">Single Year:</label>
-                            <input class="control-num" type="number" id="singleYear" value="">
-                        </div>
-                    </li>
+                        </li>
+                        <li id="yearInput-1" class="toHide" style="display:none;">
+                            <div style="display:flex;">
+                                <label class="control-label-sub" for="singleYear">Single Year:</label>
+                                <input class="control-num" type="number" id="singleYear" value="">
+                            </div>
+                        </li>
 
-                </ul>
-            </fieldset>
+                    </ul>
+                </fieldset>
+                <br>
+                <br>
+                <div>
+                    <div style="margin-bottom: 1em;">
+                        <a id="yearfilter" class="link-1 custom-btn custom-btn-output">Filter</a>
+                    </div>
+                    <div>
+                        <a href="#dl-opened" class="custom-btn custom-btn-output link-1" id="dl-closed">Export
+                        </a>
+
+                        {% include "components/downloads.html" %}
+
+                    </div>
+                </div>
+            </form>
+
             <br>
             <br>
             <div>
-                <div style="margin-bottom: 1em;">
-                    <a id="yearfilter" class="link-1 custom-btn custom-btn-output">Filter</a>
-                </div>
-                <div>
-                    <a href="#dl-opened" class="custom-btn custom-btn-output link-1" id="dl-closed">Export
-                    </a>
+                <h2>Data Inputs</h2>
+                <hr>
+                <ul class="data-inputs">
+                    <li>
+                        <h3>Email: <span id="email"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Harvest Data: <span id="harvest_data"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Harvest Data Type: <span id="harvest_data_type"></span></h3>
+                    </li>
+                    <li>
+                        <h3>MBF to CCF Conversion: <span id="mbf_to_ccf_conversion"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Official Record: <span id="is_official_record">No</span></h3>
+                    </li>
+                    <li>
+                        <h3>End Use Loss Factor: <span id="end_use_loss_factor"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Simulation Date: <span id="simulation_date"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Region: <span id="region"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Regions Data: <span id="regions"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Decay Function: <span id="decay_function"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Monte Carlo Iterations: <span id="monte_carlo"></span></h3>
+                    </li>
 
-                    {% include "components/downloads.html" %}
+                    <li>
+                        <h3>Timber Products Ratio: <span id="timber_product_ratios"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Primary Products: <span id="primary_products"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Primary Product Ratio: <span id="primary_product_ratios"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Parameters: <span id="parameters"></span></h3>
+                    </li>
+                    <li>
+                        <h3>End Use Product Ratios: <span id="end_use_product_ratios"></span></h3>
+                    </li>
+                    <li>
+                        <h3>End Use Products: <span id="end_use_products"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Discard Destinations: <span id="discard_destinations"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Discard Destination Ratios: <span id="discard_destination_ratios"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Discard Burned with Energy Capture: <span id="discard_burned_w_energy_capture"></span></h3>
+                    </li>
+                    <li>
+                        <h3>Distribution Parameters: <span id="distribution_parameters"></span></h3>
+                    </li>
 
-                </div>
+                </ul>
             </div>
-        </form>
-
-        <br>
-        <br>
-        <div>
-            <h2>Data Inputs</h2>
-            <hr>
-            <ul class="data-inputs">
-                <li>
-                    <h3>Email: <span id="email"></span></h3>
-                </li>
-                <li>
-                    <h3>Harvest Data: <span id="harvest_data"></span></h3>
-                </li>
-                <li>
-                    <h3>Harvest Data Type: <span id="harvest_data_type"></span></h3>
-                </li>
-                <li>
-                    <h3>MBF to CCF Conversion: <span id="mbf_to_ccf_conversion"></span></h3>
-                </li>
-                <li>
-                    <h3>Official Record: <span id="is_official_record">No</span></h3>
-                </li>
-                <li>
-                    <h3>End Use Loss Factor: <span id="end_use_loss_factor"></span></h3>
-                </li>
-                <li>
-                    <h3>Simulation Date: <span id="simulation_date"></span></h3>
-                </li>
-                <li>
-                    <h3>Region: <span id="region"></span></h3>
-                </li>
-                <li>
-                    <h3>Regions Data: <span id="regions"></span></h3>
-                </li>
-                <li>
-                    <h3>Decay Function: <span id="decay_function"></span></h3>
-                </li>
-                <li>
-                    <h3>Monte Carlo Iterations: <span id="monte_carlo"></span></h3>
-                </li>
-
-                <li>
-                    <h3>Timber Products Ratio: <span id="timber_product_ratios"></span></h3>
-                </li>
-                <li>
-                    <h3>Primary Products: <span id="primary_products"></span></h3>
-                </li>
-                <li>
-                    <h3>Primary Product Ratio: <span id="primary_product_ratios"></span></h3>
-                </li>
-                <li>
-                    <h3>Parameters: <span id="parameters"></span></h3>
-                </li>
-                <li>
-                    <h3>End Use Product Ratios: <span id="end_use_product_ratios"></span></h3>
-                </li>
-                <li>
-                    <h3>End Use Products: <span id="end_use_products"></span></h3>
-                </li>
-                <li>
-                    <h3>Discard Destinations: <span id="discard_destinations"></span></h3>
-                </li>
-                <li>
-                    <h3>Discard Destination Ratios: <span id="discard_destination_ratios"></span></h3>
-                </li>
-                <li>
-                    <h3>Discard Burned with Energy Capture: <span id="discard_burned_w_energy_capture"></span></h3>
-                </li>
-                <li>
-                    <h3>Distribution Parameters: <span id="distribution_parameters"></span></h3>
-                </li>
-
-            </ul>
         </div>
     </aside>
     <section>
@@ -135,53 +137,73 @@
         <!-- Tab content -->
 
         <div id="cumulativeResultsContent" class="tabcontent">
-            <div tabindex="0" aria-label=" All Final Results" class="graph active-graph all_results_final"></div>
-            <div class="add-graph-container">
+            <figure>
+                <div tabindex="0" aria-label="All Final Results" class="graph active-graph all_results_final"></div>
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
+            <figure>
                 <div tabindex="0" aria-label="Total Solid Carbon Dispositions"
-                    class="graph non-active total_solid_carbon_dispositions"></div>
-                <div tabindex="0" aria-label="Total Emissions" class="graph non-active total_emissions_dispositions">
+                    class="graph active-graph total_solid_carbon_dispositions"></div>
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
+            <figure>
+                <div tabindex="0" aria-label="Total Emissions" class="graph active-graph total_emissions_dispositions">
                 </div>
-
-            </div>
-
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
         </div>
+
         <div id="solidCarbonContent" class="tabcontent">
-            <div tabindex="0" aria-label="Total Soild Carbon Dispositions"
-                class="graph active-graph total_solid_carbon_dispositions2"></div>
-            <div class="add-graph-container">
+            <figure>
+                <div tabindex="0" aria-label="Total Solid Carbon Dispositions"
+                    class="graph active-graph total_solid_carbon_dispositions2"></div>
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
+            <figure>
                 <div tabindex="0" aria-label="Annual Net Change Carbon Stocks"
-                    class="graph non-active annual_net_change_carbon_stocks"></div>
+                    class="graph active-graph annual_net_change_carbon_stocks"></div>
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
+            <figure>
                 <div tabindex="0" aria-label="Annual Harvest and Timber Products Output"
-                    class="graph non-active annual_harvest_and_timber_product_output"></div>
+                    class="graph active-graph annual_harvest_and_timber_product_output"></div>
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
 
-            </div>
         </div>
+
         <div id="emissionsContent" class="tabcontent">
-            <div tabindex="0" aria-label="Total Emissions" class="graph active-graph total_emissions_dispositions2 ">
-            </div>
-            <div class="add-graph-container">
+            <figure>
+                <div tabindex="0" aria-label="Total Emissions"
+                    class="graph active-graph total_emissions_dispositions2 ">
+                </div>
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
+            <figure>
                 <div tabindex="0" aria-label="Burned with Energy Capture Emissions"
-                    class="graph non-active burned_with_energy_capture_emissions"></div>
+                    class="graph active-graph burned_with_energy_capture_emissions"></div>
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
+            <figure>
                 <div tabindex="0" aria-label="Burned without Energy Capture Emissions"
-                    class="graph non-active burned_without_energy_capture_emissions"></div>
-                <div tabindex="0" aria-label="SWDS Emissions" class="graph non-active swds_emissions"></div>
-
-            </div>
-        </div>
-        <div id="reusedContent" class="tabcontent">
-            <div tabindex="0" aria-label="" class="graph active-graph total_recycled_in_use"></div>
-            <div class="add-graph-container">
-                <div class="graph non-active"></div>
-                <div class="graph non-active annual_net_change_carbon_stocks_recycled"></div>
-                <div class="graph non-active"></div>
-            </div>
+                    class="graph active-graph burned_without_energy_capture_emissions"></div>
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
+            <figure>
+                <div tabindex="0" aria-label="SWDS Emissions" class="graph active-graph swds_emissions"></div>
+                <figcaption>Lorem Ipsum</figcaption>
+            </figure>
         </div>
         <div id="tableContent" class="tabcontent">
+            <!-- <div class="table-container"> -->
             <div class="graph table active-graph all_final_results_table"></div>
+            <!-- </div> -->
         </div>
+</div>
 
 
-    </section>
+
+</section>
 </div>
 <div id="hidden-graphs" style="display:none;">
     <div class="graph table hidden all_final_results_hidden_table"></div>
@@ -191,15 +213,38 @@
     <div class="graph table hidden total_yearly_dispositions"></div>
     <div class="graph table hidden total_selected_dispositions"></div>
 
-
-    <div class="graph hidden all_results_final_hidden"></div>
-    <div class="graph hidden total_solid_carbon_dispositions_hidden"></div>
-    <div class="graph hidden total_emissions_dispositions_hidden"></div>
-    <div class="graph hidden annual_net_change_carbon_stocks_hidden"></div>
-    <div class="graph hidden annual_harvest_and_timber_product_output_hidden"></div>
-    <div class="graph hidden burned_with_energy_capture_emissions_hidden"></div>
-    <div class="graph hidden burned_without_energy_capture_emissions_hidden"></div>
-    <div class="graph hidden swds_emissions_hidden"></div>
+    <figure>
+        <div class="graph hidden all_results_final_hidden"></div>
+        <figcaption></figcaption>
+    </figure>
+    <figure>
+        <div class="graph hidden total_solid_carbon_dispositions_hidden"></div>
+        <figcaption></figcaption>
+    </figure>
+    <figure>
+        <div class="graph hidden total_emissions_dispositions_hidden"></div>
+        <figcaption></figcaption>
+    </figure>
+    <figure>
+        <div class="graph hidden annual_net_change_carbon_stocks_hidden"></div>
+        <figcaption></figcaption>
+    </figure>
+    <figure>
+        <div class="graph hidden annual_harvest_and_timber_product_output_hidden"></div>
+        <figcaption></figcaption>
+    </figure>
+    <figure>
+        <div class="graph hidden burned_with_energy_capture_emissions_hidden"></div>
+        <figcaption></figcaption>
+    </figure>
+    <figure>
+        <div class="graph hidden burned_without_energy_capture_emissions_hidden"></div>
+        <figcaption></figcaption>
+    </figure>
+    <figure>
+        <div class="graph hidden swds_emissions_hidden"></div>
+        <figcaption></figcaption>
+    </figure>
 </div>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jszip.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/output.js') }}"></script>

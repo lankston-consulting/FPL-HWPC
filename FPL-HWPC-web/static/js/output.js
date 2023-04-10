@@ -15,12 +15,13 @@ captions_dict["annual_harvest_and_timber_product_output"] = [
 ];
 captions_dict["annual_net_change_carbon_stocks"] = [
   {
-    text: "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested <br> from [minimum year] to [maximum year] using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that <br> are still in use and carbon stored at solid waste disposal sites (SWDS). Carbon emissions <br> are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
+    text: "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from [minimum year] to [maximum year] using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS). Carbon emission are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 captions_dict["all_results_final"] = [
   {
-    text: "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested <br> from [minimum year] to [maximum year] using the IPCC Tier 3 Production Approach and Total cumulative metric tons carbon <br> emitted with and without energy capture. Carbon in HWP includes both products that are still in use and carbon stored at solid <br> waste disposal sites. Carbon emitted from discarded wood and paper products from landfills is emitted without energy capture. Storage is converted into CO2e and Carbon emissions <br> are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane."},
+    text: "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from [minimum year] to [maximum year] using the IPCC Tier 3 Production Approach and Total cumulative metric tons carbon emitted with and without energy capture. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites. Carbon emitted from discarded wood and paper products from landfills is emitted without energy capture. Storage is converted into CO2e and Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
+  },
 ];
 captions_dict["end_use"] = [
   {
@@ -29,67 +30,67 @@ captions_dict["end_use"] = [
 ];
 captions_dict["burned_with_energy_capture_emissions"] = [
   {
-    text: "Total cumulative metric ton carbon emitted from burning discarded products with energy capture manufactured from total timber harvested from [minimum year] to [maximum year]. <br> Discarded products are assumed to be burned in an incinerator with energy capture. Emitted carbon is displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) <br> and do not include other carbon-based greenhouse gases such as methane.",
+    text: "Total cumulative metric ton carbon emitted from burning discarded products with energy capture manufactured from total timber harvested from [minimum year] to [maximum year]. Discarded products are assumed to be burned in an incinerator with energy capture. Emitted carbon is displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 captions_dict["burned_without_energy_capture_emissions"] = [
   {
-    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from burning discarded products without energy capture manufactured from total timber harvested from [minimum year] to [maximum year]. <br> Carbon emitted from burned discarded products is assumed to be emitted without energy capture. Carbon emissions <br> are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
+    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from burning discarded products without energy capture manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon emitted from burned discarded products is assumed to be emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 captions_dict["total_cumulative_carbon_stocks"] = [
   {
-    text: "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from <br> [minimum year] to [maximum year] using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are <br> still in use and carbon stored at solid waste disposal sites (SWDS).",
+    text: "Total cumulative metric tons of carbon stocks in harvested wood products (HWP) manufactured from total timber harvested from [minimum year] to [maximum year] using the IPCC Tier 3 Production Approach. Carbon in HWP includes both products that are still in use and carbon stored at solid waste disposal sites (SWDS).",
   },
 ];
 captions_dict["total_dumps_carbon"] = [
   {
-    text: "Total cumulative metric tons Carbon stored in dumps from discarded products manufactured from total timber harvested from <br> [minimum year] to [maximum year]. Carbon in dumps include discarded wood and paper products and comprise a portion of <br> the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to <br> modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other <br> carbon-based greenhouse gases such as methane.",
+    text: "Total cumulative metric tons Carbon stored in dumps from discarded products manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon in dumps include discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 captions_dict["total_landfills_carbon"] = [
   {
-    text: "Total cumulative metric tons Carbon stored in landfills from discarded products manufactured from total timber harvested <br> from [minimum year] to [maximum year]. Carbon in landfills are discarded wood and paper products and comprise a<br> portion of the solid waste disposal site pool. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e)<br> and do not include other carbon-based greenhouse gases such as methane.",
+    text: "Total cumulative metric tons Carbon stored in landfills from discarded products manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon in landfills are discarded wood and paper products and comprise a portion of the solid waste disposal site pool. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 captions_dict["total_dumps_carbon_emitted"] = [
   {
-    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from discarded products in dumps manufactured from total timber harvested from <br> [minimum year] to [maximum year]. Carbon emitted from discarded wood and paper products in dumps is decay<br> without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher <br> rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) <br> and do not include other carbon-based greenhouse gases such as methane.",
+    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from discarded products in dumps manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon emitted from discarded wood and paper products in dumps is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 captions_dict["total_composted_carbon_emitted"] = [
   {
-    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from composted discarded harvested wood products manufactured from total <br>  timber harvested from [minimum year] to [maximum year]. No carbon storage is associated with composted discarded <br> products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of <br> carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other greenhouse gases such as methane.",
+    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from composted discarded harvested wood products manufactured from total timber harvested from [minimum year] to [maximum year]. No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other greenhouse gases such as methane.",
   },
 ];
 captions_dict["total_landfills_carbon_emitted"] = [
   {
-    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from discarded products in landfills manufactured from total timber harvested <br> from [minimum year] to [maximum year]. Carbon emitted from discarded wood and paper products in landfills is decay without<br> energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is <br>not included. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based<br> greenhouse gases such as methane.",
+    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from discarded products in landfills manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon emitted from discarded wood and paper products in landfills is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 captions_dict["total_solid_carbon_dispositions"] = [
   {
-    text: "Total cumulative metric tons Carbon stored in end-use products in use, in landfills from discarded products, and in dumps <br>from discarded products manufactured from total timber harvested from [minimum year] to [maximum year]. The recalcitrance of carbon<br> in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products<br> in use pool in a given inventory year includes products in use and recovered products. Carbon in landfills and dumps are <br>discarded wood and paper products, and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper<br> waste was generally discarded to dumps, as opposed to modern landfills. Stocks are converted into metric tons CO<sub>2</sub>e units.",
+    text: "Total cumulative metric tons Carbon stored in end-use products in use, in landfills from discarded products, and in dumps from discarded products manufactured from total timber harvested from [minimum year] to [maximum year]. The recalcitrance of carbon in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products in use pool in a given inventory year includes products in use and recovered products. Carbon in landfills and dumps are discarded wood and paper products, and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills. Stocks are converted into metric tons CO<sub>2</sub>e units.",
   },
 ];
 captions_dict["total_solid_carbon_dispositions2"] = [
   {
-    text: "Total cumulative metric tons Carbon stored in end-use products in use, in landfills from discarded products, and in dumps <br>from discarded products manufactured from total timber harvested from [minimum year] to [maximum year]. The recalcitrance of carbon<br> in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products<br> in use pool in a given inventory year includes products in use and recovered products. Carbon in landfills and dumps are <br>discarded wood and paper products, and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper<br> waste was generally discarded to dumps, as opposed to modern landfills. Stocks are converted into metric tons CO<sub>2</sub>e units.",
+    text: "Total cumulative metric tons Carbon stored in end-use products in use, in landfills from discarded products, and in dumps from discarded products manufactured from total timber harvested from [minimum year] to [maximum year]. The recalcitrance of carbon in harvested wood products is highly dependent upon the end use of those products. The carbon remaining in the end-use products in use pool in a given inventory year includes products in use and recovered products. Carbon in landfills and dumps are discarded wood and paper products, and comprise a portion of the solid waste disposal site pool. Prior to 1970, wood and paper waste was generally discarded to dumps, as opposed to modern landfills. Stocks are converted into metric tons CO<sub>2</sub>e units.",
   },
 ];
 captions_dict["total_emissions_dispositions"] = [
   {
-    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from fuelwood and wood waste used for fuel with energy capture, burned discarded<br> products with and without energy capture, composted discarded harvested wood products, and discarded products in <br>dumps and landfills manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon emitted from burning fuelwood<br> and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of<br> fossil fuel carbon. Discarded burned products are assumed to be burned in an incinerator with energy capture. No carbon storage<br> is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emitted<br> from discarded wood and paper products in dumps and landfills is decay without energy capture. Prior to 1970 wood and paper <br>waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are<br> displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
+    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from fuelwood and wood waste used for fuel with energy capture, burned discarded products with and without energy capture, composted discarded harvested wood products, and discarded products in dumps and landfills manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Discarded burned products are assumed to be burned in an incinerator with energy capture. No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emitted from discarded wood and paper products in dumps and landfills is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 captions_dict["total_emissions_dispositions2"] = [
   {
-    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from fuelwood and wood waste used for fuel with energy capture, burned discarded<br> products with and without energy capture, composted discarded harvested wood products, and discarded products in <br>dumps and landfills manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon emitted from burning fuelwood<br> and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of<br> fossil fuel carbon. Discarded burned products are assumed to be burned in an incinerator with energy capture. No carbon storage<br> is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emitted<br> from discarded wood and paper products in dumps and landfills is decay without energy capture. Prior to 1970 wood and paper <br>waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are<br> displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
+    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from fuelwood and wood waste used for fuel with energy capture, burned discarded products with and without energy capture, composted discarded harvested wood products, and discarded products in dumps and landfills manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon emitted from burning fuelwood and wood waste with energy capture occurs during the year of harvest and is not assumed to substitute for an equivalent amount of fossil fuel carbon. Discarded burned products are assumed to be burned in an incinerator with energy capture. No carbon storage is associated with composted discarded products and all composted carbon is decay emitted without energy capture. Carbon emitted from discarded wood and paper products in dumps and landfills is decay without energy capture. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 captions_dict["swds_emissions"] = [
   {
-    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from discarded products in landfills and dumps manufactured from total<br> timber harvested from [minimum year] to [maximum year]. Carbon emitted from discarded wood and paper products in landfills and dumps is <br>decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with <br>energy capture is not included. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher <br>rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not <br>include other carbon-based greenhouse gases such as methane.",
+    text: "Total cumulative metric tons CO<sub>2</sub>e emitted from discarded products in landfills and dumps manufactured from total timber harvested from [minimum year] to [maximum year]. Carbon emitted from discarded wood and paper products in landfills and dumps is decay without energy capture. Methane remediation from landfills that includes combustion and subsequent emissions with energy capture is not included. Prior to 1970 wood and paper waste was generally discarded to dumps, where it was subject to higher rates of decay than in modern landfills. Carbon emissions are displayed in units of carbon dioxide equivalent (t CO<sub>2</sub>e) and do not include other carbon-based greenhouse gases such as methane.",
   },
 ];
 // COLORS
@@ -502,130 +503,111 @@ output.initialize = function (input_json, bucket, file_name, is_single, scenario
   ];
 };
 
+
+
 $("#defaultOpen").click(function (e) {
-  let active_id = $("#cumulativeResultsContent").children()[0].classList[
-    $("#cumulativeResultsContent").children()[0].classList.length - 1
-  ];
-  let inactive_ids = [];
-  for (const element of $("#cumulativeResultsContent").children()[1].children) {
-    inactive_ids.push(
-      element.classList[
-        element.classList
+  let active_ids = [];
+  for (const element of $("#cumulativeResultsContent").children()) {
+   if (element.nodeName == "FIGURE") {
+      active_ids.push(
+        element.children[0].classList[
+        element.children[0].classList
           .length - 1
-      ]
-    );
+        ]
+     );
+    }
   }
-  generate_graph(
-    data_dict[active_id][0],
-    active_id,
-    "active",
-    data_dict[active_id][1],
-    data_dict[active_id][2],
-    captions_dict[active_id]
-  );
-  for (const element of inactive_ids) {
-    generate_graph(
-      data_dict[element][0],
-      element,
-      "inactive",
-      data_dict[element][1],
-      data_dict[element][2]
-    );
+  for (const element of active_ids) {
+      generate_graph(
+        data_dict[element][0],
+        element,
+        "active",
+        data_dict[element][1],
+        data_dict[element][2],
+        captions_dict[element]
+    ); 
   }
 });
 $("#solidCarbon").click(function (e) {
-  let active_id = $("#solidCarbonContent").children()[0].classList[
-    $("#solidCarbonContent").children()[0].classList.length - 1
-  ];
-  let inactive_ids = [];
-  for (const element of $("#solidCarbonContent").children()[1].children) {
-    inactive_ids.push(
-      element.classList[
-        element.classList.length - 1
-      ]
-    );
+  let active_ids = [];
+  for (const element of $("#solidCarbonContent").children()) {
+    console.log(element)
+    if (element.nodeName == "FIGURE") {
+      active_ids.push(
+        element.children[0].classList[
+        element.children[0].classList
+          .length - 1
+        ]
+      );
+    }
   }
-  generate_graph(
-    data_dict[active_id][0],
-    active_id,
-    "active",
-    data_dict[active_id][1],
-    data_dict[active_id][2],
-    captions_dict[active_id]
-  );
-  for (const element of inactive_ids) {
-    generate_graph(
-      data_dict[element][0],
-      element,
-      "inactive",
-      data_dict[element][1],
-      data_dict[element][2],
-    );
-  }
-});
-$("#emissions").click(function (e) {
- let active_id =
-    $("#emissionsContent").children()[0].classList[
-      $("#emissionsContent").children()[0].classList.length - 1
-    ];
-  let inactive_ids = [];
-  for (const element of $("#emissionsContent").children()[1].children) {
-    inactive_ids.push(
-      element.classList[
-        element.classList.length - 1
-      ]
-    );
-  }
-  generate_graph(
-    data_dict[active_id][0],
-    active_id,
-    "active",
-    data_dict[active_id][1],
-    data_dict[active_id][2],
-    captions_dict[active_id]
-  );
-  for (const element of inactive_ids) {
-    generate_graph(
-      data_dict[element][0],
-      element,
-      "inactive",
-      data_dict[element][1],
-      data_dict[element][2]
-    );
-  }
+  for (const element of active_ids) {
+      generate_graph(
+        data_dict[element][0],
+        element,
+        "active",
+        data_dict[element][1],
+        data_dict[element][2],
+        captions_dict[element]
+      );
+    }
 });
 
-$("#reused").click(function (e) {
-  let active_id =
-    $("#reusedContent").children()[0].classList[
-      $("#reusedContent").children()[0].classList.length - 1
-    ];
-  let inactive_ids = [];
-  for (const element of $("#reusedContent").children()[1].children) {
-    inactive_ids.push(
-      element.classList[
-        element.classList.length - 1
-      ]
-    );
+$("#emissions").click(function (e) {
+  //emissionsContent
+  let active_ids = [];
+  for (const element of $("#emissionsContent").children()) {
+    if (element.nodeName == "FIGURE") {
+      active_ids.push(
+        element.children[0].classList[
+        element.children[0].classList
+          .length - 1
+        ]
+      );}
   }
-  generate_graph(
-    data_dict[active_id][0],
-    active_id,
-    "active",
-    data_dict[active_id][1],
-    data_dict[active_id][2],
-    captions_dict[active_id]
-  );
-  for (const element of inactive_ids) {
-    generate_graph(
-      data_dict[element][0],
-      element,
-      "inactive",
-      data_dict[element][1],
-      data_dict[element][2],
-    );
-  }
+  for (const element of active_ids) {
+      generate_graph(
+        data_dict[element][0],
+        element,
+        "active",
+        data_dict[element][1],
+        data_dict[element][2],
+        captions_dict[element]
+      );
+    }
 });
+
+// $("#reused").click(function (e) {
+//   let active_id =
+//     $("#reusedContent").children()[0].classList[
+//       $("#reusedContent").children()[0].classList.length - 1
+//     ];
+//   let inactive_ids = [];
+//   for (const element of $("#reusedContent").children()[1].children) {
+//     inactive_ids.push(
+//       element.classList[
+//         element.classList.length - 1
+//       ]
+//     );
+//   }
+//   generate_graph(
+//     data_dict[active_id][0],
+//     active_id,
+//     "active",
+//     data_dict[active_id][1],
+//     data_dict[active_id][2],
+//     captions_dict[active_id]
+//   );
+//   for (const element of inactive_ids) {
+//     generate_graph(
+//       data_dict[element][0],
+//       element,
+//       "inactive",
+//       data_dict[element][1],
+//       data_dict[element][2],
+//     );
+//   }
+// });
 
 $("#table").click(function (e) {
  let active_id =
@@ -644,145 +626,145 @@ $("#table").click(function (e) {
 
 
 // Keydown event listener
-$("#defaultOpen").keydown(function (e) {
-  if (e.which === 32 || e.which === 13) {
-    let active_id = $("#cumulativeResultsContent").children()[0].classList[
-      $("#cumulativeResultsContent").children()[0].classList.length - 1
-    ];
+// $("#defaultOpen").keydown(function (e) {
+//   if (e.which === 32 || e.which === 13) {
+//     let active_id = $("#cumulativeResultsContent").children()[0].classList[
+//       $("#cumulativeResultsContent").children()[0].classList.length - 1
+//     ];
     
-    let inactive_ids = [];
-    for (const element of $("#cumulativeResultsContent").children()[1].children) {
-      inactive_ids.push(
-        element.classList[
-          element.classList
-            .length - 1
-        ]
-      );
-    }
-    generate_graph(
-      data_dict[active_id][0],
-      active_id,
-      "active",
-      data_dict[active_id][1],
-      data_dict[active_id][2],
-      captions_dict[active_id]
-    );
-    for (const element of inactive_ids) {
-      generate_graph(
-        data_dict[element][0],
-        element,
-        "inactive",
-        data_dict[element][1],
-        data_dict[element][2]
-      );
-    }
-  }
-});
+//     let inactive_ids = [];
+//     for (const element of $("#cumulativeResultsContent").children()[1].children) {
+//       inactive_ids.push(
+//         element.classList[
+//           element.classList
+//             .length - 1
+//         ]
+//       );
+//     }
+//     generate_graph(
+//       data_dict[active_id][0],
+//       active_id,
+//       "active",
+//       data_dict[active_id][1],
+//       data_dict[active_id][2],
+//       captions_dict[active_id]
+//     );
+//     for (const element of inactive_ids) {
+//       generate_graph(
+//         data_dict[element][0],
+//         element,
+//         "inactive",
+//         data_dict[element][1],
+//         data_dict[element][2]
+//       );
+//     }
+//   }
+// });
 
-$("#solidCarbon").keydown(function (e) {
-  if (e.which === 32 || e.which === 13) {
-    let active_id = $("#solidCarbonContent").children()[0].classList[
-      $("#solidCarbonContent").children()[0].classList.length - 1
-    ];
+// $("#solidCarbon").keydown(function (e) {
+//   if (e.which === 32 || e.which === 13) {
+//     let active_id = $("#solidCarbonContent").children()[0].classList[
+//       $("#solidCarbonContent").children()[0].classList.length - 1
+//     ];
     
-    let inactive_ids = [];
-    for (const element of $("#solidCarbonContent").children()[1].children) {
-      inactive_ids.push(
-        element.classList[
-          element.classList.length -
-            1
-        ]
-      );
-    }
-    generate_graph(
-      data_dict[active_id][0],
-      active_id,
-      "active",
-      data_dict[active_id][1],
-      data_dict[active_id][2],
-      captions_dict[active_id]
-    );
-    for (const element of inactive_ids) {
-      generate_graph(
-        data_dict[element][0],
-        element,
-        "inactive",
-        data_dict[element][1],
-        data_dict[element][2],
-      );
-    }
-  }
-});
+//     let inactive_ids = [];
+//     for (const element of $("#solidCarbonContent").children()[1].children) {
+//       inactive_ids.push(
+//         element.classList[
+//           element.classList.length -
+//             1
+//         ]
+//       );
+//     }
+//     generate_graph(
+//       data_dict[active_id][0],
+//       active_id,
+//       "active",
+//       data_dict[active_id][1],
+//       data_dict[active_id][2],
+//       captions_dict[active_id]
+//     );
+//     for (const element of inactive_ids) {
+//       generate_graph(
+//         data_dict[element][0],
+//         element,
+//         "inactive",
+//         data_dict[element][1],
+//         data_dict[element][2],
+//       );
+//     }
+//   }
+// });
 
-$("#emissions").keydown(function (e) {
-  if (e.which === 32 || e.which === 13) {
-    let active_id =
-      $("#emissionsContent").children()[0].classList[
-        $("#emissionsContent").children()[0].classList.length - 1
-      ];
+// $("#emissions").keydown(function (e) {
+//   if (e.which === 32 || e.which === 13) {
+//     let active_id =
+//       $("#emissionsContent").children()[0].classList[
+//         $("#emissionsContent").children()[0].classList.length - 1
+//       ];
     
-    let inactive_ids = [];
-    for (const element of $("#emissionsContent").children()[1].children) {
-      inactive_ids.push(
-        element.classList[
-          element.classList.length - 1
-        ]
-      );
-    }
-    generate_graph(
-      data_dict[active_id][0],
-      active_id,
-      "active",
-      data_dict[active_id][1],
-      data_dict[active_id][2],
-      captions_dict[active_id]
-    );
-    for (const element of inactive_ids) {
-      generate_graph(
-        data_dict[element][0],
-        element,
-        "inactive",
-        data_dict[element][1],
-        data_dict[element][2],
-      );
-    }
-  }
-});
+//     let inactive_ids = [];
+//     for (const element of $("#emissionsContent").children()[1].children) {
+//       inactive_ids.push(
+//         element.classList[
+//           element.classList.length - 1
+//         ]
+//       );
+//     }
+//     generate_graph(
+//       data_dict[active_id][0],
+//       active_id,
+//       "active",
+//       data_dict[active_id][1],
+//       data_dict[active_id][2],
+//       captions_dict[active_id]
+//     );
+//     for (const element of inactive_ids) {
+//       generate_graph(
+//         data_dict[element][0],
+//         element,
+//         "inactive",
+//         data_dict[element][1],
+//         data_dict[element][2],
+//       );
+//     }
+//   }
+// });
 
-$("#reused").keydown(function (e) {
-  if (e.which === 32 || e.which === 13) {
-    let active_id =
-      $("#reusedContent").children()[0].classList[
-        $("#reusedContent").children()[0].classList.length - 1
-      ];
+// $("#reused").keydown(function (e) {
+//   if (e.which === 32 || e.which === 13) {
+//     let active_id =
+//       $("#reusedContent").children()[0].classList[
+//         $("#reusedContent").children()[0].classList.length - 1
+//       ];
     
-    let inactive_ids = [];
-    for (const element of $("#reusedContent").children()[1].children) {
-      inactive_ids.push(
-        element.classList[
-          element.classList.length - 1
-        ]
-      );
-    }
-    generate_graph(
-      data_dict[active_id][0],
-      active_id,
-      "active",
-      data_dict[active_id][1],
-      data_dict[active_id][2],
-      captions_dict[active_id]
-    );
-    for (const element of inactive_ids) {
-      generate_graph(
-        data_dict[element][0],
-        element,
-        "inactive",
-        data_dict[element][1],
-        data_dict[element][2],
-      );
-    }
-  }
-});
+//     let inactive_ids = [];
+//     for (const element of $("#reusedContent").children()[1].children) {
+//       inactive_ids.push(
+//         element.classList[
+//           element.classList.length - 1
+//         ]
+//       );
+//     }
+//     generate_graph(
+//       data_dict[active_id][0],
+//       active_id,
+//       "active",
+//       data_dict[active_id][1],
+//       data_dict[active_id][2],
+//       captions_dict[active_id]
+//     );
+//     for (const element of inactive_ids) {
+//       generate_graph(
+//         data_dict[element][0],
+//         element,
+//         "inactive",
+//         data_dict[element][1],
+//         data_dict[element][2],
+//       );
+//     }
+//   }
+// });
 
 
 function generate_graph(
@@ -794,879 +776,30 @@ function generate_graph(
   caption
 ) {
   let stackedData = [];
-  if (is_active == "inactive") {
-    if (graph_type == "line") {
-      let tester = document.getElementsByClassName("non-active " + graph_class)[0];
-      const data = d3.csvParse(json_data);
-
-      let year_array = [];
-      let value_array = [];
-
-      for (let i in data) {
-        year_array.push(data[i][data.columns[0]]);
-        value_array.push(data[i][data.columns[1]]);
-      }
-
-      let trace1 = {
-        x: year_array,
-        y: value_array,
-        name: data_dict[graph_class][1],
-        type: "scatter",
-      };
-      let stackedData = [trace1];
-      let layout = {
-        title: title,
-        height: 350,
-        responsive: true,
-        showlegend: false,
-        
-      };
-
-      Plotly.newPlot(tester, stackedData, layout, { staticPlot: true });
-    } else if (graph_type == "multiline") {
-      console.log("graph type is active multiline");
-      let tester = document.getElementsByClassName("non-active " + graph_class)[0];
-      const data = d3.csvParse(json_data, function (d) {
-        return {
-          year: d[Object.keys(d)[0]],
-          value1: d[Object.keys(d)[1]],
-          value2: d[Object.keys(d)[2]],
-        };
-      });
-
-      let year_array = [];
-      let value1_array = [];
-      let value2_array = [];
-      for (let i in data) {
-        year_array.push(data[i].year);
-        value1_array.push(data[i].value1);
-        value2_array.push(data[i].value2);
-      }
-
-      let trace1 = {
-        x: year_array,
-        y: value1_array,
-        name: "Annual Harvest",
-        type: "scatter",
-      };
-
-      let trace2 = {
-        x: year_array,
-        y: value2_array,
-        name: "Annual Timber Harvest",
-        type: "scatter",
-      };
-
-      let layout = {
-        title: "Annual Harvest and Timber Product Outputs",
-        height: 350,
-        width: 420,
-        responsive: true,
-        showlegend: false,
-      };
-
-      let stackedData = [trace1, trace2];
-      Plotly.newPlot(tester, stackedData, layout, { staticPlot: true });
-    } else if (graph_type == "stack") {
-      let tester = document.getElementsByClassName("non-active " + graph_class)[0];
-      const data = d3.csvParse(json_data);
-      
-      let year_data = [];
-      let emissions_present = false;
-      let solid_present = false;
-      for (let i in data.columns) {
-        if (data.columns[i].includes("co2e")) {
-          emissions_present = true;
-        }
-        if (
-          !data.columns[i].includes("co2e") &&
-          !data.columns[i].includes("Year")
-        ) {
-          solid_present = true;
-        }
-      }
-      for (let i in data.columns) {
-        let column = data.columns[i];
-        if (i == 0) {
-          for (let j in data) {
-            year_data.push(data[j][column]);
-          }
-        } else {
-          let temp = [];
-          let y_name = ''
-          let temp_trace = ''
-          for (let j in data) {
-            temp.push(data[j][column]);
-          }
-          let colorHex = "#333";
-          if (column == "products_in_use") {
-            y_name = "Products in Use";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "products_in_use_mgc") {
-            y_name = "Products in Use";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "products_in_use_present_co2e") {
-            y_name = "Products in Use";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "SWDS") {
-            y_name = "SWDS";
-            colorHex = colors["green"];
-          }
-          if (column == "SWDS_mgc") {
-            y_name = "SWDS";
-            colorHex = colors["green"];
-          }
-          if (column == "SWDS_present_co2e") {
-            y_name = "SWDS";
-            colorHex = colors["green"];
-          }
-          if (column == "emitted_w_energy_capture_emitted_co2e") {
-            y_name = "Emitted with Energy Capture";
-            colorHex = colors["lightRed"];
-          }
-          if (column == "emitted_w_energy_capture") {
-            y_name = "Emitted with Energy Capture";
-            colorHex = colors["lightRed"];
-          }
-          if (column == "emitted_wo_energy_capture") {
-            y_name = "Emitted without Energy Capture";
-            colorHex = colors["darkRed"];
-          }
-          if (column == "emitted_wo_energy_capture_emitted_co2e") {
-            y_name = "Emitted without Energy Capture";
-            colorHex = colors["darkRed"];
-          }
-          if (column == "Fuel_emitted_co2e") {
-            y_name = "Fuelwood Emissions";
-            colorHex = colors["fuelwood_emissions"];
-          }
-          if (column == "Composted_emitted_co2e") {
-            y_name = "Compost Emissions";
-            colorHex = colors["compost_emissions"];
-          }
-          if (column == "Dumps_emitted_mgc") {
-            y_name = "Dump Emissions";
-            colorHex = colors["dump_emissions"];
-          }
-          if (column == "Dumps_emitted_co2e") {
-            y_name = "Dump Emissions";
-            colorHex = colors["dump_emissions"];
-          }
-          if (column == "Landfills_emitted_co2e") {
-            y_name = "Landfill Emissions";
-            colorHex = colors["landfill_emissions"];
-          }
-          if (column == "Dumps_present_mgc") {
-            y_name = "Carbon in Dumps";
-            colorHex = colors["dump_emissions"];
-          }
-          if (column == "Landfills_present_mgc") {
-            y_name = "Carbon in Landfills";
-            colorHex = colors["landfill_emissions"];
-          }
-          if (column == "new_products_in_use") {
-            y_name = "Products in Use, original";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "reused_products_in_use") {
-            y_name = "Products in Use, recycled  ";
-            colorHex = colors["lightBlue"];
-          }
-          if (column == "new_products_in_use_co2e") {
-            y_name = "Products in Use, original";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "reused_products_in_use_co2e") {
-            y_name = "Products in Use, recycled  ";
-            colorHex = colors["lightBlue"];
-          }
-          if (column == "new_products_in_use_present_co2e") {
-            y_name = "Products in Use, original";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "reused_products_in_use_present_co2e") {
-            y_name = "Products in Use, recycled  ";
-            colorHex = colors["lightBlue"];
-          }
-          if (column == "new_products_in_use_mgc") {
-            y_name = "Products in Use, original";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "reused_products_in_use_mgc") {
-            y_name = "Products in Use, recycled  ";
-            colorHex = colors["lightBlue"];
-          }
-          
-          if (emissions_present && !solid_present) {
-            temp_trace = {
-              x: year_data,
-              y: temp,
-              name: y_name,
-              stackgroup: "one",
-              line: { color: colorHex }
-            };
-          }
-          if (emissions_present && solid_present) {
-            if (column.includes("emit")) {
-              temp_trace = {
-                x: year_data,
-                y: temp,
-                yaxis: "y2",
-                name: y_name,
-                stackgroup: "one",
-                line: { color: colorHex },
-                fill: { color: colorHex }
-              };
-             
-            } else {
-              temp_trace = {
-                x: year_data,
-                y: temp,
-                name: y_name,
-                stackgroup: "one",
-                line: { color: colorHex }
-              };
-            }
-          }
-          if (!emissions_present && solid_present) {
-            temp_trace = {
-              x: year_data,
-              y: temp,
-              name: y_name,
-              stackgroup: "one",
-              line: { color: colorHex }
-            };
-          }
-          stackedData.push(temp_trace);
-        }
-      }
-      let layout = ""
-      if (emissions_present && !solid_present) {
-        layout = {
-          title: title,
-          responsive: true,
-          showlegend: false,
-          height: 350,
-          width: 420,
-        };
-      }
-      if (emissions_present && solid_present) {
-        layout = {
-          title: title,
-          responsive: true,
-          showlegend: false,
-          height: 350,
-          width: 420,
-        };
-      }
-      if (!emissions_present && solid_present) {
-        layout = {
-          title: title,
-          responsive: true,
-          showlegend: false,
-          height: 350,
-          width: 420,
-        };
-      }
-
-      Plotly.newPlot(tester, stackedData, layout, { staticPlot: true });
-    } else {
-      let tester = document.getElementsByClassName("non-active " + graph_class)[0];
-      const data = d3.csvParse(json_data, function (d) {
-        return {
-          year: d[Object.keys(d)[0]],
-          products_in_use_change: d[Object.keys(d)[1]],
-          SWDS_change: d[Object.keys(d)[2]],
-        };
-      });
-
-      let year_array = [];
-      let prod_array = [];
-      let swds_array = [];
-      for (let i in data) {
-        year_array.push(data[i].year);
-        prod_array.push(data[i].products_in_use_change);
-        swds_array.push(data[i].SWDS_change);
-      }
-      year_array = year_array.slice(0, -2);
-      prod_array = prod_array.slice(0, -2);
-      swds_array = swds_array.slice(0, -2);
-      let trace1 = {
-        x: year_array,
-        y: prod_array,
-        name: "Change in Products in Use",
-        marker: { color: colors["darkBlue"] },
-        type: "bar",
-      };
-
-      let trace2 = {
-        x: year_array,
-        y: swds_array,
-        name: "Change in SWDS",
-        marker: { color: colors["green"] },
-        type: "bar",
-      };
-
-      stackedData = [trace1, trace2];
-
-      let layout = {
-        barmode: "relative",
-        height: 350,
-        width: 420,
-        responsive: true,
-        title: "Annual Net Change Carbon Stocks",
-        showlegend: false,
-        
-      };
-
-      Plotly.newPlot(tester, stackedData, layout, { staticPlot: true });
-    }
-  } else if (is_active == "active") {
-    $("." + graph_class).html("");
-    if (graph_type == "line") {
-      let tester = document.getElementsByClassName(
-        "active-graph " + graph_class
-      )[0];
-      const data = d3.csvParse(json_data);
-
-      let minDateYear = data[0].year;
-      let maxDateYear = data[data.length - 1].year;
-      caption[0].text = caption[0].text.replace("[minimum year]", minDateYear);
-      caption[0].text = caption[0].text.replace("[maximum year]", maxDateYear);
-      let year_array = [];
-      let value_array = [];
-
-      for (let i in data) {
-        year_array.push(data[i][data.columns[0]]);
-        value_array.push(data[i][data.columns[1]]);
-      }
-
-      let trace1 = {
-        x: year_array,
-        y: value_array,
-        name: data_dict[graph_class][1],
-        type: "scatter",
-      };
-
-      
-
-      let layout = {
-        title: data_dict[graph_class][1],
-        xaxis: { title: "Year<br><br>"},
-        yaxis: { title: data_dict[graph_class][3] },
-        automargin: true,
-        height: 700,
-        margin: { l: 100, r: 50, b: 150, t: 100, pad: 4 },
-        responsive: true,
-        annotations: [
-          {
-            xref: "paper",  
-            yref: "paper",
-            x: 0.5,
-            xanchor: "center",
-            y: -0.3,
-            yanchor: "bottom",
-            text: caption[0].text,
-            showarrow: false,
-            font: { size: 16 },
-            width: 1000
-          }
-        ]
-      };
-
-      let stackedData = [trace1];
-
-      Plotly.newPlot(tester, stackedData, layout);
-    } else if (graph_type == "multiline") {
-      console.log("graph type is active multiline");
-      let tester = document.getElementsByClassName(
-        "active-graph " + graph_class
-      )[0];
-      const data = d3.csvParse(json_data, function (d) {
-        return {
-          year: d[Object.keys(d)[0]],
-          value1: d[Object.keys(d)[1]],
-          value2: d[Object.keys(d)[2]],
-        };
-      });
-      
-
-      let minDateYear = data[0].year;
-      let maxDateYear = data[data.length - 1].year;
-      caption[0].text = caption[0].text.replace("[minimum year]", minDateYear);
-      caption[0].text = caption[0].text.replace("[maximum year]", maxDateYear);
-
-      let year_array = [];
-      let value1_array = [];
-      let value2_array = [];
-      for (let i in data) {
-        year_array.push(data[i].year);
-        value1_array.push(data[i].value1);
-        value2_array.push(data[i].value2);
-      }
-
-      let trace1 = {
-        x: year_array,
-        y: value1_array,
-        name: "Annual Harvest",
-        type: "scatter",
-      };
-
-      let trace2 = {
-        x: year_array,
-        y: value2_array,
-        yaxis: "y2",
-        name: "Annual Timber Harvest",
-        type: "scatter",
-      };
-
-      let layout = {
-        title: "Annual Harvest and Timber Product Outputs",
-        xaxis: { title: "Year<br><br>"},
-        yaxis: { title: "Hundred Cubic Feet (CCF)" },
-        yaxis2: {
-          title: "Metric Tons CO<sub>2</sub>e",
-          titlefont: { color: "rgb(148, 103, 189)" },
-          tickfont: { color: "rgb(148, 103, 189)" },
-          overlaying: "y",
-          side: "right",
-        },
-        automargin: true,
-        height: 700,
-        margin: { l: 100, r: 50, b: 100, t: 100, pad: 4 },
-        responsive: true,
-
-        annotations: [
-          {
-            xref: "paper",  
-            yref: "paper",
-            x: 0.5,
-            xanchor: "center",
-            y: -0.2,
-            yanchor: "bottom",
-            text: caption[0].text,
-            showarrow: false,
-            font: { size: 16 },
-            width: 1000
-          }
-        ]
-      
-      
-      };
-
-      let stackedData = [trace1, trace2];
-      Plotly.newPlot(tester, stackedData, layout);
-    } else if (graph_type == "stack") {
-      let tester = document.getElementsByClassName(
-        "active-graph " + graph_class
-      )[0];
-      const data = d3.csvParse(json_data);
-      stackedData = [];
-      let year_data = [];
-      let emissions_present = false;
-      let solid_present = false;
-      
-      let minDateYear = data[0].Year;
-      let maxDateYear = data[data.length - 1].Year;
-      caption[0].text = caption[0].text.replace("[minimum year]", minDateYear);
-      caption[0].text = caption[0].text.replace("[maximum year]", maxDateYear);
-
-      for (let i in data.columns) {
-        if (data.columns[i].includes("co2e")) {
-          emissions_present = true;
-        }
-        if (
-          !data.columns[i].includes("co2e") &&
-          !data.columns[i].includes("Year")
-        ) {
-          solid_present = true;
-        }
-      }
-      for (let i in data.columns) {
-        let column = data.columns[i];
-        if (i == 0) {
-          for (let j in data) {
-            year_data.push(data[j][column]);
-          }
-        } else {
-          let temp = [];
-          for (let j in data) {
-            temp.push(data[j][column]);
-          }
-          
-          let colorHex = "#333";
-          let y_name = ""
-          let temp_trace = ""
-          
-          if (column == "products_in_use") {
-            y_name = "Products in Use";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "products_in_use_mgc") {
-            y_name = "Products in Use";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "products_in_use_present_co2e") {
-            y_name = "Products in Use";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "SWDS") {
-            y_name = "SWDS";
-            colorHex = colors["green"];
-          }
-          if (column == "SWDS_mgc") {
-            y_name = "SWDS";
-            colorHex = colors["green"];
-          }
-          if (column == "SWDS_present_co2e") {
-            y_name = "SWDS";
-            colorHex = colors["green"];
-          }
-          if (column == "emitted_w_energy_capture_emitted_co2e") {
-            y_name = "Emitted with Energy Capture";
-            colorHex = colors["lightRed"];
-          }
-          if (column == "emitted_w_energy_capture") {
-            y_name = "Emitted with Energy Capture";
-            colorHex = colors["lightRed"];
-          }
-          if (column == "emitted_wo_energy_capture") {
-            y_name = "Emitted without Energy Capture";
-            colorHex = colors["darkRed"];
-          }
-          if (column == "emitted_wo_energy_capture_emitted_co2e") {
-            y_name = "Emitted without Energy Capture";
-            colorHex = colors["darkRed"];
-          }
-          if (column == "Fuel_emitted_co2e") {
-            y_name = "Fuelwood Emissions";
-            colorHex = colors["fuelwood_emissions"];
-          }
-          if (column == "Composted_emitted_co2e") {
-            y_name = "Compost Emissions";
-            colorHex = colors["compost_emissions"];
-          }
-          if (column == "Dumps_emitted_mgc") {
-            y_name = "Dump Emissions";
-            colorHex = colors["dump_emissions"];
-          }
-          if (column == "Dumps_emitted_co2e") {
-            y_name = "Dump Emissions";
-            colorHex = colors["dump_emissions"];
-          }
-          if (column == "Landfills_emitted_co2e") {
-            y_name = "Landfill Emissions";
-            colorHex = colors["landfill_emissions"];
-          }
-          if (column == "Dumps_present_mgc") {
-            y_name = "Carbon in Dumps";
-            colorHex = colors["dump_emissions"];
-          }
-          if (column == "Landfills_present_mgc") {
-            y_name = "Carbon in Landfills";
-            colorHex = colors["landfill_emissions"];
-          }
-          if (column == "new_products_in_use") {
-            y_name = "Products in Use, original";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "reused_products_in_use") {
-            y_name = "Products in Use, recycled  ";
-            colorHex = colors["lightBlue"];
-          }
-          if (column == "new_products_in_use_co2e") {
-            y_name = "Products in Use, original";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "reused_products_in_use_co2e") {
-            y_name = "Products in Use, recycled  ";
-            colorHex = colors["lightBlue"];
-          }
-          if (column == "new_products_in_use_present_co2e") {
-            y_name = "Products in Use, original";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "reused_products_in_use_present_co2e") {
-            y_name = "Products in Use, recycled  ";
-            colorHex = colors["lightBlue"];
-          }
-          if (column == "new_products_in_use_mgc") {
-            y_name = "Products in Use, original";
-            colorHex = colors["darkBlue"];
-          }
-          if (column == "reused_products_in_use_mgc") {
-            y_name = "Products in Use, recycled  ";
-            colorHex = colors["lightBlue"];
-          }
-          if (emissions_present && !solid_present) {
-            temp_trace = {
-              x: year_data,
-              y: temp,
-              name: y_name,
-              stackgroup: "one",
-              line: { color: colorHex }
-            };
-          }
-          if (emissions_present && solid_present) {
-            if (column.includes("emit")) {
-              temp_trace = {
-                x: year_data,
-                y: temp,
-                yaxis: "y2",
-                name: y_name,
-                stackgroup: "one",
-                line: { color: colorHex }
-              };
-            } else {
-              temp_trace = {
-                x: year_data,
-                y: temp,
-                name: y_name,
-                stackgroup: "one",
-                line: { color: colorHex }
-              };
-            }
-          }
-          if (!emissions_present && solid_present) {
-            temp_trace = {
-              x: year_data,
-              y: temp,
-              name: y_name,
-              stackgroup: "one",
-              line: { color: colorHex }
-            };
-          }
-          stackedData.push(temp_trace);
-        }
-      }
-
-      let y_buffer = 0.0
-      let layout = ""
-      if (emissions_present && !solid_present) {
-        if(title == "Final Results"){
-          y_buffer = -0.45
-        }
-        else if(title == "Total SWDS Emissions"){
-          y_buffer = -0.45
-        }
-        else{
-          y_buffer = -0.6
-        }
-        layout = {
-          title: title,
-          xaxis: { title: "Year<br><br>"},
-          yaxis: { title: "Metric Tons CO<sub>2</sub>e" },
-          automargin: true,
-          height: 800,
-          margin: { l: 100, r: 50, b: 275, t: 100, pad: 4 },
-          responsive: true,
-          //adding caption as an annotation under graph
-          annotations: [
-            {
-              xref: "paper",  
-              yref: "paper",
-              x: 0.5,
-              xanchor: "center",
-              y: y_buffer,
-              yanchor: "bottom",
-              text: caption[0].text,
-              showarrow: false,
-              font: { size: 16 },
-              width: 1000
-            }
-          ]
-        
-        };
-      }
-      if (emissions_present && solid_present) {
-        layout = {
-          title: title,
-          autosize: true,
-          xaxis: { title: "Year<br><br>:"},
-          yaxis: { title: "Metric Tons CO<sub>2</sub>e" },
-          yaxis2: {
-            title: "Metric Tons CO<sub>2</sub>e",
-            // titlefont: {color: 'rgb(148, 103, 189)'},
-            // tickfont: {color: 'rgb(148, 103, 189)'},
-            overlaying: "y",
-            side: "right",
-          },
-          automargin: true,
-          height: 700,
-          margin: { l: 100, r: 55, b: 200, t: 100, pad: 4 },
-          responsive: true,
-          legend: { x: 1.05, y: 1},
-     
-          annotations: [
-            {
-              xref: "paper",  
-              yref: "paper",
-              x: 0.5,
-              xanchor: "center",
-              y: -0.4,
-              yanchor: "bottom",
-              text: caption[0].text,
-              showarrow: false,
-              font: { size: 16 },
-              width: 1000
-            }
-          ]
-        
-        };
-      }
-      if (!emissions_present && solid_present) {
-        if(title == "Total Cumulative Solid Carbon Dispositions"){
-          y_buffer = -0.5
-        }
-        else{
-          y_buffer = -0.4
-        }
-        layout = {
-          title: title,
-          xaxis: { title: "Year<br><br>"},
-          yaxis: { title: "Metric Tons Carbon" },
-          automargin: true,
-          height: 700,
-          margin: { l: 100, r: 50, b: 200, t: 100, pad: 4 },
-          responsive: true,
-        
-          annotations: [
-            {
-              xref: "paper",  
-              yref: "paper",
-              x: 0.5,
-              xanchor: "center",
-              y: y_buffer,
-              yanchor: "bottom",
-              text: caption[0].text,
-              showarrow: false,
-              font: { size: 16 },
-              width: 1000
-            }
-          ]
-        
-        };
-      }
-      Plotly.newPlot(tester, stackedData, layout);
-
-    } else {
-      console.log("graph type is active bar");
-      let tester = document.getElementsByClassName(
-        "active-graph " + graph_class
-      )[0];
-      const data = d3.csvParse(json_data, function (d) {
-        return {
-          year: d[Object.keys(d)[0]],
-          products_in_use_change: d[Object.keys(d)[1]],
-          SWDS_change: d[Object.keys(d)[2]],
-        };
-      });
-      let minDateYear = data[0].year;
-      let maxDateYear = data[data.length - 1].year;
-      caption[0].text = caption[0].text.replace("[minimum year]", minDateYear);
-      caption[0].text = caption[0].text.replace("[maximum year]", maxDateYear);
-
-      let year_array = [];
-      let prod_array = [];
-      let swds_array = [];
-      let net_change_array = [];
-
-      for (let i in data) {
-        year_array.push(data[i].year);
-        prod_array.push(data[i].products_in_use_change);
-        swds_array.push(data[i].SWDS_change);
-
-        let temp1 = parseInt(data[i].products_in_use_change);
-        let temp2 = parseInt(data[i].SWDS_change);
-        let temp3 = temp1 + temp2;
-
-        net_change_array.push(temp3);
-      }
-      
-      year_array = year_array.slice(0, -2);
-      prod_array = prod_array.slice(0, -2);
-      swds_array = swds_array.slice(0, -2);
-      net_change_array = net_change_array.slice(0, -2);
-
-      let trace1 = {
-        x: year_array,
-        y: prod_array,
-        name: "Change in Products in Use",
-        marker: {color: colors["darkBlue"]},
-        type: "bar",
-      };
-
-      let trace2 = {
-        x: year_array,
-        y: swds_array,
-        name: "Change in SWDS",
-        marker: {color: colors["green"]},
-        type: "bar",
-      };
-
-      let trace3 = {
-        x: year_array,
-        y: net_change_array,
-        name: "Net Change",
-        line: {color: "black"},
-        type: "scatter",
-      };
-
-      stackedData = [trace1, trace2, trace3];
-
-      let layout = {
-        barmode: "relative",
-        xaxis: { title: "Year<br><br>"},
-        yaxis: { title: "Metric Tons CO<sub>2</sub>e" },
-        title: "Annual Net Change Carbon Stocks",
-        automargin: true,
-        height: 700,
-        margin: { l: 100, r: 50, b: 135, t: 100, pad: 4 },
-        responsive: true,
-        annotations: [
-          {
-            xref: "paper",  
-            yref: "paper",
-            x: 0.5,
-            xanchor: "center",
-            y: -0.3,
-            yanchor: "bottom",
-            text: caption[0].text,
-            showarrow: false,
-            font: { size: 16 },
-            width: 1000
-          }
-        ]
-      
-      };
-      Plotly.newPlot(tester, stackedData, layout);
-    }
-  } else {
-    console.log("I broke add error logic here");
-  }
-};
-
-function generate_hidden_graph (
-  json_data,
-  graph_class,
-  title,
-  graph_type,
-  caption
-) {
   
-  let stackedData = [];
   $("." + graph_class).html("");
+  let tester
+  console.log(graph_class)
   if (graph_type == "line") {
-    let tester = document.getElementsByClassName("hidden " + graph_class)[0];
+    if (graph_class.includes("hidden")) { 
+      tester = document.getElementsByClassName(
+        "hidden " + graph_class
+      )[0];
+    }
+    else {
+      tester = document.getElementsByClassName(
+        "active-graph " + graph_class
+      )[0];
+    }
+    
+   
     const data = d3.csvParse(json_data);
 
-    let minDateYear = data[0].Year;
-    let maxDateYear = data[data.length - 1].Year;
+    let minDateYear = data[0].year;
+    let maxDateYear = data[data.length - 1].year;
     caption[0].text = caption[0].text.replace("[minimum year]", minDateYear);
     caption[0].text = caption[0].text.replace("[maximum year]", maxDateYear);
+    tester.nextElementSibling.innerHTML = caption[0].text;
 
     let year_array = [];
     let value_array = [];
@@ -1685,35 +818,57 @@ function generate_hidden_graph (
 
     let layout = {
       title: data_dict[graph_class][1],
-      xaxis: { title: "Year<br><br>"},
+      xaxis: { title: "Year<br><br>" },
       yaxis: { title: data_dict[graph_class][3] },
       automargin: true,
-      height: 700,
-      margin: { l: 100, r: 50, b: 200, t: 100, pad: 4 },
-      responsive: true,
-      annotations: [
-        {
-          xref: "paper",  
-          yref: "paper",
-          x: 0.5,
-          xanchor: "center",
-          y: -0.4,
-          yanchor: "bottom",
-          text: caption[0].text,
-          showarrow: false,
-          font: { size: 16 },
-          width: 1000
-        }
-      ]
-    
+      height: 500,
+      margin: { l: 70, r: 10, b: 50, t: 100, pad: 4 },
+      
+
     };
+
+    let config = {
+      responsive: true,
+      autosize: true,
+    }
 
     let stackedData = [trace1];
 
-    Plotly.newPlot(tester, stackedData, layout);
+   
+    
+    Plotly.newPlot(tester, stackedData, layout, config);
+  
+
+
+    // if (window.innerWidth > 1200) {
+    //   console.log("window width is greater than 1200")
+    //   var layout_update = {
+    //     height: 700,
+    //   }
+    //   Plotly.update(tester, stackedData, layout_update, config);
+  
+    // } else if (window.innerWidth <= 1200) {
+    //   console.log("window width is less than 1200")
+    //   var layout_update = {
+    //     height: 300,
+    //   }
+    //   Plotly.update(tester, stackedData, layout_update, config);
+    // }
+
+  
+
   } else if (graph_type == "multiline") {
     console.log("graph type is active multiline");
-    let tester = document.getElementsByClassName("hidden " + graph_class)[0];
+    if (graph_class.includes("hidden")) { 
+      tester = document.getElementsByClassName(
+        "hidden " + graph_class
+      )[0];
+    }
+    else {
+      tester = document.getElementsByClassName(
+        "active-graph " + graph_class
+      )[0];
+    }
     const data = d3.csvParse(json_data, function (d) {
       return {
         year: d[Object.keys(d)[0]],
@@ -1722,10 +877,12 @@ function generate_hidden_graph (
       };
     });
     
+
     let minDateYear = data[0].year;
     let maxDateYear = data[data.length - 1].year;
     caption[0].text = caption[0].text.replace("[minimum year]", minDateYear);
     caption[0].text = caption[0].text.replace("[maximum year]", maxDateYear);
+    tester.nextElementSibling.innerHTML = caption[0].text;
 
     let year_array = [];
     let value1_array = [];
@@ -1753,7 +910,7 @@ function generate_hidden_graph (
 
     let layout = {
       title: "Annual Harvest and Timber Product Outputs",
-      xaxis: { title: "Year<br><br>"},
+      xaxis: { title: "Year<br><br>" },
       yaxis: { title: "Hundred Cubic Feet (CCF)" },
       yaxis2: {
         title: "Metric Tons CO<sub>2</sub>e",
@@ -1762,44 +919,47 @@ function generate_hidden_graph (
         overlaying: "y",
         side: "right",
       },
-      automargin: true,
-      height: 700,
-      margin: { l: 100, r: 50, b: 150, t: 100, pad: 4 },
-      responsive: true,
-      annotations: [
-        {
-          xref: "paper",  
-          yref: "paper",
-          x: 0.5,
-          xanchor: "center",
-          y: -0.4,
-          yanchor: "bottom",
-          text: caption[0].text,
-          showarrow: false,
-          font: { size: 16 },
-          width: 1000
-        }
-      ]
-    
+      margin: { l: 60, r: 50, b: 50, t: 250 },
+      height: 600,
+      legend: {
+        yanchor: "top",
+        y: 1.3,
+        xanchor: "left",
+        x: 0.01,
+      }
     };
-
+    let config = {
+      responsive: true,
+      autosize: true,
+    };
+    
+    
     let stackedData = [trace1, trace2];
-
-    Plotly.newPlot(tester, stackedData, layout);
-
+    Plotly.newPlot(tester, stackedData, layout, config);
+    
   } else if (graph_type == "stack") {
-    let tester = document.getElementsByClassName("hidden " + graph_class)[0];
+    if (graph_class.includes("hidden")) { 
+      tester = document.getElementsByClassName(
+        "hidden " + graph_class
+      )[0];
+    }
+    else {
+      tester = document.getElementsByClassName(
+        "active-graph " + graph_class
+      )[0];
+    }
     const data = d3.csvParse(json_data);
-    // keys = Object.keys(data[0])
+    stackedData = [];
+    let year_data = [];
+    let emissions_present = false;
+    let solid_present = false;
+    
     let minDateYear = data[0].Year;
     let maxDateYear = data[data.length - 1].Year;
     caption[0].text = caption[0].text.replace("[minimum year]", minDateYear);
     caption[0].text = caption[0].text.replace("[maximum year]", maxDateYear);
+    tester.nextElementSibling.innerHTML = caption[0].text;
 
-    
-    let year_data = [];
-    let emissions_present = false;
-    let solid_present = false;
     for (let i in data.columns) {
       if (data.columns[i].includes("co2e")) {
         emissions_present = true;
@@ -1824,8 +984,9 @@ function generate_hidden_graph (
         }
         
         let colorHex = "#333";
-        let y_name = ''
-        let temp_trace = ''
+        let y_name = ""
+        let temp_trace = ""
+        
         if (column == "products_in_use") {
           y_name = "Products in Use";
           colorHex = colors["darkBlue"];
@@ -1967,38 +1128,39 @@ function generate_hidden_graph (
         stackedData.push(temp_trace);
       }
     }
-    let layout
+
+    let y_buffer = 0.0
+    let layout = ""
     if (emissions_present && !solid_present) {
+      if (title == "Final Results") {
+        y_buffer = -0.45
+      }
+      else if (title == "Total SWDS Emissions") {
+        y_buffer = -0.45
+      }
+      else {
+        y_buffer = -0.6
+      }
       layout = {
         title: title,
-        xaxis: { title: "Year<br><br>"},
+        xaxis: { title: "Year<br><br>" },
         yaxis: { title: "Metric Tons CO<sub>2</sub>e" },
-        automargin: true,
-        height: 800,
-        margin: { l: 100, r: 50, b: 250, t: 100, pad: 4 },
-        responsive: true,
-        annotations: [
-          {
-            xref: "paper",  
-            yref: "paper",
-            x: 0.5,
-            xanchor: "center",
-            y: -0.4,
-            yanchor: "bottom",
-            text: caption[0].text,
-            showarrow: false,
-            font: { size: 16 },
-            width: 1000
-          }
-        ]
+        margin: { l: 60, r: 0, b: 50, t: 205 },
+        height: 600,
+        legend: {
+          yanchor: "top",
+          y: 1.2,
+          xanchor: "left",
+          x: 0.01
+        }
       
       };
     }
-    if (emissions_present == true && solid_present == true) {
+    if (emissions_present && solid_present) {
       layout = {
         title: title,
         autosize: true,
-        xaxis: { title: "Year<br><br>"},
+        xaxis: { title: "Year<br><br>:" },
         yaxis: { title: "Metric Tons CO<sub>2</sub>e" },
         yaxis2: {
           title: "Metric Tons CO<sub>2</sub>e",
@@ -2007,59 +1169,57 @@ function generate_hidden_graph (
           overlaying: "y",
           side: "right",
         },
-        automargin: true,
-        height: 700,
-        margin: { l: 100, r: 55, b: 200, t: 100, pad: 4 },
-        responsive: true,
-        legend: { x: 1.05, y: 1 },
-        annotations: [
-          {
-            xref: "paper",  
-            yref: "paper",
-            x: 0.5,
-            xanchor: "center",
-            y: -0.4,
-            yanchor: "bottom",
-            text: caption[0].text,
-            showarrow: false,
-            font: { size: 16 },
-            width: 1000
-          }
-        ]
-      
+        margin: { l: 60, r: 0, b: 50, t: 205 },
+        height: 600,
+
+       
+        legend: {
+          yanchor: "top",
+          y: 1.2,
+          xanchor: "left",
+          x: 0.01
+        }
       };
     }
     if (!emissions_present && solid_present) {
+      if (title == "Total Cumulative Solid Carbon Dispositions") {
+        y_buffer = -0.5
+      }
+      else {
+        y_buffer = -0.4
+      }
       layout = {
         title: title,
-        xaxis: { title: "Year<br><br>"},
-        yaxis: { title: "Metric Tons CO<sub>2</sub>e" },
-        automargin: true,
-        height: 700,
-        margin: { l: 100, r: 50, b: 200, t: 100, pad: 4 },
-        responsive: true,
-        annotations: [
-          {
-            xref: "paper",  
-            yref: "paper",
-            x: 0.5,
-            xanchor: "center",
-            y: -0.4,
-            yanchor: "bottom",
-            text: caption[0].text,
-            showarrow: false,
-            font: { size: 16 },
-            width: 1000
-          }
-        ]
-      
+        xaxis: { title: "Year<br><br>" },
+        yaxis: { title: "Metric Tons Carbon" },
+        margin: { l: 60, r: 0, b: 50, t: 205 },
+        height: 600,
+        legend: {
+          yanchor: "top",
+          y: 1.2,
+          xanchor: "left",
+          x: 0.01
+        }
       };
     }
+    let config = {
+      responsive: true,
+      autosize: true,
+    };
 
-    Plotly.newPlot(tester, stackedData, layout);
-  } else {
-    console.log("graph type is active bar");
-    let tester = document.getElementsByClassName("hidden " + graph_class)[0];
+    Plotly.newPlot(tester, stackedData, layout, config);
+  }
+  else {
+    if (graph_class.includes("hidden")) { 
+      tester = document.getElementsByClassName(
+        "hidden " + graph_class
+      )[0];
+    }
+    else {
+      tester = document.getElementsByClassName(
+        "active-graph " + graph_class
+      )[0];
+    }
     const data = d3.csvParse(json_data, function (d) {
       return {
         year: d[Object.keys(d)[0]],
@@ -2067,68 +1227,84 @@ function generate_hidden_graph (
         SWDS_change: d[Object.keys(d)[2]],
       };
     });
-    let minDateYear = data[0].Year;
-    let maxDateYear = data[data.length - 1].Year;
+    let minDateYear = data[0].year;
+    let maxDateYear = data[data.length - 1].year;
+    console.log(caption)
     caption[0].text = caption[0].text.replace("[minimum year]", minDateYear);
     caption[0].text = caption[0].text.replace("[maximum year]", maxDateYear);
-
+    tester.nextElementSibling.innerHTML = caption[0].text;
+      
     let year_array = [];
     let prod_array = [];
     let swds_array = [];
+    let net_change_array = [];
+      
     for (let i in data) {
       year_array.push(data[i].year);
       prod_array.push(data[i].products_in_use_change);
       swds_array.push(data[i].SWDS_change);
+      
+      let temp1 = parseInt(data[i].products_in_use_change);
+      let temp2 = parseInt(data[i].SWDS_change);
+      let temp3 = temp1 + temp2;
+      
+      net_change_array.push(temp3);
     }
+            
     year_array = year_array.slice(0, -2);
     prod_array = prod_array.slice(0, -2);
     swds_array = swds_array.slice(0, -2);
+    net_change_array = net_change_array.slice(0, -2);
+      
     let trace1 = {
       x: year_array,
       y: prod_array,
       name: "Change in Products in Use",
-      marker: { color: colors["darkBlue"]},
+      marker: { color: colors["darkBlue"] },
       type: "bar",
     };
-
+      
     let trace2 = {
       x: year_array,
       y: swds_array,
       name: "Change in SWDS",
-      marker: { color: colors["green"]},
+      marker: { color: colors["green"] },
       type: "bar",
     };
-
-    stackedData = [trace1, trace2];
-
+      
+    let trace3 = {
+      x: year_array,
+      y: net_change_array,
+      name: "Net Change",
+      line: { color: "black" },
+      type: "scatter",
+    };
+      
+    stackedData = [trace1, trace2, trace3];
+      
     let layout = {
       barmode: "relative",
-      xaxis: { title: "Year<br><br>"},
+      xaxis: { title: "Year<br><br>" },
       yaxis: { title: "Metric Tons CO<sub>2</sub>e" },
-      title: "Annual Net Change Carbon Stocks",
-      automargin: true,
-      height: 700,
-      margin: { l: 100, r: 50, b: 150, t: 100, pad: 4 },
+      title: "Annual Net Change Carbon Stocks", 
+      margin: { l: 60, r: 0, b: 50, t: 220 },
+      height: 600,
+      legend: {
+        yanchor: "top",
+        y: 1.2,
+        xanchor: "left",
+        x: 0.01
+      }
+    };
+    let config = {
       responsive: true,
-      annotations: [
-        {
-          xref: "paper",  
-          yref: "paper",
-          x: 0.5,
-          xanchor: "center",
-          y: -0.4,
-          yanchor: "bottom",
-          text: caption[0].text,
-          showarrow: false,
-          font: { size: 16 },
-          width: 1000
-        }
-      ]
-    
+      autosize: true,
     };
 
-    Plotly.newPlot(tester, stackedData, layout);
+    Plotly.newPlot(tester, stackedData, layout, config);
   }
+  
+
 };
 
 function generate_table(json_data, table_class, title, is_big_four = false) {
@@ -2299,159 +1475,15 @@ function generate_table(json_data, table_class, title, is_big_four = false) {
       width: imageWidth,
     };
 
-    Plotly.newPlot(tester, data_layout, layout);
+    let config = {
+      responsive: true
+    }
+
+    Plotly.newPlot(tester, data_layout, layout, config);
   }
 };
 
-$(".non-active").click(function (e) {
-  let non_active_div = $(e.target).parent().parent();
-  let non_active_div_siblings = $(e.target).parent().parent().siblings();
-  let non_active_id
-  let current_tabs_active_id
-  let non_active_div_sibling_id
-  let current_tabs_active_graph_sibling = non_active_div
-    .parent()
-    .closest("div");
 
-  let current_tabs_active_graph = current_tabs_active_graph_sibling
-    .siblings()
-    .closest("div");
-  for (const element of non_active_div[0].classList) {
-    if (
-      element != "graph" &&
-      element != "js-plotly-plot" &&
-      element != "non-active"
-    ) {
-      non_active_id = element;
-    }
-  }
-
-  for (const element of current_tabs_active_graph[0].classList) {
-    if (
-      element != "graph" &&
-      element != "active-graph" &&
-      element != "js-plotly-plot"
-    ) {
-      current_tabs_active_id = element;
-    }
-  }
-  current_tabs_active_graph[0].classList.remove(current_tabs_active_id);
-  current_tabs_active_graph[0].classList.add(non_active_id);
-  non_active_div[0].classList.remove(non_active_id);
-  non_active_div[0].classList.add(current_tabs_active_id);
-  generate_graph(
-    data_dict[non_active_id][0],
-    non_active_id,
-    "active",
-    data_dict[non_active_id][1],
-    data_dict[non_active_id][2],
-    captions_dict[non_active_id]
-  );
-  generate_graph(
-    data_dict[current_tabs_active_id][0],
-    current_tabs_active_id,
-    "inactive",
-    data_dict[current_tabs_active_id][1],
-    data_dict[current_tabs_active_id][2]
-  );
-  if (non_active_div_siblings.length != 0) {
-    for (let i = 0; i < non_active_div_siblings.length; i++) {
-      for (const element of non_active_div_siblings[i].classList) {
-        if (
-          element != "graph" &&
-          element != "js-plotly-plot" &&
-          element != "non-active"
-        ) {
-          non_active_div_sibling_id = element;
-        }
-      }
-
-      generate_graph(
-        data_dict[non_active_div_sibling_id][0],
-        non_active_div_sibling_id,
-        "inactive",
-        data_dict[non_active_div_sibling_id][1],
-        data_dict[non_active_div_sibling_id][2]
-      );
-    }
-  }
-});
-
-$(".non-active").keydown(function (e) {
-  if (e.keyCode == 13 || e.keyCode == 32) {
-    let non_active_div = $(e.target).parent().parent();
-    let non_active_div_siblings = $(e.target).parent().parent().siblings();
-    let non_active_id
-    let current_tabs_active_id
-    let current_tabs_active_graph_sibling = non_active_div
-      .parent()
-      .closest("div");
-
-    let current_tabs_active_graph = current_tabs_active_graph_sibling
-      .siblings()
-      .closest("div");
-    for (const element of non_active_div[0].classList) {
-      if (
-        element != "graph" &&
-        element != "js-plotly-plot" &&
-        element != "non-active"
-      ) {
-        non_active_id = element;
-      }
-    }
-
-    for (const element of current_tabs_active_graph[0].classList) {
-      if (
-        element != "graph" &&
-        element != "active-graph" &&
-        element != "js-plotly-plot"
-      ) {
-        current_tabs_active_id = element;
-      }
-    }
-    current_tabs_active_graph[0].classList.remove(current_tabs_active_id);
-    current_tabs_active_graph[0].classList.add(non_active_id);
-    non_active_div[0].classList.remove(non_active_id);
-    non_active_div[0].classList.add(current_tabs_active_id);
-    generate_graph(
-      data_dict[non_active_id][0],
-      non_active_id,
-      "active",
-      data_dict[non_active_id][1],
-      data_dict[non_active_id][2],
-      captions_dict[non_active_id]
-    );
-    generate_graph(
-      data_dict[current_tabs_active_id][0],
-      current_tabs_active_id,
-      "inactive",
-      data_dict[current_tabs_active_id][1],
-      data_dict[current_tabs_active_id][2]
-    );
-    let non_active_div_sibling_id;
-    if (non_active_div_siblings.length != 0) {
-      for (let i = 0; i < non_active_div_siblings.length; i++) {
-        for (const element of non_active_div_siblings[i].classList) {
-          if (
-            element != "graph" &&
-            element != "js-plotly-plot" &&
-            element != "non-active"
-          ) {
-             non_active_div_sibling_id = element;
-          }
-        }
-
-        generate_graph(
-          data_dict[non_active_div_sibling_id][0],
-          non_active_div_sibling_id,
-          "inactive",
-          data_dict[non_active_div_sibling_id][1],
-          data_dict[non_active_div_sibling_id][2]
-        );
-      }
-    }
-  }
-});
 
 $("#allYearsBtn").click(function (e) {
  
@@ -2554,58 +1586,66 @@ d3.select("#dl-closed").on("click", function () {
     data_dict["total_selected_dispositions"][1]
   );
 
-  generate_hidden_graph(
+  generate_graph(
     data_dict["all_results_final_hidden"][0],
     "all_results_final_hidden",
+    "active",
     data_dict["all_results_final_hidden"][1],
     data_dict["all_results_final_hidden"][2],
     captions_dict["all_results_final"]
   );
-  generate_hidden_graph(
+  generate_graph(
     data_dict["total_solid_carbon_dispositions_hidden"][0],
     "total_solid_carbon_dispositions_hidden",
+    "active",
     data_dict["total_solid_carbon_dispositions_hidden"][1],
     data_dict["total_solid_carbon_dispositions_hidden"][2],
     captions_dict["total_solid_carbon_dispositions"]
   );
-  generate_hidden_graph(
+  generate_graph(
     data_dict["total_emissions_dispositions_hidden"][0],
     "total_emissions_dispositions_hidden",
+    "active",
     data_dict["total_emissions_dispositions_hidden"][1],
     data_dict["total_emissions_dispositions_hidden"][2],
     captions_dict["total_emissions_dispositions"]
   );
-  generate_hidden_graph(
+  generate_graph(
     data_dict["annual_net_change_carbon_stocks_hidden"][0],
     "annual_net_change_carbon_stocks_hidden",
+    "active",
     data_dict["annual_net_change_carbon_stocks_hidden"][1],
     data_dict["annual_net_change_carbon_stocks_hidden"][2],
     captions_dict["annual_net_change_carbon_stocks"]
   );
-  generate_hidden_graph(
+  generate_graph(
     data_dict["annual_harvest_and_timber_product_output_hidden"][0],
     "annual_harvest_and_timber_product_output_hidden",
+    "active",
     data_dict["annual_harvest_and_timber_product_output_hidden"][1],
     data_dict["annual_harvest_and_timber_product_output_hidden"][2],
     captions_dict["annual_harvest_and_timber_product_output"]
   );
-  generate_hidden_graph(
+  generate_graph(
     data_dict["burned_with_energy_capture_emissions_hidden"][0],
     "burned_with_energy_capture_emissions_hidden",
+    "active",
     data_dict["burned_with_energy_capture_emissions_hidden"][1],
     data_dict["burned_with_energy_capture_emissions_hidden"][2],
     captions_dict["burned_with_energy_capture_emissions"]
   );
-  generate_hidden_graph(
+  generate_graph(
     data_dict["burned_without_energy_capture_emissions_hidden"][0],
     "burned_without_energy_capture_emissions_hidden",
+    "active",
     data_dict["burned_without_energy_capture_emissions_hidden"][1],
     data_dict["burned_without_energy_capture_emissions_hidden"][2],
     captions_dict["burned_without_energy_capture_emissions"]
   );
-  generate_hidden_graph(
+  generate_graph(
     data_dict["swds_emissions_hidden"][0],
     "swds_emissions_hidden",
+    "active",
     data_dict["swds_emissions_hidden"][1],
     data_dict["swds_emissions_hidden"][2],
     captions_dict["swds_emissions"]
@@ -2731,6 +1771,7 @@ function export_plots() {
       }
     });
 }
+
 
 async function generate_image(div, options, file_name) {
   let url = await Plotly.toImage(div, options);
